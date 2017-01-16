@@ -4,10 +4,15 @@ package battlecode2;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
-	static int TREE_POS_ARR_START = 50;
+	static int TREE_POS_ARR_START = 50; // the positon in the broadcast array
+										// where the tree positons are first
+										// stored and continues till end
+	static int GARDNER_COUNT_ARR = 1;// the position in the broacast array where
+										// the count of gardern is stored
 	static RobotController rc;
 
 	@SuppressWarnings("unused")
+
 	public static void run(RobotController rc) throws GameActionException {
 		RobotPlayer.rc = rc;
 		switch (rc.getType()) {
@@ -82,7 +87,7 @@ public strictfp class RobotPlayer {
 				}
 
 				// Move randomly
-				tryMove(randomDirection());
+				//tryMove(randomDirection());
 
 				// Clock.yield() makes the robot wait until the next turn, then
 				// it will perform this loop again
@@ -123,10 +128,10 @@ public strictfp class RobotPlayer {
 						MapLocation enemyLocation = robots[0].getLocation();
 						Direction toEnemy = myLocation.directionTo(enemyLocation);
 
-						tryMove(toEnemy);
+						//tryMove(toEnemy);
 					} else {
 						// Move Randomly
-						tryMove(randomDirection());
+						//tryMove(randomDirection());
 					}
 				}
 
@@ -301,24 +306,39 @@ public strictfp class RobotPlayer {
 		MapLocation myLoc = rc.getLocation();
 		TreeInfo[] trees = rc.senseNearbyTrees();
 		for (TreeInfo t : trees) {
-			
+
 		}
 	}
 
-	
-	static boolean checkForTree(float x, float y) {
+	/**
+	 * checks if tree in message array list
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	static boolean checkForTreeInList(float x, float y) {
+
 		return true;
 	}
+
 	/**
 	 * adds tree to Message array
-	 * @throws GameActionException 
+	 * 
+	 * @throws GameActionException
 	 * 
 	 */
-	static boolean addTreeToList(float x,float y) throws GameActionException {
-		for(int i = TREE_POS_ARR_START; i<997; i+=3) {
-			
-			if(rc.readBroadcast(i)==0) {
-				rc.broadcast(i, (int)(x*100));
+	static boolean addTreeToList(int type, float x, float y) throws GameActionException {
+		// starts in broadcast array at TREE_POS_ARR_START, currently goes till
+		// end of array i increments by 3 skiping over positons
+		for (int i = TREE_POS_ARR_START; i < 997; i += 3) {
+			// if empty spot in array, add
+			if (rc.readBroadcast(i) == 0) {
+
+				rc.broadcast(i, 1);
+				rc.broadcast(i+1, (int) (x * 100));
+				rc.broadcast(i+2, (int) (y * 100));
+				TREE_POS_ARR_START++;
 				return true;
 			}
 		}
