@@ -35,11 +35,11 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an Archon!");
-		System.out.println(guessMapSize());
+		System.out.println(guessMapSize()[0] + ", " + guessMapSize()[1]);
 		while (true) {
 			try {
 				if (rc.readBroadcast(1) == 0) {
-					rc.hireGardener(Direction.getNorth());
+					// rc.hireGardener(Direction.getNorth());
 					int tempGardener = rc.readBroadcast(1);
 					tempGardener++;
 					rc.broadcast(1, tempGardener);
@@ -357,31 +357,31 @@ public strictfp class RobotPlayer {
 	 * 
 	 */
 	static float[] guessMapSize() {
-		
-		float w = 0;//max distnace between arcons width
-		float h = 0;//max distance between  arcons height
+
+		float w = 0;// max distnace between arcons width
+		float h = 0;// max distance between arcons height
 		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
 		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
-		//gets distances between arcons
-		for(MapLocation MLA1: ALocs) {
-			for(MapLocation MLB1: BLocs) {
-				if(Math.abs(MLA1.x-MLB1.x)>w) {
-					w = Math.abs(MLA1.x-MLB1.x);
+		// gets distances between arcons
+		for (MapLocation MLA1 : ALocs) {
+			for (MapLocation MLB1 : BLocs) {
+				if (Math.abs(MLA1.x - MLB1.x) > w) {
+					w = Math.abs(MLA1.x - MLB1.x);
 				}
-				if(Math.abs(MLA1.y-MLB1.x)>h) {
-					h = Math.abs(MLA1.y-MLB1.y);
+				if (Math.abs(MLA1.y - MLB1.y) > h) {
+					h = Math.abs(MLA1.y - MLB1.y);
 				}
 			}
-			for(MapLocation MLA2: ALocs) {
-				if(Math.abs(MLA1.x-MLA2.x)>w) {
-					w = Math.abs(MLA1.x-MLA2.x);
+			for (MapLocation MLA2 : ALocs) {
+				if (Math.abs(MLA1.x - MLA2.x) > w) {
+					w = Math.abs(MLA1.x - MLA2.x);
 				}
-				if(Math.abs(MLA1.y-MLA2.x)>h) {
-					h = Math.abs(MLA1.y-MLA2.y);
+				if (Math.abs(MLA1.y - MLA2.y) > h) {
+					h = Math.abs(MLA1.y - MLA2.y);
 				}
 			}
 		}
-		float[] max = {w, h};
+		float[] max = { w, h };
 		return max;
 	}
 }
