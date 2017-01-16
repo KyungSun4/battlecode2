@@ -7,8 +7,21 @@ public strictfp class RobotPlayer {
 	static int TREE_POS_ARR_START = 50; // the position in the broadcast array
 										// where the tree positions are first
 										// stored and continues till end
+	static int ARCHON_COUNT_ARR = 0; // the position in the broadcast array
+										// where the count of archon is stored
+
 	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
 										// where the count of gardener is stored
+	static int SOLDIER_COUNT_ARR = 2; // the position in the broadcast array
+										// where the count of gardener is stored
+
+	static int LUMBERJACK_COUNT_ARR = 3; // the position in the broadcast array
+											// where the count of lumber-jack is
+											// stored
+	static int SCOUT_COUNT_ARR = 4; // the position in the broadcast array
+									// where the count of scout is stored
+	static int TANK_COUNT_ARR = 5; // the position in the broadcast array where
+									// the count of tank is stored
 
 	@SuppressWarnings("unused")
 
@@ -29,6 +42,9 @@ public strictfp class RobotPlayer {
 			break;
 		case SCOUT:
 			runScout();
+			break;
+		case TANK:
+			runTank();
 			break;
 		}
 	}
@@ -68,6 +84,35 @@ public strictfp class RobotPlayer {
 
 	static void runScout() throws GameActionException {
 		System.out.println("I'm an Scout!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				MapLocation myLocation = rc.getLocation();
+
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Scout Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	static void runTank() throws GameActionException {
+		System.out.println("I'm an Tank!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				MapLocation myLocation = rc.getLocation();
+
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Tank Exception");
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	static void runSoldier() throws GameActionException {
