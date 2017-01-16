@@ -512,9 +512,19 @@ public strictfp class RobotPlayer {
 				myTrees.remove(i);
 			}
 		}
-		if(mySensedTrees.size()<1) {
-			if(rc.canPlantTree(Direction.getNorth()))
+		if(mySensedTrees.size()<4) {
+			if(rc.canPlantTree(Direction.getNorth())) {
 				rc.plantTree(Direction.getNorth());
+			}
+			else if(rc.canPlantTree(Direction.getSouth())) {
+				rc.plantTree(Direction.getSouth());
+			}
+			else if(rc.canPlantTree(Direction.getEast())) {
+				rc.plantTree(Direction.getEast());
+			}
+			else if(rc.canPlantTree(Direction.getWest())) {
+				rc.plantTree(Direction.getWest());
+			}
 		}
 		
 	}
