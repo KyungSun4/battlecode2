@@ -489,19 +489,20 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @param myTrees
 	 *            the trees that this gardner is maintaining
+	 * @throws GameActionException 
 	 */
-	static void maintainTreeRing(ArrayList<MapLocation> myTrees) {
+	static void maintainTreeRing(ArrayList<MapLocation> myTrees) throws GameActionException {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
 															// water are within
 															// 3 away
-		ArrayList<TreeInfo> mySenseTrees = new ArrayList<TreeInfo>();
-		// check if any of my trees died
+		ArrayList<TreeInfo> mySensedTrees = new ArrayList<TreeInfo>();
+		// check if any of my trees died get rid of dead ones and put all living ones in mySensedTrees
 		for (int i = 0;i<myTrees.size(); i++) {
 			boolean notFound = true;
 			for (TreeInfo sensedTree : sensedTrees) {
 				if (sensedTree.getTeam() == rc.getTeam()) {
 					if (sensedTree.location.equals(myTrees.get(i))) {
-						mySenseTrees.add(sensedTree);
+						mySensedTrees.add(sensedTree);
 						notFound = false;
 					}
 				}
@@ -511,5 +512,10 @@ public strictfp class RobotPlayer {
 				myTrees.remove(i);
 			}
 		}
+		if(mySensedTrees.size()<1) {
+			if(rc.canPlantTree(Direction.getNorth()))
+				rc.plantTree(Direction.getNorth());
+		}
+		
 	}
 }
