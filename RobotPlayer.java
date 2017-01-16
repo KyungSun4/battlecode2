@@ -1,6 +1,7 @@
 package battlecode2;
 //change
 
+//Nathan's test commit 
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
