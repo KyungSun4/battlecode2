@@ -1,7 +1,7 @@
 package battlecode2;
 
 import battlecode.common.*;
-
+import java.util.*;
 public strictfp class RobotPlayer {
 	static RobotController rc;
 	static int TREE_POS_ARR_START = 50; // the position in the broadcast array
@@ -75,6 +75,7 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm a gardener!");
+		MapLocation[] myTrees;
 		while (true) {
 			try {
 
@@ -342,16 +343,17 @@ public strictfp class RobotPlayer {
 	 */
 	static void scoutMove() {
 		// if nescesary, evade
-		//get bullets that will hit soon ad avoid them
-		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius*2);
+		// get bullets that will hit soon ad avoid them
+		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius * 2);
 		for (BulletInfo i : twoStrideBullets) {
 			avoidBullet(i);
 		}
-		// keep view distance away from other scouts or if alone, try and scan map
+		// keep view distance away from other scouts or if alone, try and scan
+		// map
 		// scan scouts in range
 		// scan map and update info
 	}
-	
+
 	/**
 	 * All tree locations will be stored in main message array, this method will
 	 * takein all the trees within the sight and if a tree in the ist that was
@@ -416,7 +418,8 @@ public strictfp class RobotPlayer {
 		float h = 0;// max distance between arcons height
 		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
 		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
-		// gets distances between arcons and sets w and h to the maximum distances found
+		// gets distances between arcons and sets w and h to the maximum
+		// distances found
 		for (MapLocation MLA1 : ALocs) {
 			for (MapLocation MLB1 : BLocs) {
 				if (Math.abs(MLA1.x - MLB1.x) > w) {
@@ -438,33 +441,68 @@ public strictfp class RobotPlayer {
 		float[] max = { w + RobotType.ARCHON.bodyRadius * 2, h + RobotType.ARCHON.bodyRadius * 2 };
 		return max;
 	}
-	
+
 	/**
 	 * use robot's position to try and improve guesses for map size and origin.
-	 * @throws GameActionException 
+	 * 
+	 * @throws GameActionException
 	 */
 	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
-		int myx = (int)(myLoc.x*1000);
-		int myy = (int)(myLoc.y*1000);
+		int myx = (int) (myLoc.x * 1000);
+		int myy = (int) (myLoc.y * 1000);
 		int originx = rc.readBroadcast(ORIGIN_X_ARR);
 		int originy = rc.readBroadcast(ORIGIN_X_ARR);
 		int width = rc.readBroadcast(MIN_MAP_WIDTH_ARR);
 		int height = rc.readBroadcast(MIN_MAP_WIDTH_ARR);
-		//check if bellow origin
-		if(myx < originx ) {
+		// check if bellow origin
+		if (myx < originx) {
 			rc.broadcast(ORIGIN_X_ARR, myx);
 		}
-		//check if above height plus origin
-		else if(myx>myx+width) {
-			rc.broadcast(MIN_MAP_WIDTH_ARR, myx-originx);
+		// check if above height plus origin
+		else if (myx > myx + width) {
+			rc.broadcast(MIN_MAP_WIDTH_ARR, myx - originx);
 		}
-		//check if to the left of origin
-		if(myy < rc.readBroadcast(ORIGIN_Y_ARR) ) {
+		// check if to the left of origin
+		if (myy < rc.readBroadcast(ORIGIN_Y_ARR)) {
 			rc.broadcast(ORIGIN_Y_ARR, myy);
 		}
-		//check if to the right of origin plus height
-		else if(myy>myy+height) {
-			rc.broadcast(MIN_MAP_HEIGHT_ARR, myy-originy);
+		// check if to the right of origin plus height
+		else if (myy > myy + height) {
+			rc.broadcast(MIN_MAP_HEIGHT_ARR, myy - originy);
+		}
+	}
+
+	/**
+	 * uses inital arcon locations to find symetry
+	 * 
+	 * @return 0-failed 1-horizontal -- 2-vertical | 3-diagonal positive /
+	 *         4-diagonal Negative \
+	 */
+	static int findMapSymetry() {
+		return 0;
+	}
+
+	/**
+	 * Gardners method to build tight ring of trees around itself and water,
+	 * farm, and plant those trees.
+	 * 
+	 * @param myTrees
+	 *            the trees that this gardner is maintaining
+	 */
+	static void maintainTreeRing(MapLocation[] myTrees) {
+		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
+															// water are within
+															// 3 away
+		ArrayList<TreeInfo> mySenseTrees;
+		// check if any of my trees died
+		for (TreeInfo sensedTree : sensedTrees) {
+			if (sensedTree.getTeam() == rc.getTeam()) {
+				for (MapLocation myTree : myTrees) {
+					if (sensedTree.location.equals(myTree)) {
+						
+					}
+				}
+			}
 		}
 	}
 }
