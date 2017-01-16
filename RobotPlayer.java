@@ -3,9 +3,10 @@ import battlecode.common.*;
 
 public strictfp class RobotPlayer {
 	static RobotController rc;
-	static int TREE_POS_ARR_START = 50;
-
+	static int TREE_POS_ARR_START = 50; // the position in the broadcast array where the tree positions are first stored and continues till end
+	static int GARDNER_COUNT_ARR = 1; //the position in the broadcast array where the count of gardener is stored
 	@SuppressWarnings("unused")
+
 	public static void run(RobotController rc) throws GameActionException {
 		RobotPlayer.rc = rc;
 		switch (rc.getType()) {
@@ -305,7 +306,15 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static boolean checkForTree(float x, float y) {
+
+	/**
+	 * checks if tree in message array list
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	static boolean checkForTreeInList(float x, float y) {
 		return true;
 	}
 
@@ -315,11 +324,16 @@ public strictfp class RobotPlayer {
 	 * @throws GameActionException
 	 * 
 	 */
-	static boolean addTreeToList(float x, float y) throws GameActionException {
-		for (int i = TREE_POS_ARR_START; i < 997; i += 3) {
 
+	static boolean addTreeToList(int type, float x, float y) throws GameActionException {
+		// starts in broadcast array at TREE_POS_ARR_START, currently goes till
+		// end of array i increments by 3 skiping over positons
+		for (int i = TREE_POS_ARR_START; i < 997; i += 3) {
+			// if empty spot in array, add
 			if (rc.readBroadcast(i) == 0) {
-				rc.broadcast(i, (int) (x * 100));
+				rc.broadcast(i, 1);
+				rc.broadcast(i+1, (int) (x * 100));
+				rc.broadcast(i+2, (int) (y * 100));
 				return true;
 			}
 		}
