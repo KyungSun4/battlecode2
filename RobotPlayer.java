@@ -1,5 +1,4 @@
-package battleCodepPlayer;
-//731
+package battleCodePlayer;
 import battlecode.common.*;
 public strictfp class RobotPlayer 
 {
@@ -31,7 +30,7 @@ public strictfp class RobotPlayer
     static void runArchon() throws GameActionException 
     {
         System.out.println("I'm an Archon!");
-        int numberOfGardeners = 0;
+        int numOfGardeners = rc.readBroadcast(1);
         while (true) 
         {
             try 
@@ -39,8 +38,7 @@ public strictfp class RobotPlayer
             	if (rc.readBroadcast(1) == 0)
             	{
             		rc.hireGardener(Direction.getNorth());
-            		numberOfGardeners++;
-            		rc.broadcast(1, numberOfGardeners);
+                    rc.broadcast(1, numOfGardeners++);
             	}               
                 Clock.yield();
             } 
@@ -70,7 +68,7 @@ public strictfp class RobotPlayer
         }
     }
 
-    static void runScout() throws GameActionException
+    /*static void runScout() throws GameActionException
     {
         System.out.println("I'm an Scout!");
     }
@@ -309,47 +307,5 @@ public strictfp class RobotPlayer
     		}
     	}
     	return directionToEnemy;
-    }
-    /**
-    * the scouts move method
-    * 
-    */
-    static void scoutMove() {
-		// if nessesary, evade
-		// keep view distnace away from other scouts
-		// scan scouts in range
-		// scan map and update info
-    }
-	/**
-	 * All tree locations will be stored in main message array, this method will
-	 * takein all the trees within the sight and if a tree in the ist that was
-	 * in that radius is no longer there, remove it. if a new tree is found, it
-	 * will add it to the list
-	 */
-	static void updateTreesInMessArr() {
-		MapLocation myLoc = rc.getLocation();
-	}
-
-	/**
-	 * adds tree to Message array
-	 * 
-	 */
-	static void addTreeToList() {
-	}
-
-	/**
-	 * removes tree from Message array
-	 * 
-	 */
-	static void removeTreeToList() {
-	}
- 	/** uses Initial arcon locations to guess map size
- 	* 
- 	*/
-	static void guessMapSize() {
-		MapLocation[] aArcL = rc.getInitialArchonLocations(Team.A);
-		MapLocation[] bArcL = rc.getInitialArchonLocations(Team.B);
-		for(MapLocation x : aArcL) {
-			
-	}	
+    }*/
 }
