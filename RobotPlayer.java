@@ -1,10 +1,15 @@
 package battlecode2;
+
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
 	static RobotController rc;
-	static int TREE_POS_ARR_START = 50; // the position in the broadcast array where the tree positions are first stored and continues till end
-	static int GARDNER_COUNT_ARR = 1; //the position in the broadcast array where the count of gardener is stored
+	static int TREE_POS_ARR_START = 50; // the position in the broadcast array
+										// where the tree positions are first
+										// stored and continues till end
+	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
+										// where the count of gardener is stored
+
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
@@ -30,6 +35,7 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an Archon!");
+		System.out.println(guessMapSize());
 		while (true) {
 			try {
 				if (rc.readBroadcast(1) == 0) {
@@ -83,7 +89,7 @@ public strictfp class RobotPlayer {
 				}
 
 				// Move randomly
-				//tryMove(randomDirection());
+				// tryMove(randomDirection());
 
 				// Clock.yield() makes the robot wait until the next turn, then
 				// it will perform this loop again
@@ -124,10 +130,10 @@ public strictfp class RobotPlayer {
 						MapLocation enemyLocation = robots[0].getLocation();
 						Direction toEnemy = myLocation.directionTo(enemyLocation);
 
-						//tryMove(toEnemy);
+						// tryMove(toEnemy);
 					} else {
 						// Move Randomly
-						//tryMove(randomDirection());
+						// tryMove(randomDirection());
 					}
 				}
 
@@ -306,7 +312,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-
 	/**
 	 * checks if tree in message array list
 	 * 
@@ -332,8 +337,8 @@ public strictfp class RobotPlayer {
 			// if empty spot in array, add
 			if (rc.readBroadcast(i) == 0) {
 				rc.broadcast(i, 1);
-				rc.broadcast(i+1, (int) (x * 100));
-				rc.broadcast(i+2, (int) (y * 100));
+				rc.broadcast(i + 1, (int) (x * 100));
+				rc.broadcast(i + 2, (int) (y * 100));
 				return true;
 			}
 		}
@@ -351,4 +356,32 @@ public strictfp class RobotPlayer {
 	 * uses Initial arcon locations to guess map size
 	 * 
 	 */
+	static float[] guessMapSize() {
+		
+		float w = 0;//max distnace between arcons width
+		float h = 0;//max distance between  arcons height
+		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
+		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
+		//gets distances between arcons
+		for(MapLocation MLA1: ALocs) {
+			for(MapLocation MLB1: BLocs) {
+				if(Math.abs(MLA1.x-MLB1.x)>w) {
+					w = Math.abs(MLA1.x-MLB1.x);
+				}
+				if(Math.abs(MLA1.y-MLB1.x)>h) {
+					h = Math.abs(MLA1.y-MLB1.y);
+				}
+			}
+			for(MapLocation MLA2: ALocs) {
+				if(Math.abs(MLA1.x-MLA2.x)>w) {
+					w = Math.abs(MLA1.x-MLA2.x);
+				}
+				if(Math.abs(MLA1.y-MLA2.x)>h) {
+					h = Math.abs(MLA1.y-MLA2.y);
+				}
+			}
+		}
+		float[] max = {w, h};
+		return max;
+	}
 }
