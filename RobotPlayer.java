@@ -338,7 +338,7 @@ public strictfp class RobotPlayer {
 				rc.broadcast(i, 1);
 				rc.broadcast(i+1, (int) (x * 100));
 				rc.broadcast(i+2, (int) (y * 100));
-				TREE_POS_ARR_START++;
+				
 				return true;
 			}
 		}
