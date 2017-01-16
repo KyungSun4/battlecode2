@@ -438,4 +438,33 @@ public strictfp class RobotPlayer {
 		float[] max = { w + RobotType.ARCHON.bodyRadius * 2, h + RobotType.ARCHON.bodyRadius * 2 };
 		return max;
 	}
+	
+	/**
+	 * use robot's position to try and improve guesses for map size and origin.
+	 * @throws GameActionException 
+	 */
+	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
+		int myx = (int)(myLoc.x*1000);
+		int myy = (int)(myLoc.y*1000);
+		int originx = rc.readBroadcast(ORIGIN_X_ARR);
+		int originy = rc.readBroadcast(ORIGIN_X_ARR);
+		int width = rc.readBroadcast(MIN_MAP_WIDTH_ARR);
+		int height = rc.readBroadcast(MIN_MAP_WIDTH_ARR);
+		//check if bellow origin
+		if(myx < originx ) {
+			rc.broadcast(ORIGIN_X_ARR, myx);
+		}
+		//check if above height plus origin
+		else if(myx>myx+width) {
+			rc.broadcast(MIN_MAP_WIDTH_ARR, myx-originx);
+		}
+		//check if to the left of origin
+		if(myy < rc.readBroadcast(ORIGIN_Y_ARR) ) {
+			rc.broadcast(ORIGIN_Y_ARR, myy);
+		}
+		//check if to the right of origin plus height
+		else if(myy>myy+height) {
+			rc.broadcast(MIN_MAP_HEIGHT_ARR, myy-originy);
+		}
+	}
 }
