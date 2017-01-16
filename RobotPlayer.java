@@ -15,7 +15,7 @@ public strictfp class RobotPlayer
             case GARDENER:
                 runGardener();
                 break;
-            /*case SOLDIER:
+            case SOLDIER:
                 runSoldier();
                 break;
             case LUMBERJACK:
@@ -23,7 +23,7 @@ public strictfp class RobotPlayer
                 break;
             case SCOUT:
             	runScout();
-            	break;*/
+            	break;
         }
 	}
     
