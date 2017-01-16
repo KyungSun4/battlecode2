@@ -1,11 +1,9 @@
 package battlecode2;
-//change
-
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
-	static int TREE_POS_ARR_START = 50;
 	static RobotController rc;
+	static int TREE_POS_ARR_START = 50;
 
 	@SuppressWarnings("unused")
 	public static void run(RobotController rc) throws GameActionException {
@@ -31,12 +29,14 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an Archon!");
-		int numOfGardeners = rc.readBroadcast(1);
 		while (true) {
 			try {
 				if (rc.readBroadcast(1) == 0) {
 					rc.hireGardener(Direction.getNorth());
-					rc.broadcast(1, numOfGardeners++);
+					int tempGardener = rc.readBroadcast(1);
+					tempGardener++;
+					rc.broadcast(1, tempGardener);
+					System.out.println(rc.readBroadcast(1));
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -82,7 +82,7 @@ public strictfp class RobotPlayer {
 				}
 
 				// Move randomly
-				tryMove(randomDirection());
+				//tryMove(randomDirection());
 
 				// Clock.yield() makes the robot wait until the next turn, then
 				// it will perform this loop again
@@ -123,10 +123,10 @@ public strictfp class RobotPlayer {
 						MapLocation enemyLocation = robots[0].getLocation();
 						Direction toEnemy = myLocation.directionTo(enemyLocation);
 
-						tryMove(toEnemy);
+						//tryMove(toEnemy);
 					} else {
 						// Move Randomly
-						tryMove(randomDirection());
+						//tryMove(randomDirection());
 					}
 				}
 
@@ -301,24 +301,25 @@ public strictfp class RobotPlayer {
 		MapLocation myLoc = rc.getLocation();
 		TreeInfo[] trees = rc.senseNearbyTrees();
 		for (TreeInfo t : trees) {
-			
+
 		}
 	}
 
-	
 	static boolean checkForTree(float x, float y) {
 		return true;
 	}
+
 	/**
 	 * adds tree to Message array
-	 * @throws GameActionException 
+	 * 
+	 * @throws GameActionException
 	 * 
 	 */
-	static boolean addTreeToList(float x,float y) throws GameActionException {
-		for(int i = TREE_POS_ARR_START; i<997; i+=3) {
-			
-			if(rc.readBroadcast(i)==0) {
-				rc.broadcast(i, (int)(x*100));
+	static boolean addTreeToList(float x, float y) throws GameActionException {
+		for (int i = TREE_POS_ARR_START; i < 997; i += 3) {
+
+			if (rc.readBroadcast(i) == 0) {
+				rc.broadcast(i, (int) (x * 100));
 				return true;
 			}
 		}
