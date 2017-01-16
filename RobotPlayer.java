@@ -304,12 +304,16 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	
+	static boolean checkForTree(float x, float y) {
+		return true;
+	}
 	/**
 	 * adds tree to Message array
 	 * @throws GameActionException 
 	 * 
 	 */
-	static boolean addTreeToList(float x,float y)  {
+	static boolean addTreeToList(float x,float y) throws GameActionException {
 		for(int i = TREE_POS_ARR_START; i<997; i+=3) {
 			
 			if(rc.readBroadcast(i)==0) {
