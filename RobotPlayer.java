@@ -344,7 +344,7 @@ public strictfp class RobotPlayer {
 	 * removes tree from Message array
 	 * 
 	 */
-	static void removeTreeToList() {
+	static void removeTreeFromList() {
 	}
 
 	/**
