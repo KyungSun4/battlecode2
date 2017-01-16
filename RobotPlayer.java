@@ -16,7 +16,7 @@ public strictfp class RobotPlayer {
 		case GARDENER:
 			runGardener();
 			break;
-		case SOLDIER:
+		/*case SOLDIER:
 			runSoldier();
 			break;
 		case LUMBERJACK:
@@ -24,7 +24,7 @@ public strictfp class RobotPlayer {
 			break;
 		case SCOUT:
 			runScout();
-			break;
+			break;*/
 		}
 	}
 
@@ -32,7 +32,7 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an Archon!");
 		while (true) {
 			try {
-				if (rc.readBroadcast(1) == 0) {
+				if (rc.readBroadcast(1) == 0 && rc.canHireGardener(Direction.getNorth())) {
 					rc.hireGardener(Direction.getNorth());
 					int tempGardener = rc.readBroadcast(1);
 					tempGardener++;
@@ -49,9 +49,22 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm a gardener!");
+		int treeCounter = 0;
+		Direction treeDir = Direction.getEast().rotateLeftRads((float)(Math.PI/2));
 		while (true) {
 			try {
-
+				if (treeCounter <= 4 && rc.canPlantTree(treeDir)) {
+					rc.plantTree(treeDir);
+					treeCounter++;
+					treeDir = treeDir.rotateLeftRads((float)(Math.PI/2));
+				}
+				//These statements get the distance to the tree it planted 
+				MapLocation gardenerLoc = rc.getLocation();
+				TreeInfo arr[] = rc.senseNearbyTrees(3, rc.getTeam());
+				MapLocation x = arr[0].location;
+				Float dist = gardenerLoc.distanceTo(x);
+				System.out.println(dist);
+				
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
@@ -60,7 +73,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void runScout() throws GameActionException {
+	/*static void runScout() throws GameActionException {
 		System.out.println("I'm an Scout!");
 	}
 
@@ -279,7 +292,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 		return directionToEnemy;
-	}
+	}*/
 
 	/**
 	 * the scouts move method
