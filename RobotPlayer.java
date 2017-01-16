@@ -22,6 +22,10 @@ public strictfp class RobotPlayer {
 									// where the count of scout is stored
 	static int TANK_COUNT_ARR = 5; // the position in the broadcast array where
 									// the count of tank is stored
+	static int MIN_MAP_WIDTH_ARR = 6; // since float, multiply by 1000
+	static int MIN_MAP_HEIGHT_ARR = 7; // since float, multiply by 1000
+	static int ORIGIN_X_ARR = 8; // since float, multiply by 1000
+	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
 
 	@SuppressWarnings("unused")
 
@@ -337,12 +341,17 @@ public strictfp class RobotPlayer {
 	 * 
 	 */
 	static void scoutMove() {
-		// if nessesary, evade
-		// keep view distnace away from other scouts
+		// if nescesary, evade
+		//get bullets that will hit soon ad avoid them
+		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius*2);
+		for (BulletInfo i : twoStrideBullets) {
+			avoidBullet(i);
+		}
+		// keep view distance away from other scouts or if alone, try and scan map
 		// scan scouts in range
 		// scan map and update info
 	}
-
+	
 	/**
 	 * All tree locations will be stored in main message array, this method will
 	 * takein all the trees within the sight and if a tree in the ist that was
@@ -407,7 +416,7 @@ public strictfp class RobotPlayer {
 		float h = 0;// max distance between arcons height
 		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
 		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
-		// gets distances between arcons
+		// gets distances between arcons and sets w and h to the maximum distances found
 		for (MapLocation MLA1 : ALocs) {
 			for (MapLocation MLB1 : BLocs) {
 				if (Math.abs(MLA1.x - MLB1.x) > w) {
