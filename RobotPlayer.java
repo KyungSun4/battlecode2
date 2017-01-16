@@ -381,7 +381,7 @@ public strictfp class RobotPlayer {
 				}
 			}
 		}
-		float[] max = { w, h };
+		float[] max = { w + RobotType.ARCHON.bodyRadius * 2, h + RobotType.ARCHON.bodyRadius * 2 };
 		return max;
 	}
 }
