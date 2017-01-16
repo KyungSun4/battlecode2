@@ -2,6 +2,7 @@ package battlecode2;
 
 import battlecode.common.*;
 import java.util.*;
+
 public strictfp class RobotPlayer {
 	static RobotController rc;
 	static int TREE_POS_ARR_START = 50; // the position in the broadcast array
@@ -75,7 +76,7 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm a gardener!");
-		MapLocation[] myTrees;
+		ArrayList<MapLocation> myTrees = new ArrayList<MapLocation>();
 		while (true) {
 			try {
 
@@ -489,19 +490,25 @@ public strictfp class RobotPlayer {
 	 * @param myTrees
 	 *            the trees that this gardner is maintaining
 	 */
-	static void maintainTreeRing(MapLocation[] myTrees) {
+	static void maintainTreeRing(ArrayList<MapLocation> myTrees) {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
 															// water are within
 															// 3 away
-		ArrayList<TreeInfo> mySenseTrees;
+		ArrayList<TreeInfo> mySenseTrees = new ArrayList<TreeInfo>();
 		// check if any of my trees died
-		for (TreeInfo sensedTree : sensedTrees) {
-			if (sensedTree.getTeam() == rc.getTeam()) {
-				for (MapLocation myTree : myTrees) {
-					if (sensedTree.location.equals(myTree)) {
-						
+		for (int i = 0;i<myTrees.size(); i++) {
+			boolean notFound = true;
+			for (TreeInfo sensedTree : sensedTrees) {
+				if (sensedTree.getTeam() == rc.getTeam()) {
+					if (sensedTree.location.equals(myTrees.get(i))) {
+						mySenseTrees.add(sensedTree);
+						notFound = false;
 					}
 				}
+			}
+			if(notFound) {
+				//tree must have died so remove it
+				myTrees.remove(i);
 			}
 		}
 	}
