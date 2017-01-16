@@ -1,7 +1,7 @@
 package examplefuncsplayer;
 //tieonsihosntio
 //
-//dgdf
+//dgdfjohn eddited this
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
