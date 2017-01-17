@@ -208,11 +208,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	private static Direction Direction(float f) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	static Direction randomDirection() {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
@@ -248,92 +243,6 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	static boolean willCollideWithMe(BulletInfo bullet) {
-		// Get relevant bullet information
-		Direction propagationDirection = bullet.dir;
-		MapLocation bulletLocation = bullet.location;
-
-		// Calculate bullet relations to this robot
-		MapLocation myLocation = rc.getLocation();
-		Direction directionToRobot = bulletLocation.directionTo(myLocation);
-		float distToRobot = bulletLocation.distanceTo(myLocation);
-		float theta = propagationDirection.radiansBetween(directionToRobot);
-
-		// If theta > 90 degrees, then the bullet is traveling away from us and
-		// we can break early
-		if (Math.abs(theta) > Math.PI / 2)
-			return false;
-
-		// distToRobot is our hypotenuse, theta is our angle, and we want to
-		// know this length of the opposite leg.
-		// This is the distance of a line that goes from myLocation and
-		// intersects perpendicularly with propagationDirection.
-		// This corresponds to the smallest radius circle centered at our
-		// location that would intersect with the
-		// line that is the path of the bullet.
-		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta)); // soh
-																					// cah
-																					// toa
-																					// :)
-
-		return (perpendicularDist <= rc.getType().bodyRadius);
-	}
-
-	// Rough outline of avoiding bullets. Does not account for collisions.
-	static void avoidBullet(BulletInfo bullet) {
-		Direction propagationDirection = bullet.dir;
-		MapLocation bulletLocation = bullet.location;
-		MapLocation myLocation = rc.getLocation();
-		Direction directionToRobot = bulletLocation.directionTo(myLocation);
-		try {
-			Direction moveToAvoid;
-			// Sets the direction it wants to move based on the orientation to
-			// the bullet
-			if ((directionToRobot.getAngleDegrees() - propagationDirection.getAngleDegrees()) >= 0) {
-				moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
-			} else {
-				moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
-			}
-			// Checks if the direction it wants to move is clear before moving.
-			// If false, it will check if it can move backwards
-			// If that is also false it will move towards the bullet in attempt
-			// to make room to move away next turn
-			if (rc.canMove(moveToAvoid)) {
-				rc.move(moveToAvoid);
-			}
-			// In the future make a method to detect the next available
-			// rc.move() direction to replace these.
-			else if (rc.canMove(propagationDirection)) {
-				rc.move(propagationDirection);
-			} else {
-				rc.move(propagationDirection.rotateLeftRads((float) Math.PI));
-			}
-			// Possibly replace with the tryMove method?^^
-		} catch (Exception e) {
-			System.out.println("bulletAvoid Exception");
-			e.printStackTrace();
-		}
-	}
-
-	// Returns true if the coast is clear
-	static boolean friendlyFire() {
-		return true;
-	}
-
-	// Called if an enemy robot sensed
-	// A couple of ways to do this, you could ask for the id of the robot as a
-	// param rather than location
-	// Create an algorithm to take into account robots trying to dodge bullets?
-	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
-		MapLocation myLocation = rc.getLocation();
-		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
-		rc.fireSingleShot(directionToEnemy);
-	}
-
-	static boolean enemyDetected() {
-		return false;
-	}
-
 	static Direction directionToClosestEnemy() {
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
 		MapLocation myLocation = rc.getLocation();
@@ -350,23 +259,6 @@ public strictfp class RobotPlayer {
 			}
 		}
 		return directionToEnemy;
-	}
-
-	/**
-	 * the scouts move method
-	 * 
-	 */
-	static void scoutMove() {
-		// if nescesary, evade
-		// get bullets that will hit soon ad avoid them
-		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius * 2);
-		for (BulletInfo i : twoStrideBullets) {
-			avoidBullet(i);
-		}
-		// keep view distance away from other scouts or if alone, try and scan
-		// map
-		// scan scouts in range
-		// scan map and update info
 	}
 
 	/**
@@ -542,5 +434,175 @@ public strictfp class RobotPlayer {
 			}
 		}
 		
+	}
+	
+	static boolean willCollideWithMe(BulletInfo bullet) {
+		MapLocation myLocation = rc.getLocation();
+
+		// Get relevant bullet information
+		Direction propagationDirection = bullet.dir;
+		MapLocation bulletLocation = bullet.location;
+
+		// Calculate bullet relations to this robot
+		Direction directionToRobot = bulletLocation.directionTo(myLocation);
+		float distToRobot = bulletLocation.distanceTo(myLocation);
+		float theta = propagationDirection.radiansBetween(directionToRobot);
+
+		// If theta > 90 degrees, then the bullet is traveling away from us and
+		// we can break early
+		if (Math.abs(theta) > Math.PI / 2) {
+			return false;
+		}
+
+		// distToRobot is our hypotenuse, theta is our angle, and we want to
+		// know this length of the opposite leg.
+		// This is the distance of a line that goes from myLocation and
+		// intersects perpendicularly with propagationDirection.
+		// This corresponds to the smallest radius circle centered at our
+		// location that would intersect with the
+		// line that is the path of the bullet.
+		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta));
+		return (perpendicularDist <= rc.getType().bodyRadius);
+	}
+	
+	static String getMapStats() {
+		// Array of archon location friendly/enemy
+		MapLocation archonLocationF[] = rc.getInitialArchonLocations(rc.getTeam());
+		MapLocation archonLocationE[] = rc.getInitialArchonLocations(rc.getTeam().opponent());
+		for (MapLocation locationsF : archonLocationF) {
+			//This means it is symmetrical across the X axis
+			if (locationsF.x == archonLocationE[0].x) {
+				// If it is symmetrical across X, need to find if we start on the bottom or top
+				if (locationsF.y < archonLocationE[0].y) {
+					// Start on bottom
+					System.out.println("Bottom");
+					return "bottom";
+				} else {
+					// Start on top
+					System.out.println("Top");
+					return "top";
+				}
+			}
+			// This means it is symmetrical across the Y axis
+			else if (locationsF.y == archonLocationE[0].y) {
+				// If it is symmetrical across Y, need to find if we start on the left or right
+				if (locationsF.x < archonLocationE[0].x) {
+					// Start on left
+					System.out.println("Left");
+					return "left";
+				} else {
+					// Start on right
+					System.out.println("Right");
+					return "right";
+				}
+			}
+		}
+		// If not symmetrical on X or Y axis, assume symmetrical across the XY 
+		// Need to find which corner we start in
+		float smallestX = archonLocationF[0].x;
+		float smallestY = archonLocationF[0].y;
+		// This for loop finds the smallest X and Y values for comparison
+		for (MapLocation locations : archonLocationF) {
+			if (locations.x < smallestX)
+				smallestX = locations.x;
+			if (locations.y < smallestY)
+				smallestY = locations.y;
+		}
+		// If an enemy archon's location is smaller than our smallest location, we know we are not in the bottom/left corner ect.
+		boolean isBottom = true;
+		boolean isLeft = true;
+		for (MapLocation locations : archonLocationE) {
+			if (smallestY > locations.y)
+				isBottom = false;
+			if (smallestX > locations.x)
+				isLeft = false;
+		}
+		if (isBottom == true && isLeft == true)
+			return "bottomLeft";
+		else if (isBottom == true && isLeft == false)
+			return "bottomRight";
+		else if (isBottom == false && isLeft == true)
+			return "topLeft";
+		else if (isBottom == false && isLeft == false)
+			return "topRight";
+		else
+			return "ERROR";
+	}
+	
+	//Starts at east then rotates counter clockwise to find the next available space at increments of 30 degrees.
+	static Direction nextUnoccupiedDirection(RobotType robot, int degrees)
+	{
+		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
+		while (rc.canMove(testDirection) == false)
+		{
+			testDirection = testDirection.rotateLeftDegrees(30);
+		}
+		return testDirection;
+	}
+	
+	//Method is called if an enemy is sensed
+	static void attackEnemy(MapLocation enemyLocation) throws GameActionException 
+	{
+		System.out.println("Attacking!");
+		MapLocation myLocation = rc.getLocation();
+		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
+		rc.fireSingleShot(directionToEnemy);
+	}
+	
+	//Called if a bullet is sensed within the robots. A robot will sense nearby bullets and will run this code for each one of the bullets
+	static boolean ifNeedToAvoidBullet(BulletInfo bullet) {
+		MapLocation myLocation = rc.getLocation();
+		MapLocation bulletlocation = bullet.getLocation();
+		float distanceToBullet = myLocation.distanceTo(bulletlocation);
+		float bulletSpeed = bullet.getSpeed();
+		if (willCollideWithMe(bullet) && bulletSpeed/(distanceToBullet + rc.getType().bodyRadius) >= .5)
+		{
+			System.out.print("Need to evade bullet!");
+			return true;
+		}
+		return false;
+	}
+	
+	static void avoidBullet(BulletInfo bullet) {
+		//These statements simply get info about the orientation and angles between the robot and bullet
+		Direction propagationDirection = bullet.dir;
+		MapLocation bulletLocation = bullet.location;
+		MapLocation myLocation = rc.getLocation();
+		Direction directionToRobot = bulletLocation.directionTo(myLocation);
+		try {
+			Direction moveToAvoid;
+			// Sets the direction it wants to move based on what portion of the robot the bullet will hit
+			if ((directionToRobot.getAngleDegrees() - propagationDirection.getAngleDegrees()) >= 0) 
+			{
+				//Sets moveToAvoid a direction perpendicular to the direction of the bullet
+				moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
+			} 
+			else 
+			{
+				moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
+			}
+			// Checks if the direction it wants to move is clear before moving.
+			if (rc.canMove(moveToAvoid)) 
+			{
+				rc.move(moveToAvoid);
+			}
+			//If the space it wants to move to is occupied it will use the nextUnoccupiedDirection method to move
+			else
+			{
+				//This if statement is to check the direction the bullet is coming. You dont want to move into the path of the bullet
+				if (directionToRobot.getAngleDegrees() > 180)
+				{
+					rc.move(nextUnoccupiedDirection(rc.getType(), 180));
+				}
+				else
+				{
+					rc.move(nextUnoccupiedDirection(rc.getType(), 0));
+				}
+			}
+			System.out.println("Avoided successfully?");
+		} catch (Exception e) {
+			System.out.println("FAILED TO AVOID BULLET!");
+			e.printStackTrace();
+		}
 	}
 }
