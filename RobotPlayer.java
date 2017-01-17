@@ -78,29 +78,21 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm a gardener!");
 		int treeCounter = 0;
 		int lumberjack = 0;
-		Direction treeDir = Direction.getEast().rotateLeftRads((float)(Math.PI/2));
+		Direction treeDir = Direction.getEast().rotateLeftRads((float) (Math.PI / 2));
 		ArrayList<MapLocation> myTrees = new ArrayList<MapLocation>();
 		while (true) {
 			try {
-				if (lumberjack == 0)
-				{
+				if (lumberjack == 0) {
 					rc.buildRobot(RobotType.LUMBERJACK, Direction.getNorth());
 					lumberjack++;
 				}
-					
-				/*if (treeCounter <= 4 && rc.canPlantTree(treeDir)) {
-					rc.plantTree(treeDir);
-					treeCounter++;
-					treeDir = treeDir.rotateLeftRads((float)(Math.PI/2));
-				}*/
-				
-				
-				
-				
-				
-				
-				
-				
+
+				/*
+				 * if (treeCounter <= 4 && rc.canPlantTree(treeDir)) {
+				 * rc.plantTree(treeDir); treeCounter++; treeDir =
+				 * treeDir.rotateLeftRads((float)(Math.PI/2)); }
+				 */
+
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
@@ -180,15 +172,12 @@ public strictfp class RobotPlayer {
 		int treeID = 0;
 		while (true) {
 			try {
-				if (!busy)
-				{
-					searchTree:
-					{
+				if (!busy) {
+					searchTree: {
 						TreeInfo arr[] = rc.senseNearbyTrees();
-						for (TreeInfo x: arr){
+						for (TreeInfo x : arr) {
 							RobotType tree = x.getContainedRobot();
-							if (tree != null)
-							{
+							if (tree != null) {
 								treeID = x.getID();
 								System.out.println(x.getContainedRobot());
 								busy = true;
@@ -197,9 +186,9 @@ public strictfp class RobotPlayer {
 						}
 					}
 				}
-				Direction temp = Direction((float)(Math.PI)*(3/4));
+				Direction temp = Direction((float) (Math.PI) * (3 / 4));
 				rc.move(temp);
-				
+
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Lumberjack Exception");
@@ -259,6 +248,23 @@ public strictfp class RobotPlayer {
 			}
 		}
 		return directionToEnemy;
+	}
+
+	/**
+	 * the scouts move method
+	 * 
+	 */
+	static void scoutMove() {
+		// if nescesary, evade
+		// get bullets that will hit soon ad avoid them
+		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius * 2);
+		for (BulletInfo i : twoStrideBullets) {
+			avoidBullet(i);
+		}
+		// keep view distance away from other scouts or if alone, try and scan
+		// map
+		// scan scouts in range
+		// scan map and update info
 	}
 
 	/**
@@ -395,15 +401,16 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @param myTrees
 	 *            the trees that this gardner is maintaining
-	 * @throws GameActionException 
+	 * @throws GameActionException
 	 */
 	static void maintainTreeRing(ArrayList<MapLocation> myTrees) throws GameActionException {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
 															// water are within
 															// 3 away
 		ArrayList<TreeInfo> mySensedTrees = new ArrayList<TreeInfo>();
-		// check if any of my trees died get rid of dead ones and put all living ones in mySensedTrees
-		for (int i = 0;i<myTrees.size(); i++) {
+		// check if any of my trees died get rid of dead ones and put all living
+		// ones in mySensedTrees
+		for (int i = 0; i < myTrees.size(); i++) {
 			boolean notFound = true;
 			for (TreeInfo sensedTree : sensedTrees) {
 				if (sensedTree.getTeam() == rc.getTeam()) {
@@ -413,29 +420,26 @@ public strictfp class RobotPlayer {
 					}
 				}
 			}
-			if(notFound) {
-				//tree must have died so remove it
+			if (notFound) {
+				// tree must have died so remove it
 				myTrees.remove(i);
 			}
 		}
-		//plants 4 trees around to start.
-		if(mySensedTrees.size()<4) {
-			if(rc.canPlantTree(Direction.getNorth())) {
+		// plants 4 trees around to start.
+		if (mySensedTrees.size() < 4) {
+			if (rc.canPlantTree(Direction.getNorth())) {
 				rc.plantTree(Direction.getNorth());
-			}
-			else if(rc.canPlantTree(Direction.getSouth())) {
+			} else if (rc.canPlantTree(Direction.getSouth())) {
 				rc.plantTree(Direction.getSouth());
-			}
-			else if(rc.canPlantTree(Direction.getEast())) {
+			} else if (rc.canPlantTree(Direction.getEast())) {
 				rc.plantTree(Direction.getEast());
-			}
-			else if(rc.canPlantTree(Direction.getWest())) {
+			} else if (rc.canPlantTree(Direction.getWest())) {
 				rc.plantTree(Direction.getWest());
 			}
 		}
-		
+
 	}
-	
+
 	static boolean willCollideWithMe(BulletInfo bullet) {
 		MapLocation myLocation = rc.getLocation();
 
@@ -464,15 +468,16 @@ public strictfp class RobotPlayer {
 		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta));
 		return (perpendicularDist <= rc.getType().bodyRadius);
 	}
-	
+
 	static String getMapStats() {
 		// Array of archon location friendly/enemy
 		MapLocation archonLocationF[] = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation archonLocationE[] = rc.getInitialArchonLocations(rc.getTeam().opponent());
 		for (MapLocation locationsF : archonLocationF) {
-			//This means it is symmetrical across the X axis
+			// This means it is symmetrical across the X axis
 			if (locationsF.x == archonLocationE[0].x) {
-				// If it is symmetrical across X, need to find if we start on the bottom or top
+				// If it is symmetrical across X, need to find if we start on
+				// the bottom or top
 				if (locationsF.y < archonLocationE[0].y) {
 					// Start on bottom
 					System.out.println("Bottom");
@@ -485,7 +490,8 @@ public strictfp class RobotPlayer {
 			}
 			// This means it is symmetrical across the Y axis
 			else if (locationsF.y == archonLocationE[0].y) {
-				// If it is symmetrical across Y, need to find if we start on the left or right
+				// If it is symmetrical across Y, need to find if we start on
+				// the left or right
 				if (locationsF.x < archonLocationE[0].x) {
 					// Start on left
 					System.out.println("Left");
@@ -497,7 +503,7 @@ public strictfp class RobotPlayer {
 				}
 			}
 		}
-		// If not symmetrical on X or Y axis, assume symmetrical across the XY 
+		// If not symmetrical on X or Y axis, assume symmetrical across the XY
 		// Need to find which corner we start in
 		float smallestX = archonLocationF[0].x;
 		float smallestY = archonLocationF[0].y;
@@ -508,7 +514,8 @@ public strictfp class RobotPlayer {
 			if (locations.y < smallestY)
 				smallestY = locations.y;
 		}
-		// If an enemy archon's location is smaller than our smallest location, we know we are not in the bottom/left corner ect.
+		// If an enemy archon's location is smaller than our smallest location,
+		// we know we are not in the bottom/left corner ect.
 		boolean isBottom = true;
 		boolean isLeft = true;
 		for (MapLocation locations : archonLocationE) {
@@ -528,74 +535,69 @@ public strictfp class RobotPlayer {
 		else
 			return "ERROR";
 	}
-	
-	//Starts at east then rotates counter clockwise to find the next available space at increments of 30 degrees.
-	static Direction nextUnoccupiedDirection(RobotType robot, int degrees)
-	{
+
+	// Starts at east then rotates counter clockwise to find the next available
+	// space at increments of 30 degrees.
+	static Direction nextUnoccupiedDirection(RobotType robot, int degrees) {
 		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
-		while (rc.canMove(testDirection) == false)
-		{
+		while (rc.canMove(testDirection) == false) {
 			testDirection = testDirection.rotateLeftDegrees(30);
 		}
 		return testDirection;
 	}
-	
-	//Method is called if an enemy is sensed
-	static void attackEnemy(MapLocation enemyLocation) throws GameActionException 
-	{
+
+	// Method is called if an enemy is sensed
+	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
 		System.out.println("Attacking!");
 		MapLocation myLocation = rc.getLocation();
 		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
 		rc.fireSingleShot(directionToEnemy);
 	}
-	
-	//Called if a bullet is sensed within the robots. A robot will sense nearby bullets and will run this code for each one of the bullets
+
+	// Called if a bullet is sensed within the robots. A robot will sense nearby
+	// bullets and will run this code for each one of the bullets
 	static boolean ifNeedToAvoidBullet(BulletInfo bullet) {
 		MapLocation myLocation = rc.getLocation();
 		MapLocation bulletlocation = bullet.getLocation();
 		float distanceToBullet = myLocation.distanceTo(bulletlocation);
 		float bulletSpeed = bullet.getSpeed();
-		if (willCollideWithMe(bullet) && bulletSpeed/(distanceToBullet + rc.getType().bodyRadius) >= .5)
-		{
+		if (willCollideWithMe(bullet) && bulletSpeed / (distanceToBullet + rc.getType().bodyRadius) >= .5) {
 			System.out.print("Need to evade bullet!");
 			return true;
 		}
 		return false;
 	}
-	
+
 	static void avoidBullet(BulletInfo bullet) {
-		//These statements simply get info about the orientation and angles between the robot and bullet
+		// These statements simply get info about the orientation and angles
+		// between the robot and bullet
 		Direction propagationDirection = bullet.dir;
 		MapLocation bulletLocation = bullet.location;
 		MapLocation myLocation = rc.getLocation();
 		Direction directionToRobot = bulletLocation.directionTo(myLocation);
 		try {
 			Direction moveToAvoid;
-			// Sets the direction it wants to move based on what portion of the robot the bullet will hit
-			if ((directionToRobot.getAngleDegrees() - propagationDirection.getAngleDegrees()) >= 0) 
-			{
-				//Sets moveToAvoid a direction perpendicular to the direction of the bullet
+			// Sets the direction it wants to move based on what portion of the
+			// robot the bullet will hit
+			if ((directionToRobot.getAngleDegrees() - propagationDirection.getAngleDegrees()) >= 0) {
+				// Sets moveToAvoid a direction perpendicular to the direction
+				// of the bullet
 				moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
-			} 
-			else 
-			{
+			} else {
 				moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
 			}
 			// Checks if the direction it wants to move is clear before moving.
-			if (rc.canMove(moveToAvoid)) 
-			{
+			if (rc.canMove(moveToAvoid)) {
 				rc.move(moveToAvoid);
 			}
-			//If the space it wants to move to is occupied it will use the nextUnoccupiedDirection method to move
-			else
-			{
-				//This if statement is to check the direction the bullet is coming. You dont want to move into the path of the bullet
-				if (directionToRobot.getAngleDegrees() > 180)
-				{
+			// If the space it wants to move to is occupied it will use the
+			// nextUnoccupiedDirection method to move
+			else {
+				// This if statement is to check the direction the bullet is
+				// coming. You dont want to move into the path of the bullet
+				if (directionToRobot.getAngleDegrees() > 180) {
 					rc.move(nextUnoccupiedDirection(rc.getType(), 180));
-				}
-				else
-				{
+				} else {
 					rc.move(nextUnoccupiedDirection(rc.getType(), 0));
 				}
 			}
