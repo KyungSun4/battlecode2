@@ -1,10 +1,33 @@
 package battlecode2;
+
 import battlecode.common.*;
+import java.util.*;
 
 public strictfp class RobotPlayer {
 	static RobotController rc;
-	static int TREE_POS_ARR_START = 50; // the position in the broadcast array where the tree positions are first stored and continues till end
-	static int GARDNER_COUNT_ARR = 1; //the position in the broadcast array where the count of gardener is stored
+	static int TREE_POS_ARR_START = 50; // the position in the broadcast array
+										// where the tree positions are first
+										// stored and continues till end
+	static int ARCHON_COUNT_ARR = 0; // the position in the broadcast array
+										// where the count of archon is stored
+
+	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
+										// where the count of gardener is stored
+	static int SOLDIER_COUNT_ARR = 2; // the position in the broadcast array
+										// where the count of gardener is stored
+
+	static int LUMBERJACK_COUNT_ARR = 3; // the position in the broadcast array
+											// where the count of lumber-jack is
+											// stored
+	static int SCOUT_COUNT_ARR = 4; // the position in the broadcast array
+									// where the count of scout is stored
+	static int TANK_COUNT_ARR = 5; // the position in the broadcast array where
+									// the count of tank is stored
+	static int MIN_MAP_WIDTH_ARR = 6; // since float, multiply by 1000
+	static int MIN_MAP_HEIGHT_ARR = 7; // since float, multiply by 1000
+	static int ORIGIN_X_ARR = 8; // since float, multiply by 1000
+	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
+
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
@@ -25,15 +48,24 @@ public strictfp class RobotPlayer {
 		case SCOUT:
 			runScout();
 			break;
+		case TANK:
+			runTank();
+			break;
 		}
 	}
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an Archon!");
+		System.out.println(guessMapSize()[0] + ", " + guessMapSize()[1]);
 		while (true) {
 			try {
+<<<<<<< HEAD
 				if (rc.readBroadcast(1) == 0 && rc.canHireGardener(Direction.getNorth())) {
 					rc.hireGardener(Direction.getNorth());
+=======
+				if (rc.readBroadcast(1) == 0) {
+					// rc.hireGardener(Direction.getNorth());
+>>>>>>> origin/master
 					int tempGardener = rc.readBroadcast(1);
 					tempGardener++;
 					rc.broadcast(1, tempGardener);
@@ -49,9 +81,13 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm a gardener!");
+<<<<<<< HEAD
 		int treeCounter = 0;
 		int lumberjack = 0;
 		Direction treeDir = Direction.getEast().rotateLeftRads((float)(Math.PI/2));
+=======
+		ArrayList<MapLocation> myTrees = new ArrayList<MapLocation>();
+>>>>>>> origin/master
 		while (true) {
 			try {
 				if (lumberjack == 0)
@@ -83,6 +119,35 @@ public strictfp class RobotPlayer {
 
 	static void runScout() throws GameActionException {
 		System.out.println("I'm an Scout!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				MapLocation myLocation = rc.getLocation();
+
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Scout Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	static void runTank() throws GameActionException {
+		System.out.println("I'm an Tank!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				MapLocation myLocation = rc.getLocation();
+
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Tank Exception");
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	static void runSoldier() throws GameActionException {
@@ -104,7 +169,7 @@ public strictfp class RobotPlayer {
 				}
 
 				// Move randomly
-				//tryMove(randomDirection());
+				// tryMove(randomDirection());
 
 				// Clock.yield() makes the robot wait until the next turn, then
 				// it will perform this loop again
@@ -123,6 +188,7 @@ public strictfp class RobotPlayer {
 		int treeID = 0;
 		while (true) {
 			try {
+<<<<<<< HEAD
 				if (!busy)
 				{
 					searchTree:
@@ -138,6 +204,30 @@ public strictfp class RobotPlayer {
 								break searchTree;
 							}
 						}
+=======
+				// See if there are any enemy robots within striking range
+				// (distance 1 from lumberjack's radius)
+				RobotInfo[] robots = rc.senseNearbyRobots(
+						RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
+
+				if (robots.length > 0 && !rc.hasAttacked()) {
+					// Use strike() to hit all nearby robots!
+					rc.strike();
+				} else {
+					// No close robots, so search for robots within sight radius
+					robots = rc.senseNearbyRobots(-1, enemy);
+
+					// If there is a robot, move towards it
+					if (robots.length > 0) {
+						MapLocation myLocation = rc.getLocation();
+						MapLocation enemyLocation = robots[0].getLocation();
+						Direction toEnemy = myLocation.directionTo(enemyLocation);
+
+						// tryMove(toEnemy);
+					} else {
+						// Move Randomly
+						// tryMove(randomDirection());
+>>>>>>> origin/master
 					}
 				}
 				Direction temp = Direction((float)(Math.PI)*(3/4));
@@ -300,8 +390,14 @@ public strictfp class RobotPlayer {
 	 * 
 	 */
 	static void scoutMove() {
-		// if nessesary, evade
-		// keep view distnace away from other scouts
+		// if nescesary, evade
+		// get bullets that will hit soon ad avoid them
+		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius * 2);
+		for (BulletInfo i : twoStrideBullets) {
+			avoidBullet(i);
+		}
+		// keep view distance away from other scouts or if alone, try and scan
+		// map
 		// scan scouts in range
 		// scan map and update info
 	}
@@ -319,7 +415,6 @@ public strictfp class RobotPlayer {
 
 		}
 	}
-
 
 	/**
 	 * checks if tree in message array list
@@ -346,8 +441,8 @@ public strictfp class RobotPlayer {
 			// if empty spot in array, add
 			if (rc.readBroadcast(i) == 0) {
 				rc.broadcast(i, 1);
-				rc.broadcast(i+1, (int) (x * 100));
-				rc.broadcast(i+2, (int) (y * 100));
+				rc.broadcast(i + 1, (int) (x * 100));
+				rc.broadcast(i + 2, (int) (y * 100));
 				return true;
 			}
 		}
@@ -358,11 +453,127 @@ public strictfp class RobotPlayer {
 	 * removes tree from Message array
 	 * 
 	 */
-	static void removeTreeToList() {
+	static void removeTreeFromList() {
 	}
 
 	/**
 	 * uses Initial arcon locations to guess map size
 	 * 
 	 */
+	static float[] guessMapSize() {
+
+		float w = 0;// max distnace between arcons width
+		float h = 0;// max distance between arcons height
+		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
+		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
+		// gets distances between arcons and sets w and h to the maximum
+		// distances found
+		for (MapLocation MLA1 : ALocs) {
+			for (MapLocation MLB1 : BLocs) {
+				if (Math.abs(MLA1.x - MLB1.x) > w) {
+					w = Math.abs(MLA1.x - MLB1.x);
+				}
+				if (Math.abs(MLA1.y - MLB1.y) > h) {
+					h = Math.abs(MLA1.y - MLB1.y);
+				}
+			}
+			for (MapLocation MLA2 : ALocs) {
+				if (Math.abs(MLA1.x - MLA2.x) > w) {
+					w = Math.abs(MLA1.x - MLA2.x);
+				}
+				if (Math.abs(MLA1.y - MLA2.y) > h) {
+					h = Math.abs(MLA1.y - MLA2.y);
+				}
+			}
+		}
+		float[] max = { w + RobotType.ARCHON.bodyRadius * 2, h + RobotType.ARCHON.bodyRadius * 2 };
+		return max;
+	}
+
+	/**
+	 * use robot's position to try and improve guesses for map size and origin.
+	 * 
+	 * @throws GameActionException
+	 */
+	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
+		int myx = (int) (myLoc.x * 1000);
+		int myy = (int) (myLoc.y * 1000);
+		int originx = rc.readBroadcast(ORIGIN_X_ARR);
+		int originy = rc.readBroadcast(ORIGIN_X_ARR);
+		int width = rc.readBroadcast(MIN_MAP_WIDTH_ARR);
+		int height = rc.readBroadcast(MIN_MAP_WIDTH_ARR);
+		// check if bellow origin
+		if (myx < originx) {
+			rc.broadcast(ORIGIN_X_ARR, myx);
+		}
+		// check if above height plus origin
+		else if (myx > myx + width) {
+			rc.broadcast(MIN_MAP_WIDTH_ARR, myx - originx);
+		}
+		// check if to the left of origin
+		if (myy < rc.readBroadcast(ORIGIN_Y_ARR)) {
+			rc.broadcast(ORIGIN_Y_ARR, myy);
+		}
+		// check if to the right of origin plus height
+		else if (myy > myy + height) {
+			rc.broadcast(MIN_MAP_HEIGHT_ARR, myy - originy);
+		}
+	}
+
+	/**
+	 * uses inital arcon locations to find symetry
+	 * 
+	 * @return 0-failed 1-horizontal -- 2-vertical | 3-diagonal positive /
+	 *         4-diagonal Negative \
+	 */
+	static int findMapSymetry() {
+		return 0;
+	}
+
+	/**
+	 * Gardners method to build tight ring of trees around itself and water,
+	 * farm, and plant those trees.
+	 * 
+	 * @param myTrees
+	 *            the trees that this gardner is maintaining
+	 * @throws GameActionException 
+	 */
+	static void maintainTreeRing(ArrayList<MapLocation> myTrees) throws GameActionException {
+		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
+															// water are within
+															// 3 away
+		ArrayList<TreeInfo> mySensedTrees = new ArrayList<TreeInfo>();
+		// check if any of my trees died get rid of dead ones and put all living ones in mySensedTrees
+		for (int i = 0;i<myTrees.size(); i++) {
+			boolean notFound = true;
+			for (TreeInfo sensedTree : sensedTrees) {
+				if (sensedTree.getTeam() == rc.getTeam()) {
+					if (sensedTree.location.equals(myTrees.get(i))) {
+						mySensedTrees.add(sensedTree);
+						notFound = false;
+					}
+				}
+			}
+			if(notFound) {
+				//tree must have died so remove it
+				myTrees.remove(i);
+			}
+		}
+		//plants 4 trees around to start.
+		if(mySensedTrees.size()<4) {
+			if(rc.canPlantTree(Direction.getNorth())) {
+				rc.plantTree(Direction.getNorth());
+			}
+			else if(rc.canPlantTree(Direction.getSouth())) {
+				rc.plantTree(Direction.getSouth());
+			}
+			else if(rc.canPlantTree(Direction.getEast())) {
+				rc.plantTree(Direction.getEast());
+			}
+			else if(rc.canPlantTree(Direction.getWest())) {
+				rc.plantTree(Direction.getWest());
+			}
+		}
+		
+	}
 }
