@@ -512,6 +512,7 @@ public strictfp class RobotPlayer {
 				myTrees.remove(i);
 			}
 		}
+		//plants 4 trees around to start.
 		if(mySensedTrees.size()<4) {
 			if(rc.canPlantTree(Direction.getNorth())) {
 				rc.plantTree(Direction.getNorth());
