@@ -16,7 +16,7 @@ public strictfp class RobotPlayer {
 		case GARDENER:
 			runGardener();
 			break;
-		/*case SOLDIER:
+		case SOLDIER:
 			runSoldier();
 			break;
 		case LUMBERJACK:
@@ -24,7 +24,7 @@ public strictfp class RobotPlayer {
 			break;
 		case SCOUT:
 			runScout();
-			break;*/
+			break;
 		}
 	}
 
@@ -50,20 +50,28 @@ public strictfp class RobotPlayer {
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm a gardener!");
 		int treeCounter = 0;
+		int lumberjack = 0;
 		Direction treeDir = Direction.getEast().rotateLeftRads((float)(Math.PI/2));
 		while (true) {
 			try {
-				if (treeCounter <= 4 && rc.canPlantTree(treeDir)) {
+				if (lumberjack == 0)
+				{
+					rc.buildRobot(RobotType.LUMBERJACK, Direction.getNorth());
+					lumberjack++;
+				}
+					
+				/*if (treeCounter <= 4 && rc.canPlantTree(treeDir)) {
 					rc.plantTree(treeDir);
 					treeCounter++;
 					treeDir = treeDir.rotateLeftRads((float)(Math.PI/2));
-				}
-				//These statements get the distance to the tree it planted 
-				MapLocation gardenerLoc = rc.getLocation();
-				TreeInfo arr[] = rc.senseNearbyTrees(3, rc.getTeam());
-				MapLocation x = arr[0].location;
-				Float dist = gardenerLoc.distanceTo(x);
-				System.out.println(dist);
+				}*/
+				
+				
+				
+				
+				
+				
+				
 				
 				Clock.yield();
 			} catch (Exception e) {
@@ -74,6 +82,7 @@ public strictfp class RobotPlayer {
 	}
 
 	/*static void runScout() throws GameActionException {
+	static void runScout() throws GameActionException {
 		System.out.println("I'm an Scout!");
 	}
 
@@ -111,48 +120,41 @@ public strictfp class RobotPlayer {
 
 	static void runLumberjack() throws GameActionException {
 		System.out.println("I'm a lumberjack!");
-		Team enemy = rc.getTeam().opponent();
-
-		// The code you want your robot to perform every round should be in this
-		// loop
+		boolean busy = false;
+		int treeID = 0;
 		while (true) {
-			// Try/catch blocks stop unhandled exceptions, which cause your
-			// robot to explode
 			try {
-				// See if there are any enemy robots within striking range
-				// (distance 1 from lumberjack's radius)
-				RobotInfo[] robots = rc.senseNearbyRobots(
-						RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
-
-				if (robots.length > 0 && !rc.hasAttacked()) {
-					// Use strike() to hit all nearby robots!
-					rc.strike();
-				} else {
-					// No close robots, so search for robots within sight radius
-					robots = rc.senseNearbyRobots(-1, enemy);
-
-					// If there is a robot, move towards it
-					if (robots.length > 0) {
-						MapLocation myLocation = rc.getLocation();
-						MapLocation enemyLocation = robots[0].getLocation();
-						Direction toEnemy = myLocation.directionTo(enemyLocation);
-
-						//tryMove(toEnemy);
-					} else {
-						// Move Randomly
-						//tryMove(randomDirection());
+				if (!busy)
+				{
+					searchTree:
+					{
+						TreeInfo arr[] = rc.senseNearbyTrees();
+						for (TreeInfo x: arr){
+							RobotType tree = x.getContainedRobot();
+							if (tree != null)
+							{
+								treeID = x.getID();
+								System.out.println(x.getContainedRobot());
+								busy = true;
+								break searchTree;
+							}
+						}
 					}
 				}
-
-				// Clock.yield() makes the robot wait until the next turn, then
-				// it will perform this loop again
+				Direction temp = Direction((float)(Math.PI)*(3/4));
+				rc.move(temp);
+				
 				Clock.yield();
-
 			} catch (Exception e) {
 				System.out.println("Lumberjack Exception");
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private static Direction Direction(float f) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	static Direction randomDirection() {
@@ -292,7 +294,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 		return directionToEnemy;
-	}*/
+	}
 
 	/**
 	 * the scouts move method
