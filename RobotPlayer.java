@@ -81,7 +81,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	/*static void runScout() throws GameActionException {
 	static void runScout() throws GameActionException {
 		System.out.println("I'm an Scout!");
 	}
