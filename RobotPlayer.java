@@ -59,13 +59,8 @@ public strictfp class RobotPlayer {
 		System.out.println(guessMapSize()[0] + ", " + guessMapSize()[1]);
 		while (true) {
 			try {
-<<<<<<< HEAD
-				if (rc.readBroadcast(1) == 0 && rc.canHireGardener(Direction.getNorth())) {
-					rc.hireGardener(Direction.getNorth());
-=======
 				if (rc.readBroadcast(1) == 0) {
 					// rc.hireGardener(Direction.getNorth());
->>>>>>> origin/master
 					int tempGardener = rc.readBroadcast(1);
 					tempGardener++;
 					rc.broadcast(1, tempGardener);
@@ -81,13 +76,10 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm a gardener!");
-<<<<<<< HEAD
 		int treeCounter = 0;
 		int lumberjack = 0;
 		Direction treeDir = Direction.getEast().rotateLeftRads((float)(Math.PI/2));
-=======
 		ArrayList<MapLocation> myTrees = new ArrayList<MapLocation>();
->>>>>>> origin/master
 		while (true) {
 			try {
 				if (lumberjack == 0)
@@ -188,7 +180,6 @@ public strictfp class RobotPlayer {
 		int treeID = 0;
 		while (true) {
 			try {
-<<<<<<< HEAD
 				if (!busy)
 				{
 					searchTree:
@@ -204,30 +195,6 @@ public strictfp class RobotPlayer {
 								break searchTree;
 							}
 						}
-=======
-				// See if there are any enemy robots within striking range
-				// (distance 1 from lumberjack's radius)
-				RobotInfo[] robots = rc.senseNearbyRobots(
-						RobotType.LUMBERJACK.bodyRadius + GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
-
-				if (robots.length > 0 && !rc.hasAttacked()) {
-					// Use strike() to hit all nearby robots!
-					rc.strike();
-				} else {
-					// No close robots, so search for robots within sight radius
-					robots = rc.senseNearbyRobots(-1, enemy);
-
-					// If there is a robot, move towards it
-					if (robots.length > 0) {
-						MapLocation myLocation = rc.getLocation();
-						MapLocation enemyLocation = robots[0].getLocation();
-						Direction toEnemy = myLocation.directionTo(enemyLocation);
-
-						// tryMove(toEnemy);
-					} else {
-						// Move Randomly
-						// tryMove(randomDirection());
->>>>>>> origin/master
 					}
 				}
 				Direction temp = Direction((float)(Math.PI)*(3/4));
