@@ -250,39 +250,39 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void maintainTreeRing(ArrayList<MapLocation> myTrees) throws GameActionException {
-		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
-															// water are within
-															// 3 away
-		ArrayList<TreeInfo> mySensedTrees = new ArrayList<TreeInfo>();
-		// check if any of my trees died get rid of dead ones and put all living
-		// ones in mySensedTrees
-		for (int i = 0; i < myTrees.size(); i++) {
-			boolean notFound = true;
-			for (TreeInfo sensedTree : sensedTrees) {
-				if (sensedTree.getTeam() == rc.getTeam()) {
-					if (sensedTree.location.equals(myTrees.get(i))) {
-						mySensedTrees.add(sensedTree);
-						notFound = false;
-					}
-				}
-			}
-			if (notFound) {
-				// tree must have died so remove it
-				myTrees.remove(i);
+	static void maintainTreeRing() throws GameActionException {
+		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3, rc.getTeam());
+		// all trees it can water are within 3 away
+		/*
+		 * ArrayList<TreeInfo> mySensedTrees = new ArrayList<TreeInfo>(); //
+		 * check if any of my trees died get rid of dead ones and put all living
+		 * // ones in mySensedTrees for (int i = 0; i < myTrees.size(); i++) {
+		 * boolean notFound = true; for (TreeInfo sensedTree : sensedTrees) { if
+		 * (sensedTree.getTeam() == rc.getTeam()) { if
+		 * (sensedTree.location.equals(myTrees.get(i))) {
+		 * mySensedTrees.add(sensedTree); notFound = false; } } } if (notFound)
+		 * { // tree must have died so remove it myTrees.remove(i); } }
+		 */
+		// water weakest tree
+		TreeInfo weakest = sensedTrees[0];
+		for (int i = 0; i < sensedTrees.length; i++) {
+			if (sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
+				weakest = sensedTrees[i];
 			}
 		}
+		if (rc.canWater(weakest.ID)) {
+			rc.water(weakest.ID);
+		}
 		// plants 6 trees around to start. 30 degree offsets
-		if (mySensedTrees.size() < 6) {
-			Direction dir = new Direction(Direction.getNorth().radians);
-			for (int x = 0; x < 6; x++) {
-				if (rc.canPlantTree(dir)) {
-					rc.plantTree(dir);
-					x = 6;
-				}
-				dir.rotateRightRads((float) (Math.PI / 6));
 
+		Direction dir = new Direction(Direction.getNorth().radians);
+		for (int x = 0; x < 6; x++) {
+			if (rc.canPlantTree(dir)) {
+				rc.plantTree(dir);
+				x = 6;
 			}
+			dir.rotateRightRads((float) (Math.PI / 6));
+
 		}
 
 	}
