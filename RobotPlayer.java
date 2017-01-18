@@ -58,9 +58,23 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an Archon!");
 		while (true) {
 			try {
+
+				Clock.yield();
+			} catch (Exception e) {
+				System.out.println("Archon Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	static void runGardener() throws GameActionException {
+		System.out.println("I'm an Gardner!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
 				if (rc.getRoundNum() == 1)
 				{
-					
+					//insert stuff under here for each case
 					switch (getMapStats()) {
 					case "left":
 						break;
@@ -80,19 +94,6 @@ public strictfp class RobotPlayer {
 						break;
 					}
 				}
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Archon Exception");
-				e.printStackTrace();
-			}
-		}
-	}
-
-	static void runGardener() throws GameActionException {
-		System.out.println("I'm an Gardner!");
-		Team enemy = rc.getTeam().opponent();
-		while (true) {
-			try {
 				MapLocation myLocation = rc.getLocation();
 				Clock.yield();
 			} catch (Exception e) {
