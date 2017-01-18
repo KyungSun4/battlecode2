@@ -27,10 +27,10 @@ public strictfp class RobotPlayer {
 	static int MIN_MAP_HEIGHT_ARR = 7; // since float, multiply by 1000
 	static int ORIGIN_X_ARR = 8; // since float, multiply by 1000
 	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
-	//can send up to 4 requests, each requires 3 spots
+	// can send up to 4 requests, each requires 3 spots
 	static int LUMBERJACK_REQUESTS_START = 20;
 	static int LUMBERJACK_REQUESTS_END = 35;
-	
+
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
@@ -132,8 +132,8 @@ public strictfp class RobotPlayer {
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
-					//move away from archon
-					
+					// move away from archon
+
 					if (tryMove(move, (float) 20, 5)) {
 						count++;
 					}
@@ -652,22 +652,56 @@ public strictfp class RobotPlayer {
 	static Direction randomDirection() {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
-	
+
 	/**
 	 * writes to Broadcast Array to request a lumberjack
-	 * @return returns false if fails (no more spots to request, should try again next round)
-	 * @throws GameActionException 
+	 * 
+	 * @return returns false if fails (no more spots to request, should try
+	 *         again next round)
+	 * @throws GameActionException
 	 */
 	static boolean requestLumberJack(TreeInfo tree, int NumLumberJacks) throws GameActionException {
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
-		    // if empty spot in array, add
-		    if (rc.readBroadcast(i) == 0) {
-		      rc.broadcast(i, NumLumberJacks);
-		      rc.broadcast(i + 1, (int) (tree.getLocation().x * 1000));
-		      rc.broadcast(i + 2, (int) (tree.getLocation().y * 1000));
-		      return true;
-		    }
-		  }
-		  return false;
+			// if empty spot in array, add
+			if (rc.readBroadcast(i) == 0) {
+				rc.broadcast(i, NumLumberJacks);
+				rc.broadcast(i + 1, (int) (tree.getLocation().x * 1000));
+				rc.broadcast(i + 2, (int) (tree.getLocation().y * 1000));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * when a lumberjack is not busy it should run this method to find a task (
+	 * a tree to chop down)
+	 * 
+	 * @return returns if it can find a request
+	 * @throws GameActionException
+	 */
+	static MapLocation getLumberJackRequest() throws GameActionException {
+		int x;
+		int y;
+		int pos;
+		int minDist = 1000000000;
+		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
+			if (rc.readBroadcast(i) > 0) {
+				int treex = rc.readBroadcast(i + 1);
+				int treey = rc.readBroadcast(i + 2);
+				if (Math.pow(x - treex, 2) + Math.pow(y - treey, 2) < minDist) {
+					x = treex;
+					y = treey;
+					pos = i;
+				}
+
+			}
+		}
+		if (minDist == 1000000000) {
+			return null;
+		} else {
+			rc.broadcast(pos, rc.readBroadcast(pos) - 1);
+			return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
+		}
 	}
 }
