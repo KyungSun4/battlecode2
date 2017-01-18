@@ -92,7 +92,7 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
-				if (rc.getRoundNum() == 1) {
+				if (rc.getRoundNum() == 2) {
 					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 				}
 				MapLocation myLocation = rc.getLocation();
