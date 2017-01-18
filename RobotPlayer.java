@@ -58,21 +58,22 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an Archon!");
 		while (true) {
 			try {
-				//This code is special and will only be run during round one.
-				if (rc.getRoundNum() == 1)
-				{
+				// This code is special and will only be run during round one.
+				if (rc.getRoundNum() == 1) {
 					MapLocation mapCenter = getMapCenter();
 					MapLocation archonLocation[] = rc.getInitialArchonLocations(rc.getTeam());
 					float compareDistance = 0;
 					MapLocation maxDistanceArchonLocation = rc.getLocation();
-					// Searches for the location that has the greatest distance away
-					for (MapLocation locations: archonLocation) {
+					// Searches for the location that has the greatest distance
+					// away
+					for (MapLocation locations : archonLocation) {
 						if (locations.distanceTo(mapCenter) > compareDistance) {
 							compareDistance = locations.distanceTo(mapCenter);
 							maxDistanceArchonLocation = locations;
 						}
 					}
-					// If this archons location matches the location with the greatest distance away, make a gardener
+					// If this archons location matches the location with the
+					// greatest distance away, make a gardener
 					if (rc.getLocation() == maxDistanceArchonLocation) {
 						rc.hireGardener(nextUnoccupiedDirection(0));
 					}
@@ -188,7 +189,10 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	/* ****************************************************************************************************************************************** */
+	/*
+	 * *************************************************************************
+	 * *****************************************************************
+	 */
 
 	static float[] guessMapSize() {
 
@@ -388,7 +392,7 @@ public strictfp class RobotPlayer {
 		}
 		return testDirection;
 	}
-	
+
 	static Direction nextUnoccupiedDirection(RobotType robot, int degrees) {
 		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
 		while (rc.canMove(testDirection) == false) {
@@ -513,40 +517,49 @@ public strictfp class RobotPlayer {
 		// A move never happened, so return false.
 		return false;
 	}
-/**
- * Gets the center of map based on inital Archon locations
- * @return MapLocation of center
- */
+
+	/**
+	 * Gets the center of map based on inital Archon locations
+	 * 
+	 * @return MapLocation of center
+	 */
 	static MapLocation getMapCenter() {
-		//gets inital locations of both teams
+		// gets inital locations of both teams
 		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
-		//where the 
-		MapLocation[] midPoints = new MapLocation[teamALocations.length*teamBLocations.length];
+		// where the
+		ArrayList<MapLocation> midPoints = new ArrayList<MapLocation>();
+		ArrayList<Integer> midPointCounts = new ArrayList<Integer>();
 		for (int i = 0; i < teamALocations.length; i++) {
 			for (int j = 0; j < teamBLocations.length; j++) {
-				midPoints[i*j] = new MapLocation((teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
+				MapLocation midPoint = new MapLocation(
+						(teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
 						(teamBLocations[j].y - teamALocations[i].y) / 2 + teamALocations[i].y);
-			}
-		}
-		if (midPoints.length == 1) {
-			return midPoints[0];
-		}
-		int[] midPointCounts = new int[midPoints.length];
-		for (int i = 0; i < midPoints.length; i++) {
-			for (int j = 0; j < midPoints.length; j++) {
-				if (i != j && midPoints[i].equals(midPoints[j])) {
-					midPointCounts[i]++;
+				boolean alreadyFound = false;
+				for (int k = 0; k < midPoints.size(); k++) {
+					if ((int) (midPoint.x) == (int) (midPoints.get(k).x)
+							&& (int) (midPoint.y) == (int) (midPoints.get(k).y)) {
+						midPointCounts.set(k, midPointCounts.get(k) + 1);
+						alreadyFound = true;
+					}
 				}
+				if (!alreadyFound) {
+					midPoints.add(midPoint);
+				}
+				midPointCounts.add(1);
 			}
 		}
-		int maxNumFound = 0;
-		for(int x = 0; x<midPointCounts.length;x++) {
-			if(midPointCounts[x]>midPointCounts[maxNumFound]) {
-				maxNumFound = x;
+		if (midPoints.size() == 1) {
+			return midPoints.get(0);
+		}
+		int withMaxCount = 0;
+		for (int i = 0; i < midPoints.size(); i++) {
+			if (midPointCounts.get(i) > midPointCounts.get(withMaxCount)) {
+				withMaxCount = i;
 			}
 		}
-		System.out.println(midPoints[maxNumFound]);
-		return midPoints[maxNumFound];
+		System.out.println(midPoints);
+		System.out.println(midPoints.get(withMaxCount));
+		return midPoints.get(withMaxCount);
 	}
 }
