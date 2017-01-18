@@ -522,14 +522,19 @@ public strictfp class RobotPlayer {
 		// A move never happened, so return false.
 		return false;
 	}
-
+/**
+ * Gets the center of map based on inital Archon locations
+ * @return MapLocation of center
+ */
 	static MapLocation getMapCenter() {
+		//gets inital locations of both teams
 		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
-		MapLocation[] midPoints = new MapLocation[teamALocations.length];
+		//where the 
+		MapLocation[] midPoints = new MapLocation[teamALocations.length*teamBLocations.length];
 		for (int i = 0; i < teamALocations.length; i++) {
 			for (int j = 0; j < teamBLocations.length; j++) {
-				midPoints[i] = new MapLocation((teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
+				midPoints[i*j] = new MapLocation((teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
 						(teamBLocations[j].y - teamALocations[i].y) / 2 + teamALocations[i].y);
 			}
 		}
