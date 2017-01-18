@@ -101,7 +101,8 @@ public strictfp class RobotPlayer {
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
-					if (tryMove(Direction.getEast(), (float) 20, 3)) {
+					//should latter make random Direction more smart
+					if (tryMove(randomDirection(), (float) 20, 3)) {
 						count++;
 					}
 				}
@@ -609,5 +610,14 @@ public strictfp class RobotPlayer {
 		System.out.println(midPoints);
 		System.out.println(midPoints.get(withMaxCount));
 		return midPoints.get(withMaxCount);
+	}
+
+	/**
+	 * Returns a random Direction
+	 * 
+	 * @return a random Direction
+	 */
+	static Direction randomDirection() {
+		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
 }
