@@ -82,30 +82,26 @@ public strictfp class RobotPlayer {
 						Direction makeRobot = nextUnoccupiedDirection(0);
 						if (rc.canHireGardener(makeRobot))
 							rc.hireGardener(makeRobot);
-						else 
-						{
+						else {
 							Direction move = randomDirection();
 							if (rc.canMove(move))
 								rc.move(move);
 						}
 					}
 				}
-				if (!hasGardener)
-				{
+				if (!hasGardener) {
 					Direction makeRobot = nextUnoccupiedDirection(0);
 					if (rc.canHireGardener(makeRobot))
 						rc.hireGardener(makeRobot);
 				}
-				if (rc.getTeamBullets() > 500)
-				{
+				if (rc.getTeamBullets() > 500) {
 					float teamBullets = rc.getTeamBullets();
 					float excessBullets = teamBullets - 500;
-					excessBullets = (int)(excessBullets / 10);
+					excessBullets = (int) (excessBullets / 10);
 					System.out.println(excessBullets);
-					rc.donate (excessBullets);
+					rc.donate(excessBullets);
 				}
-				if (!rc.hasMoved())
-				{
+				if (!rc.hasMoved()) {
 					Direction randomDir = randomDirection();
 					if (rc.canMove(randomDir))
 						rc.move(randomDir);
@@ -134,7 +130,7 @@ public strictfp class RobotPlayer {
 				if (state == 0) {
 					// move away from archon
 
-					if (tryMove(move, (float) 20, 5)) {
+					if (tryMove(randomDirection(), (float) 20, 5)) {
 						count++;
 					}
 				}
@@ -145,6 +141,8 @@ public strictfp class RobotPlayer {
 					maintainTreeRing();
 				}
 				Clock.yield();
+				
+
 			} catch (Exception e) {
 				System.out.println("Gardern Exception");
 				e.printStackTrace();
@@ -251,10 +249,28 @@ public strictfp class RobotPlayer {
 		MapLocation tree;
 		while (true) {
 			try {
+				/*
 				tree = getLumberJackRequest();
-				if(tree!= null) {
-					tryMoveToLocation(tree);
-				}
+				if (tree != null) {
+					TreeInfo[] sensedTrees = rc.senseNearbyTrees(-1, rc.getTeam().opponent());
+					boolean found = false;
+					for (int x = 0; x < sensedTrees.length; x++) {
+						if (Math.round(sensedTrees[x].getLocation().x * 100) / 100 == Math.round(tree.x * 100) / 100) {
+							found = true;
+						}
+					}
+					if (found == true) {
+						if (rc.canChop(tree)) {
+							rc.chop(tree);
+						} else {
+							tree = null;
+						}
+					} else {
+						tryMoveToLocation(tree, 20, 6);
+					}
+
+				}*/
+
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Lumberjack Exception");
@@ -685,6 +701,7 @@ public strictfp class RobotPlayer {
 	 * @return returns if it can find a request
 	 * @throws GameActionException
 	 */
+	/*
 	static MapLocation getLumberJackRequest() throws GameActionException {
 		int x;
 		int y;
@@ -699,14 +716,16 @@ public strictfp class RobotPlayer {
 					y = treey;
 					pos = i;
 				}
+				
 
 			}
 		}
 		if (minDist == 1000000000) {
 			return null;
 		} else {
-			rc.broadcast(pos, rc.readBroadcast(pos) - 1);
-			return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
+			//rc.broadcast(pos, rc.readBroadcast(pos) - 1);
+			//return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
 		}
 	}
+	*/
 }
