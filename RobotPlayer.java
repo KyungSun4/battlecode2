@@ -186,7 +186,7 @@ public strictfp class RobotPlayer {
 						}
 					}
 				}
-				Direction temp = Direction((float) (Math.PI) * (3 / 4));
+				Direction temp = Direction((3.0/4) * Math.PI));
 				rc.move(temp);
 
 				Clock.yield();
