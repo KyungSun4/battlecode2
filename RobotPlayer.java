@@ -75,7 +75,6 @@ public strictfp class RobotPlayer {
 						rc.hireGardener(nextUnoccupiedDirection(0));
 					}
 				}
-				
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -89,25 +88,33 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
-				if (rc.getRoundNum() == 1)
-				{
+				//build a scout in open spot
+				if (rc.getRoundNum() == 2) {
+					//insert stuff under here for each case
 					switch (getMapStats()) {
 					case "left":
-						
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 						break;
 					case "right":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(180));
 						break;
 					case "top":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(270));
 						break;
 					case "bottom":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(90));
 						break;
 					case "bottomLeft":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(45));
 						break;
 					case "bottomRight":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(135));
 						break;
 					case "topLeft":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(315));
 						break;
 					case "topRight":
+						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(225));
 						break;
 					}
 				}
@@ -190,7 +197,7 @@ public strictfp class RobotPlayer {
 	}
 
 	/* ****************************************************************************************************************************************** */
-	
+
 	static float[] guessMapSize() {
 
 		float w = 0;// max distnace between arcons width
@@ -221,7 +228,7 @@ public strictfp class RobotPlayer {
 		return max;
 	}
 
-	// Needs improvements. 
+	// Needs improvements.
 	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
 		int myx = (int) (myLoc.x * 1000);
 		int myy = (int) (myLoc.y * 1000);
@@ -269,16 +276,16 @@ public strictfp class RobotPlayer {
 				myTrees.remove(i);
 			}
 		}
-		// plants 4 trees around to start.
-		if (mySensedTrees.size() < 4) {
-			if (rc.canPlantTree(Direction.getNorth())) {
-				rc.plantTree(Direction.getNorth());
-			} else if (rc.canPlantTree(Direction.getSouth())) {
-				rc.plantTree(Direction.getSouth());
-			} else if (rc.canPlantTree(Direction.getEast())) {
-				rc.plantTree(Direction.getEast());
-			} else if (rc.canPlantTree(Direction.getWest())) {
-				rc.plantTree(Direction.getWest());
+		// plants 6 trees around to start. 30 degree offsets
+		if (mySensedTrees.size() < 6) {
+			Direction dir = new Direction(Direction.getNorth().radians);
+			for(int x = 0; x<6;x++) {
+				if (rc.canPlantTree(dir)) {
+					rc.plantTree(dir);
+					x=6;
+				}
+				dir.rotateRightRads((float)(Math.PI / 6));
+				
 			}
 		}
 
@@ -389,6 +396,20 @@ public strictfp class RobotPlayer {
 		}
 		return testDirection;
 	}
+	
+	static Direction nextUnoccupiedDirection(RobotType robot, int degrees) {
+		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
+		while (rc.canMove(testDirection) == false) {
+			testDirection = testDirection.rotateLeftDegrees(30);
+		}
+		return testDirection;
+	}
+
+	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide)
+			throws GameActionException {
+		Direction dirTo = rc.getLocation().directionTo(loc);
+		return tryMove(dirTo, degreeOffset, checksPerSide);
+	}
 
 	// Method is called if an enemy is sensed
 	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
@@ -451,7 +472,7 @@ public strictfp class RobotPlayer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static Direction directionToClosestEnemy() {
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
 		MapLocation myLocation = rc.getLocation();
@@ -469,7 +490,7 @@ public strictfp class RobotPlayer {
 		}
 		return directionToEnemy;
 	}
-	
+
 	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 
 		// First, try intended direction
