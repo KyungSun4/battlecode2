@@ -134,7 +134,8 @@ public strictfp class RobotPlayer {
 							treeID = tree.getID();
 							busy = true;
 						}
-						break;
+						break;  
+						// why is is this break here, only the first tree get checked then it breaks
 					}
 				}
 				else if (busy)
@@ -143,6 +144,7 @@ public strictfp class RobotPlayer {
 						rc.move(toTree);
 					}
 					else {
+						//why is a scout trying to shake??????
 						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int)toTree.getAngleDegrees());
 						rc.move(nextMove);
 					}
