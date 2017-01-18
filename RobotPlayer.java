@@ -81,7 +81,10 @@ public strictfp class RobotPlayer {
 					if (rc.getLocation() == maxDistanceArchonLocation) {
 						Direction makeRobot = nextUnoccupiedDirection(0);
 						if (rc.canHireGardener(makeRobot))
+						{
 							rc.hireGardener(makeRobot);
+							rc.broadcast(1, 1);
+						}
 						else 
 						{
 							Direction move = randomDirection();
@@ -90,17 +93,25 @@ public strictfp class RobotPlayer {
 						}
 					}
 				}
-				if (!hasGardener)
+				//This controls how many gardeners it will make before stopping.
+				if (rc.readBroadcast(1) < 7)
 				{
 					Direction makeRobot = nextUnoccupiedDirection(0);
 					if (rc.canHireGardener(makeRobot))
+					{
 						rc.hireGardener(makeRobot);
+						int gardenerCount = rc.readBroadcast(1);
+						gardenerCount++;
+						rc.broadcast(1, gardenerCount);
+					}
+					
 				}
 				if (rc.getTeamBullets() > 500)
 				{
 					float teamBullets = rc.getTeamBullets();
 					float excessBullets = teamBullets - 500;
 					excessBullets = (int)(excessBullets / 10);
+					excessBullets = excessBullets*10;
 					System.out.println(excessBullets);
 					rc.donate (excessBullets);
 				}
@@ -127,18 +138,22 @@ public strictfp class RobotPlayer {
 		Direction move = randomDirection();
 		while (true) {
 			try {
-				if (rc.getRoundNum() == 2) {
+				/*if (rc.getRoundNum() == 2) {
 					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
-				}
+				}*/
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
 					//move away from archon
 					
-					if (tryMove(move, (float) 20, 5)) {
+					if (tryMove(randomDirection(), (float) 20, 5)) {
 						count++;
 					}
 				}
 				if (count == 10) {
+					/*TreeInfo nearbyTrees[] = rc.senseNearbyTrees((float)3.05);
+					RobotInfo nearbyRobots[] = rc.senseNearbyRobots((float)6.1);
+					if (nearbyTrees.length == 0 && nearbyRobots.length == 0)
+					*/
 					state = 1;
 				}
 				if (state == 1) {
@@ -161,7 +176,7 @@ public strictfp class RobotPlayer {
 		int treeID = 0;
 		while (true) {
 			try {
-				if (!busy) {
+				/*if (!busy) {
 					if (rc.canMove(move)) {
 						rc.move(move);
 					} else {
@@ -194,7 +209,7 @@ public strictfp class RobotPlayer {
 						rc.shake(treeID);
 						busy = false;
 					}
-				}
+				}*/
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
