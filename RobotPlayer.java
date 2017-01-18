@@ -91,33 +91,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 1) {
-					// insert stuff under here for each case
-					switch (getMapStats()) {
-					case "left":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
-						break;
-					case "right":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(180));
-						break;
-					case "top":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(270));
-						break;
-					case "bottom":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(90));
-						break;
-					case "bottomLeft":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(45));
-						break;
-					case "bottomRight":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(135));
-						break;
-					case "topLeft":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(315));
-						break;
-					case "topRight":
-						rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(225));
-						break;
-					}
+					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 				}
 				MapLocation myLocation = rc.getLocation();
 				Clock.yield();
@@ -133,7 +107,24 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
-				MapLocation myLocation = rc.getLocation();
+				switch (getMapStats()) {
+				case "left":
+					break;
+				case "right":
+					break;
+				case "top":
+					break;
+				case "bottom":
+					break;
+				case "bottomLeft":
+					break;
+				case "bottomRight":
+					break;
+				case "topLeft":
+					break;
+				case "topRight":
+					break;
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
