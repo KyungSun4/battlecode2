@@ -59,6 +59,7 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an Archon!");
+		boolean hasGardener = false;
 		while (true) {
 			try {
 				// This code is special and will only be run during round one.
@@ -81,7 +82,33 @@ public strictfp class RobotPlayer {
 						Direction makeRobot = nextUnoccupiedDirection(0);
 						if (rc.canHireGardener(makeRobot))
 							rc.hireGardener(makeRobot);
+						else 
+						{
+							Direction move = randomDirection();
+							if (rc.canMove(move))
+								rc.move(move);
+						}
 					}
+				}
+				if (!hasGardener)
+				{
+					Direction makeRobot = nextUnoccupiedDirection(0);
+					if (rc.canHireGardener(makeRobot))
+						rc.hireGardener(makeRobot);
+				}
+				if (rc.getTeamBullets() > 500)
+				{
+					float teamBullets = rc.getTeamBullets();
+					float excessBullets = teamBullets - 500;
+					excessBullets = (int)(excessBullets / 10);
+					System.out.println(excessBullets);
+					rc.donate (excessBullets);
+				}
+				if (!rc.hasMoved())
+				{
+					Direction randomDir = randomDirection();
+					if (rc.canMove(randomDir))
+						rc.move(randomDir);
 				}
 				Clock.yield();
 			} catch (Exception e) {
