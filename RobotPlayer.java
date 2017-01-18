@@ -94,6 +94,7 @@ public strictfp class RobotPlayer {
 		// 0-finding location 1-building tree circle
 		int state = 0;
 		int count = 0;
+		Direction move = randomDirection();
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 2) {
@@ -101,8 +102,9 @@ public strictfp class RobotPlayer {
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
-					//should latter make random Direction more smart
-					if (tryMove(randomDirection(), (float) 20, 3)) {
+					//move away from archon
+					
+					if (tryMove(move, (float) 20, 3)) {
 						count++;
 					}
 				}
