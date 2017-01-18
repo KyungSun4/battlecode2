@@ -64,7 +64,7 @@ public strictfp class RobotPlayer {
 					MapLocation mapCenter = getMapCenter();
 					MapLocation archonLocation[] = rc.getInitialArchonLocations(rc.getTeam());
 					float compareDistance = 0;
-					MapLocation maxDistanceArchonLocation;
+					MapLocation maxDistanceArchonLocation = rc.getLocation();
 					// Searches for the location that has the greatest distance away
 					for (MapLocation locations: archonLocation) {
 						if (locations.distanceTo(mapCenter) > compareDistance) {
