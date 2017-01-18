@@ -58,11 +58,42 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an Archon!");
 		while (true) {
 			try {
+				//This code is special and will only be run during round one.
 				if (rc.getRoundNum() == 1)
 				{
-					
+					MapLocation mapCenter = getMapCenter();
+					MapLocation archonLocation[] = rc.getInitialArchonLocations(rc.getTeam());
+					float compareDistance = 0;
+					MapLocation maxDistanceArchonLocation;
+					for (MapLocation locations: archonLocation) {
+						if (locations.distanceTo(mapCenter) > compareDistance) {
+							compareDistance = locations.distanceTo(mapCenter);
+							maxDistanceArchonLocation = locations;
+						}
+					}
+					if (rc.getLocation() == maxDistanceArchonLocation) {
+						rc.hireGardener(nextUnoccupiedDirection(0));
+					}
+				}
+				
+				Clock.yield();
+			} catch (Exception e) {
+				System.out.println("Archon Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	static void runGardener() throws GameActionException {
+		System.out.println("I'm an Gardner!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				if (rc.getRoundNum() == 1)
+				{
 					switch (getMapStats()) {
 					case "left":
+						
 						break;
 					case "right":
 						break;
@@ -80,19 +111,6 @@ public strictfp class RobotPlayer {
 						break;
 					}
 				}
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Archon Exception");
-				e.printStackTrace();
-			}
-		}
-	}
-
-	static void runGardener() throws GameActionException {
-		System.out.println("I'm an Gardner!");
-		Team enemy = rc.getTeam().opponent();
-		while (true) {
-			try {
 				MapLocation myLocation = rc.getLocation();
 				Clock.yield();
 			} catch (Exception e) {
@@ -169,19 +187,6 @@ public strictfp class RobotPlayer {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	static void scoutMove() {
-		// if nescesary, evade
-		// get bullets that will hit soon ad avoid them
-		BulletInfo[] twoStrideBullets = rc.senseNearbyBullets(RobotType.SCOUT.strideRadius * 2);
-		for (BulletInfo i : twoStrideBullets) {
-			avoidBullet(i);
-		}
-		// keep view distance away from other scouts or if alone, try and scan
-		// map
-		// scan scouts in range
-		// scan map and update info
 	}
 
 	/* ****************************************************************************************************************************************** */
@@ -377,7 +382,7 @@ public strictfp class RobotPlayer {
 
 	// Starts at east then rotates counter clockwise to find the next available
 	// space at increments of 30 degrees.
-	static Direction nextUnoccupiedDirection(RobotType robot, int degrees) {
+	static Direction nextUnoccupiedDirection(int degrees) {
 		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
 		while (rc.canMove(testDirection) == false) {
 			testDirection = testDirection.rotateLeftDegrees(30);
