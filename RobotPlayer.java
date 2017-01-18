@@ -75,30 +75,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runGardener() throws GameActionException {
-		System.out.println("I'm a gardener!");
-		int treeCounter = 0;
-		int lumberjack = 0;
-		Direction treeDir = Direction.getEast().rotateLeftRads((float) (Math.PI / 2));
-		ArrayList<MapLocation> myTrees = new ArrayList<MapLocation>();
-		while (true) {
-			try {
-				if (lumberjack == 0) {
-					rc.buildRobot(RobotType.LUMBERJACK, Direction.getNorth());
-					lumberjack++;
-				}
-
-				/*
-				 * if (treeCounter <= 4 && rc.canPlantTree(treeDir)) {
-				 * rc.plantTree(treeDir); treeCounter++; treeDir =
-				 * treeDir.rotateLeftRads((float)(Math.PI/2)); }
-				 */
-
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Gardener Exception");
-				e.printStackTrace();
-			}
-		}
+		
 	}
 
 	static void runScout() throws GameActionException {
@@ -167,34 +144,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runLumberjack() throws GameActionException {
-		System.out.println("I'm a lumberjack!");
-		boolean busy = false;
-		int treeID = 0;
-		while (true) {
-			try {
-				if (!busy) {
-					searchTree: {
-						TreeInfo arr[] = rc.senseNearbyTrees();
-						for (TreeInfo x : arr) {
-							RobotType tree = x.getContainedRobot();
-							if (tree != null) {
-								treeID = x.getID();
-								System.out.println(x.getContainedRobot());
-								busy = true;
-								break searchTree;
-							}
-						}
-					}
-				}
-				Direction temp = Direction((3.0/4) * Math.PI));
-				rc.move(temp);
-
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Lumberjack Exception");
-				e.printStackTrace();
-			}
-		}
+		
 	}
 
 	static Direction randomDirection() {
