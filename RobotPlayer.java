@@ -75,7 +75,19 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runGardener() throws GameActionException {
+		System.out.println("I'm an Gardner!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				MapLocation myLocation = rc.getLocation();
 
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Gardern Exception");
+				e.printStackTrace();
+			}
+		}
 	}
 
 	static void runScout() throws GameActionException {
@@ -153,7 +165,7 @@ public strictfp class RobotPlayer {
 				Clock.yield();
 
 			} catch (Exception e) {
-				System.out.println("Tank Exception");
+				System.out.println("Lumberjack Exception");
 				e.printStackTrace();
 			}
 		}
