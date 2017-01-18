@@ -144,7 +144,6 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runLumberjack() throws GameActionException {
-		
 	}
 
 	static Direction randomDirection() {
