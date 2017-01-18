@@ -89,15 +89,22 @@ public strictfp class RobotPlayer {
 						}
 					}
 				}
-				if (!hasGardener) {
+				// This controls how many gardeners it will make before
+				// stopping.
+				if (rc.readBroadcast(1) < 9) {
 					Direction makeRobot = nextUnoccupiedDirection(0);
-					if (rc.canHireGardener(makeRobot))
+					if (rc.canHireGardener(makeRobot)) {
 						rc.hireGardener(makeRobot);
+						int gardenerCount = rc.readBroadcast(1);
+						gardenerCount++;
+						rc.broadcast(1, gardenerCount);
+					}
+
 				}
 				if (rc.getTeamBullets() > 500) {
 					float teamBullets = rc.getTeamBullets();
 					float excessBullets = teamBullets - 500;
-					excessBullets = (int) (excessBullets / 10);
+					excessBullets = (excessBullets / 50);
 					System.out.println(excessBullets);
 					rc.donate(excessBullets);
 				}
@@ -140,7 +147,6 @@ public strictfp class RobotPlayer {
 					maintainTreeRing();
 				}
 				Clock.yield();
-				
 
 			} catch (Exception e) {
 				System.out.println("Gardern Exception");
@@ -289,26 +295,17 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				/*
-				tree = getLumberJackRequest();
-				if (tree != null) {
-					TreeInfo[] sensedTrees = rc.senseNearbyTrees(-1, rc.getTeam().opponent());
-					boolean found = false;
-					for (int x = 0; x < sensedTrees.length; x++) {
-						if (Math.round(sensedTrees[x].getLocation().x * 100) / 100 == Math.round(tree.x * 100) / 100) {
-							found = true;
-						}
-					}
-					if (found == true) {
-						if (rc.canChop(tree)) {
-							rc.chop(tree);
-						} else {
-							tree = null;
-						}
-					} else {
-						tryMoveToLocation(tree, 20, 6);
-					}
-
-				}*/
+				 * tree = getLumberJackRequest(); if (tree != null) { TreeInfo[]
+				 * sensedTrees = rc.senseNearbyTrees(-1,
+				 * rc.getTeam().opponent()); boolean found = false; for (int x =
+				 * 0; x < sensedTrees.length; x++) { if
+				 * (Math.round(sensedTrees[x].getLocation().x * 100) / 100 ==
+				 * Math.round(tree.x * 100) / 100) { found = true; } } if (found
+				 * == true) { if (rc.canChop(tree)) { rc.chop(tree); } else {
+				 * tree = null; } } else { tryMoveToLocation(tree, 20, 6); }
+				 * 
+				 * }
+				 */
 
 				Clock.yield();
 			} catch (Exception e) {
@@ -741,30 +738,16 @@ public strictfp class RobotPlayer {
 	 * @throws GameActionException
 	 */
 	/*
-	static MapLocation getLumberJackRequest() throws GameActionException {
-		int x;
-		int y;
-		int pos;
-		int minDist = 1000000000;
-		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
-			if (rc.readBroadcast(i) > 0) {
-				int treex = rc.readBroadcast(i + 1);
-				int treey = rc.readBroadcast(i + 2);
-				if (Math.pow(x - treex, 2) + Math.pow(y - treey, 2) < minDist) {
-					x = treex;
-					y = treey;
-					pos = i;
-				}
-				
-
-			}
-		}
-		if (minDist == 1000000000) {
-			return null;
-		} else {
-			//rc.broadcast(pos, rc.readBroadcast(pos) - 1);
-			//return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
-		}
-	}
-	*/
+	 * static MapLocation getLumberJackRequest() throws GameActionException {
+	 * int x; int y; int pos; int minDist = 1000000000; for (int i =
+	 * LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) { if
+	 * (rc.readBroadcast(i) > 0) { int treex = rc.readBroadcast(i + 1); int
+	 * treey = rc.readBroadcast(i + 2); if (Math.pow(x - treex, 2) + Math.pow(y
+	 * - treey, 2) < minDist) { x = treex; y = treey; pos = i; }
+	 * 
+	 * 
+	 * } } if (minDist == 1000000000) { return null; } else {
+	 * //rc.broadcast(pos, rc.readBroadcast(pos) - 1); //return new
+	 * MapLocation((float) (x / 1000.0), (float) (y / 1000.0)); } }
+	 */
 }
