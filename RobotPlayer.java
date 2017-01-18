@@ -378,6 +378,16 @@ public strictfp class RobotPlayer {
 		}
 		return testDirection;
 	}
+	/**
+	 * Uses tryMove to go to a location
+	 * @param loc
+	 * @return 
+	 * @throws GameActionException 
+	 */
+	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide) throws GameActionException {
+		Direction dirTo = rc.getLocation().directionTo(loc);
+		return tryMove(dirTo,degreeOffset,checksPerSide);
+	}
 
 	// Method is called if an enemy is sensed
 	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
