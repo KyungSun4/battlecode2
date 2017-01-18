@@ -65,12 +65,14 @@ public strictfp class RobotPlayer {
 					MapLocation archonLocation[] = rc.getInitialArchonLocations(rc.getTeam());
 					float compareDistance = 0;
 					MapLocation maxDistanceArchonLocation;
+					// Searches for the location that has the greatest distance away
 					for (MapLocation locations: archonLocation) {
 						if (locations.distanceTo(mapCenter) > compareDistance) {
 							compareDistance = locations.distanceTo(mapCenter);
 							maxDistanceArchonLocation = locations;
 						}
 					}
+					// If this archons location matches the location with the greatest distance away, make a gardener
 					if (rc.getLocation() == maxDistanceArchonLocation) {
 						rc.hireGardener(nextUnoccupiedDirection(0));
 					}
