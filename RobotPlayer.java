@@ -75,7 +75,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runGardener() throws GameActionException {
-		
+
 	}
 
 	static void runScout() throws GameActionException {
@@ -144,6 +144,19 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runLumberjack() throws GameActionException {
+		System.out.println("I'm an LumberJack!");
+		Team enemy = rc.getTeam().opponent();
+		while (true) {
+			try {
+				MapLocation myLocation = rc.getLocation();
+
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Tank Exception");
+				e.printStackTrace();
+			}
+		}
 	}
 
 	static Direction randomDirection() {
@@ -217,60 +230,6 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * All tree locations will be stored in main message array, this method will
-	 * takein all the trees within the sight and if a tree in the ist that was
-	 * in that radius is no longer there, remove it. if a new tree is found, it
-	 * will add it to the list
-	 */
-	static void updateTreesInMessArr() {
-		MapLocation myLoc = rc.getLocation();
-		TreeInfo[] trees = rc.senseNearbyTrees();
-		for (TreeInfo t : trees) {
-
-		}
-	}
-
-	/**
-	 * checks if tree in message array list
-	 * 
-	 * @param x
-	 * @param y
-	 * @return
-	 */
-	static boolean checkForTreeInList(float x, float y) {
-		return true;
-	}
-
-	/**
-	 * adds tree to Message array
-	 * 
-	 * @throws GameActionException
-	 * 
-	 */
-
-	static boolean addTreeToList(int type, float x, float y) throws GameActionException {
-		// starts in broadcast array at TREE_POS_ARR_START, currently goes till
-		// end of array i increments by 3 skiping over positons
-		for (int i = TREE_POS_ARR_START; i < 997; i += 3) {
-			// if empty spot in array, add
-			if (rc.readBroadcast(i) == 0) {
-				rc.broadcast(i, 1);
-				rc.broadcast(i + 1, (int) (x * 100));
-				rc.broadcast(i + 2, (int) (y * 100));
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * removes tree from Message array
-	 * 
-	 */
-	static void removeTreeFromList() {
-	}
-
-	/**
 	 * uses Initial arcon locations to guess map size
 	 * 
 	 */
@@ -332,16 +291,6 @@ public strictfp class RobotPlayer {
 		else if (myy > myy + height) {
 			rc.broadcast(MIN_MAP_HEIGHT_ARR, myy - originy);
 		}
-	}
-
-	/**
-	 * uses inital arcon locations to find symetry
-	 * 
-	 * @return 0-failed 1-horizontal -- 2-vertical | 3-diagonal positive /
-	 *         4-diagonal Negative \
-	 */
-	static int findMapSymetry() {
-		return 0;
 	}
 
 	/**
