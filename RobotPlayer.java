@@ -117,8 +117,7 @@ public strictfp class RobotPlayer {
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm an Gardner!");
 		Team enemy = rc.getTeam().opponent();
-		// 0-finding location 1-building tree circle
-		int state = 0;
+		int state = 0;   // 0-finding location 1-building tree circle
 		int count = 0;
 		Direction move = randomDirection();
 		while (true) {
@@ -233,9 +232,49 @@ public strictfp class RobotPlayer {
 						// ...Then fire a bullet in the direction of the enemy.
 						rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
 					}
+					Clock.yield();
 				}
-				Clock.yield();
-
+				else {
+					int movementRange[] = new int[2];  //possible range of movement in degrees
+					//if(tryMoveToLocation())
+					switch(getMapStats()) {
+					case "bottom":
+						movementRange[0] = 0;
+						movementRange[1] = 180;
+						break;
+					case "top":
+						movementRange[0] = 180;
+						movementRange[1] = 360;
+						break;
+					case "left":
+						movementRange[0] = -90;
+						movementRange[1] = 90;
+						break;
+					case "right":
+						movementRange[0] = 90;
+						movementRange[1] = 270;
+						break;
+					case "bottomLeft":
+						movementRange[0] = -45;
+						movementRange[1] = 135;
+						break;
+					case "bottomRight":
+						movementRange[0] = 45;
+						movementRange[1] = 225;
+						break;
+					case "topLeft":
+						movementRange[0] = -135;
+						movementRange[1] = 45;
+						break;
+					case "topRight":
+						movementRange[0] = 135;
+						movementRange[1] = 315;
+						break;
+					}
+					int degreeMove = parseInt((movementRange[1] - movementRange[0]) * Math.random()) + movementRange[0];
+					float radianMove = (float) ((degreeMove/360) * Math.PI * 2);
+					tryMove(new Direction(radianMove), (float) 10, 5);
+				}
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
 				e.printStackTrace();
@@ -580,6 +619,7 @@ public strictfp class RobotPlayer {
 		return directionToEnemy;
 	}
 
+	//returns true if move was performed, false if not performed
 	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 
 		// First, try intended direction
@@ -589,7 +629,6 @@ public strictfp class RobotPlayer {
 		}
 
 		// Now try a bunch of similar angles
-		boolean moved = false;
 		int currentCheck = 1;
 
 		while (currentCheck <= checksPerSide) {
