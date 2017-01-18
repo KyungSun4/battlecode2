@@ -76,7 +76,8 @@ public strictfp class RobotPlayer {
 					// greatest distance away, make a gardener
 					if (rc.getLocation() == maxDistanceArchonLocation) {
 						Direction makeRobot = nextUnoccupiedDirection(0);
-						if (rc.canHireGardener(makeRobot)) rc.hireGardener(makeRobot);
+						if (rc.canHireGardener(makeRobot))
+							rc.hireGardener(makeRobot);
 					}
 				}
 				Clock.yield();
@@ -90,12 +91,26 @@ public strictfp class RobotPlayer {
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm an Gardner!");
 		Team enemy = rc.getTeam().opponent();
+		// 0-finding location 1-building tree circle
+		int state = 0;
+		int count = 0;
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 2) {
 					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 				}
 				MapLocation myLocation = rc.getLocation();
+				if (state == 0) {
+					if (tryMove(Direction.getEast(), (float) 20, 3)) {
+						count++;
+					}
+				}
+				if (count == 10) {
+					state = 1;
+				}
+				if (state == 1) {
+					maintainTreeRing();
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardern Exception");
@@ -104,7 +119,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	//Scout fuckery
+	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
 		boolean busy = false;
@@ -116,40 +131,33 @@ public strictfp class RobotPlayer {
 				if (!busy) {
 					if (rc.canMove(move)) {
 						rc.move(move);
-					}
-					else {
+					} else {
 						move.rotateLeftDegrees(90);
-						if (rc.canMove(move))
-						{
-							rc.move(move);	
+						if (rc.canMove(move)) {
+							rc.move(move);
 						}
 					}
 					TreeInfo trees[] = rc.senseNearbyTrees();
-					for (TreeInfo tree: trees)
-					{
-						if (tree.getContainedBullets() > 0)
-						{
+					for (TreeInfo tree : trees) {
+						if (tree.getContainedBullets() > 0) {
 							MapLocation myLocation = rc.getLocation();
 							MapLocation treeLocation = tree.getLocation();
 							treeID = tree.getID();
 							busy = true;
 						}
-						break;  
-						// why is is this break here, only the first tree get checked then it breaks
+						break;
+						// why is is this break here, only the first tree get
+						// checked then it breaks
 					}
-				}
-				else if (busy)
-				{
+				} else if (busy) {
 					if (rc.canMove(toTree)) {
 						rc.move(toTree);
-					}
-					else {
-						//why is a scout trying to shake??????
-						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int)toTree.getAngleDegrees());
+					} else {
+						// why is a scout trying to shake??????
+						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int) toTree.getAngleDegrees());
 						rc.move(nextMove);
 					}
-					if (rc.canShake(treeID))
-					{
+					if (rc.canShake(treeID)) {
 						rc.shake(treeID);
 						busy = false;
 					}
@@ -292,24 +300,27 @@ public strictfp class RobotPlayer {
 		 * { // tree must have died so remove it myTrees.remove(i); } }
 		 */
 		// water weakest tree
-		TreeInfo weakest = sensedTrees[0];
+		TreeInfo weakest = null;
 		for (int i = 0; i < sensedTrees.length; i++) {
-			if (sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
+			if (weakest == null || sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
 				weakest = sensedTrees[i];
 			}
 		}
-		if (rc.canWater(weakest.ID)) {
-			rc.water(weakest.ID);
+		if (weakest != null) {
+			if (rc.canWater(weakest.ID)) {
+				rc.water(weakest.ID);
+			}
 		}
 		// plants 6 trees around to start. 30 degree offsets
 
 		Direction dir = new Direction(Direction.getNorth().radians);
-		for (int x = 0; x < 6; x++) {
+		for (int x = 0; x < 7; x++) {
 			if (rc.canPlantTree(dir)) {
 				rc.plantTree(dir);
-				x = 6;
+				x = 7;
 			}
-			dir.rotateRightRads((float) (Math.PI / 6));
+			dir = dir.rotateRightRads((float) (Math.PI / 3));
+			System.out.println(dir);
 
 		}
 
