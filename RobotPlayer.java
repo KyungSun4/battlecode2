@@ -56,16 +56,8 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an Archon!");
-		System.out.println(guessMapSize()[0] + ", " + guessMapSize()[1]);
 		while (true) {
 			try {
-				if (rc.readBroadcast(1) == 0) {
-					// rc.hireGardener(Direction.getNorth());
-					int tempGardener = rc.readBroadcast(1);
-					tempGardener++;
-					rc.broadcast(1, tempGardener);
-					System.out.println(rc.readBroadcast(1));
-				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -80,9 +72,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-
 				Clock.yield();
-
 			} catch (Exception e) {
 				System.out.println("Gardern Exception");
 				e.printStackTrace();
@@ -96,9 +86,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-
 				Clock.yield();
-
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
 				e.printStackTrace();
@@ -112,7 +100,6 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -140,12 +127,6 @@ public strictfp class RobotPlayer {
 						rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
 					}
 				}
-
-				// Move randomly
-				// tryMove(randomDirection());
-
-				// Clock.yield() makes the robot wait until the next turn, then
-				// it will perform this loop again
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -160,10 +141,7 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
-				MapLocation myLocation = rc.getLocation();
-
 				Clock.yield();
-
 			} catch (Exception e) {
 				System.out.println("Lumberjack Exception");
 				e.printStackTrace();
@@ -171,63 +149,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static Direction randomDirection() {
-		return new Direction((float) Math.random() * 2 * (float) Math.PI);
-	}
-
-	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
-
-		// First, try intended direction
-		if (rc.canMove(dir)) {
-			rc.move(dir);
-			return true;
-		}
-
-		// Now try a bunch of similar angles
-		boolean moved = false;
-		int currentCheck = 1;
-
-		while (currentCheck <= checksPerSide) {
-			// Try the offset of the left side
-			if (rc.canMove(dir.rotateLeftDegrees(degreeOffset * currentCheck))) {
-				rc.move(dir.rotateLeftDegrees(degreeOffset * currentCheck));
-				return true;
-			}
-			// Try the offset on the right side
-			if (rc.canMove(dir.rotateRightDegrees(degreeOffset * currentCheck))) {
-				rc.move(dir.rotateRightDegrees(degreeOffset * currentCheck));
-				return true;
-			}
-			// No move performed, try slightly further
-			currentCheck++;
-		}
-
-		// A move never happened, so return false.
-		return false;
-	}
-
-	static Direction directionToClosestEnemy() {
-		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
-		MapLocation myLocation = rc.getLocation();
-		MapLocation enemyLocation = nearbyEnemies[0].location;
-		// Sets the initial shortest distance to the first spot in the array
-		Float shortestDistance = myLocation.distanceTo(enemyLocation);
-		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
-		for (int i = 1; 1 < nearbyEnemies.length; i++) {
-			enemyLocation = nearbyEnemies[i].location;
-			Float tempDistance = myLocation.distanceTo(enemyLocation);
-			if (tempDistance < shortestDistance) {
-				shortestDistance = tempDistance;
-				directionToEnemy = myLocation.directionTo(nearbyEnemies[i].location);
-			}
-		}
-		return directionToEnemy;
-	}
-
-	/**
-	 * the scouts move method
-	 * 
-	 */
 	static void scoutMove() {
 		// if nescesary, evade
 		// get bullets that will hit soon ad avoid them
@@ -241,8 +162,10 @@ public strictfp class RobotPlayer {
 		// scan map and update info
 	}
 
+	/* ****************************************************************************************************************************************** */
+	
 	/**
-	 * uses Initial arcon locations to guess map size
+	 * uses Initial arhcon locations to guess map size
 	 * 
 	 */
 	static float[] guessMapSize() {
@@ -516,5 +439,54 @@ public strictfp class RobotPlayer {
 			System.out.println("FAILED TO AVOID BULLET!");
 			e.printStackTrace();
 		}
+	}
+	
+	static Direction directionToClosestEnemy() {
+		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
+		MapLocation myLocation = rc.getLocation();
+		MapLocation enemyLocation = nearbyEnemies[0].location;
+		// Sets the initial shortest distance to the first spot in the array
+		Float shortestDistance = myLocation.distanceTo(enemyLocation);
+		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
+		for (int i = 1; 1 < nearbyEnemies.length; i++) {
+			enemyLocation = nearbyEnemies[i].location;
+			Float tempDistance = myLocation.distanceTo(enemyLocation);
+			if (tempDistance < shortestDistance) {
+				shortestDistance = tempDistance;
+				directionToEnemy = myLocation.directionTo(nearbyEnemies[i].location);
+			}
+		}
+		return directionToEnemy;
+	}
+	
+	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
+
+		// First, try intended direction
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+			return true;
+		}
+
+		// Now try a bunch of similar angles
+		boolean moved = false;
+		int currentCheck = 1;
+
+		while (currentCheck <= checksPerSide) {
+			// Try the offset of the left side
+			if (rc.canMove(dir.rotateLeftDegrees(degreeOffset * currentCheck))) {
+				rc.move(dir.rotateLeftDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canMove(dir.rotateRightDegrees(degreeOffset * currentCheck))) {
+				rc.move(dir.rotateRightDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// No move performed, try slightly further
+			currentCheck++;
+		}
+
+		// A move never happened, so return false.
+		return false;
 	}
 }
