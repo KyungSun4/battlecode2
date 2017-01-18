@@ -185,8 +185,16 @@ public strictfp class RobotPlayer {
 		// scan map and update info
 	}
 
-	/* ****************************************************************************************************************************************** */
-	
+	/*
+	 * *************************************************************************
+	 * *****************************************************************
+	 */
+
+	/**
+	 * uses Initial arhcon locations to guess map size
+	 * 
+	 */
+
 	static float[] guessMapSize() {
 
 		float w = 0;// max distnace between arcons width
@@ -217,7 +225,7 @@ public strictfp class RobotPlayer {
 		return max;
 	}
 
-	// Needs improvements. 
+	// Needs improvements.
 	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
 		int myx = (int) (myLoc.x * 1000);
 		int myy = (int) (myLoc.y * 1000);
@@ -265,16 +273,16 @@ public strictfp class RobotPlayer {
 				myTrees.remove(i);
 			}
 		}
-		// plants 4 trees around to start.
-		if (mySensedTrees.size() < 4) {
-			if (rc.canPlantTree(Direction.getNorth())) {
-				rc.plantTree(Direction.getNorth());
-			} else if (rc.canPlantTree(Direction.getSouth())) {
-				rc.plantTree(Direction.getSouth());
-			} else if (rc.canPlantTree(Direction.getEast())) {
-				rc.plantTree(Direction.getEast());
-			} else if (rc.canPlantTree(Direction.getWest())) {
-				rc.plantTree(Direction.getWest());
+		// plants 6 trees around to start. 30 degree offsets
+		if (mySensedTrees.size() < 6) {
+			Direction dir = new Direction(Direction.getNorth().radians);
+			for(int x = 0; x<6;x++) {
+				if (rc.canPlantTree(dir)) {
+					rc.plantTree(dir);
+					x=6;
+				}
+				dir.rotateRightRads((float)(Math.PI / 6));
+				
 			}
 		}
 
@@ -386,6 +394,19 @@ public strictfp class RobotPlayer {
 		return testDirection;
 	}
 
+	/**
+	 * Uses tryMove to go to a location
+	 * 
+	 * @param loc
+	 * @return
+	 * @throws GameActionException
+	 */
+	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide)
+			throws GameActionException {
+		Direction dirTo = rc.getLocation().directionTo(loc);
+		return tryMove(dirTo, degreeOffset, checksPerSide);
+	}
+
 	// Method is called if an enemy is sensed
 	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
 		System.out.println("Attacking!");
@@ -447,7 +468,7 @@ public strictfp class RobotPlayer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static Direction directionToClosestEnemy() {
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
 		MapLocation myLocation = rc.getLocation();
@@ -465,7 +486,7 @@ public strictfp class RobotPlayer {
 		}
 		return directionToEnemy;
 	}
-	
+
 	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 
 		// First, try intended direction
