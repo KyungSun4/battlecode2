@@ -72,25 +72,33 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
-				if (rc.getRoundNum() == 1)
-				{
+				//build a scout in open spot
+				if (rc.getRoundNum() == 2) {
 					//insert stuff under here for each case
 					switch (getMapStats()) {
 					case "left":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 						break;
 					case "right":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(180));
 						break;
 					case "top":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(270));
 						break;
 					case "bottom":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(90));
 						break;
 					case "bottomLeft":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(45));
 						break;
 					case "bottomRight":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(135));
 						break;
 					case "topLeft":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(315));
 						break;
 					case "topRight":
+						buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(225));
 						break;
 					}
 				}
@@ -386,7 +394,7 @@ public strictfp class RobotPlayer {
 
 	// Starts at east then rotates counter clockwise to find the next available
 	// space at increments of 30 degrees.
-	static Direction nextUnoccupiedDirection(RobotType robot, int degrees) {
+	static Direction nextUnoccupiedDirection(int degrees) {
 		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
 		while (rc.canMove(testDirection) == false) {
 			testDirection = testDirection.rotateLeftDegrees(30);
