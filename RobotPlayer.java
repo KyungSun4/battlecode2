@@ -58,6 +58,28 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an Archon!");
 		while (true) {
 			try {
+				if (rc.getRoundNum() == 1)
+				{
+					
+					switch (getMapStats()) {
+					case "left":
+						break;
+					case "right":
+						break;
+					case "top":
+						break;
+					case "bottom":
+						break;
+					case "bottomLeft":
+						break;
+					case "bottomRight":
+						break;
+					case "topLeft":
+						break;
+					case "topRight":
+						break;
+					}
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -164,10 +186,6 @@ public strictfp class RobotPlayer {
 
 	/* ****************************************************************************************************************************************** */
 	
-	/**
-	 * uses Initial arhcon locations to guess map size
-	 * 
-	 */
 	static float[] guessMapSize() {
 
 		float w = 0;// max distnace between arcons width
@@ -198,11 +216,7 @@ public strictfp class RobotPlayer {
 		return max;
 	}
 
-	/**
-	 * use robot's position to try and improve guesses for map size and origin.
-	 * 
-	 * @throws GameActionException
-	 */
+	// Needs improvements. 
 	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
 		int myx = (int) (myLoc.x * 1000);
 		int myy = (int) (myLoc.y * 1000);
@@ -228,14 +242,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	/**
-	 * Gardners method to build tight ring of trees around itself and water,
-	 * farm, and plant those trees.
-	 * 
-	 * @param myTrees
-	 *            the trees that this gardner is maintaining
-	 * @throws GameActionException
-	 */
 	static void maintainTreeRing(ArrayList<MapLocation> myTrees) throws GameActionException {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3); // all trees it can
 															// water are within
@@ -377,16 +383,6 @@ public strictfp class RobotPlayer {
 			testDirection = testDirection.rotateLeftDegrees(30);
 		}
 		return testDirection;
-	}
-	/**
-	 * Uses tryMove to go to a location
-	 * @param loc
-	 * @return 
-	 * @throws GameActionException 
-	 */
-	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide) throws GameActionException {
-		Direction dirTo = rc.getLocation().directionTo(loc);
-		return tryMove(dirTo,degreeOffset,checksPerSide);
 	}
 
 	// Method is called if an enemy is sensed
