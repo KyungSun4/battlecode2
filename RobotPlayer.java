@@ -524,17 +524,23 @@ public strictfp class RobotPlayer {
 	 * @return MapLocation of center
 	 */
 	static MapLocation getMapCenter() {
-		// gets inital locations of both teams
+		// gets initial locations of both teams
 		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
-		// where the
+		// stores midpoints btwn
 		ArrayList<MapLocation> midPoints = new ArrayList<MapLocation>();
+		// store the number of times the midpoint is found
 		ArrayList<Integer> midPointCounts = new ArrayList<Integer>();
+		// compares each archon from one team with the archons from the other
+		// team
 		for (int i = 0; i < teamALocations.length; i++) {
 			for (int j = 0; j < teamBLocations.length; j++) {
+				// get midpoint btwn the two archons
 				MapLocation midPoint = new MapLocation(
 						(teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
 						(teamBLocations[j].y - teamALocations[i].y) / 2 + teamALocations[i].y);
+				// checks if this midpoint was already recorded, if yes, add to
+				// its count
 				boolean alreadyFound = false;
 				for (int k = 0; k < midPoints.size(); k++) {
 					if ((int) (midPoint.x) == (int) (midPoints.get(k).x)
@@ -543,15 +549,18 @@ public strictfp class RobotPlayer {
 						alreadyFound = true;
 					}
 				}
+				// if not already found add it
 				if (!alreadyFound) {
 					midPoints.add(midPoint);
 				}
 				midPointCounts.add(1);
 			}
 		}
+		// if there's only one midpoint then return it
 		if (midPoints.size() == 1) {
 			return midPoints.get(0);
 		}
+		// finds the midpoint with the most counts
 		int withMaxCount = 0;
 		for (int i = 0; i < midPoints.size(); i++) {
 			if (midPointCounts.get(i) > midPointCounts.get(withMaxCount)) {
