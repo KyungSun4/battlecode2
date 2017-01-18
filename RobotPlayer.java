@@ -72,9 +72,8 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
-				if (rc.getRoundNum() == 1)
-				{
-					//insert stuff under here for each case
+				if (rc.getRoundNum() == 1) {
+					// insert stuff under here for each case
 					switch (getMapStats()) {
 					case "left":
 						break;
@@ -276,13 +275,13 @@ public strictfp class RobotPlayer {
 		// plants 6 trees around to start. 30 degree offsets
 		if (mySensedTrees.size() < 6) {
 			Direction dir = new Direction(Direction.getNorth().radians);
-			for(int x = 0; x<6;x++) {
+			for (int x = 0; x < 6; x++) {
 				if (rc.canPlantTree(dir)) {
 					rc.plantTree(dir);
-					x=6;
+					x = 6;
 				}
-				dir.rotateRightRads((float)(Math.PI / 6));
-				
+				dir.rotateRightRads((float) (Math.PI / 6));
+
 			}
 		}
 
@@ -516,5 +515,35 @@ public strictfp class RobotPlayer {
 
 		// A move never happened, so return false.
 		return false;
+	}
+
+	static MapLocation getMapCenter() {
+		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
+		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
+		MapLocation[] midPoints = new MapLocation[teamALocations.length];
+		for (int i = 0; i < teamALocations.length; i++) {
+			for (int j = 0; j < teamBLocations.length; j++) {
+				midPoints[i] = new MapLocation((teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
+						(teamBLocations[j].y - teamALocations[i].y) / 2 + teamALocations[i].y);
+			}
+		}
+		if (midPoints.length == 1) {
+			return midPoints[0];
+		}
+		int[] midPointCounts = new int[midPoints.length];
+		for (int i = 0; i < midPoints.length; i++) {
+			for (int j = 0; j < midPoints.length; j++) {
+				if (i != j && midPoints[i].equals(midPoints[j])) {
+					midPointCounts[i]++;
+				}
+			}
+		}
+		int maxNumFound = 0;
+		for(int x = 0; x<midPointCounts.length;x++) {
+			if(midPointCounts[x]>midPointCounts[maxNumFound]) {
+				maxNumFound = x;
+			}
+		}
+		return midPoints[maxNumFound];
 	}
 }
