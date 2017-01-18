@@ -104,28 +104,53 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	//Scout fuckery
 	static void runScout() throws GameActionException {
-		System.out.println("I'm an Scout!");
-		Team enemy = rc.getTeam().opponent();
+		System.out.println("I'm a scout!");
+		boolean busy = false;
+		Direction move = Direction.getSouth().rotateLeftDegrees(45);
+		Direction toTree = Direction.getEast();
+		int treeID = 0;
 		while (true) {
 			try {
-				switch (getMapStats()) {
-				case "left":
-					break;
-				case "right":
-					break;
-				case "top":
-					break;
-				case "bottom":
-					break;
-				case "bottomLeft":
-					break;
-				case "bottomRight":
-					break;
-				case "topLeft":
-					break;
-				case "topRight":
-					break;
+				if (!busy) {
+					if (rc.canMove(move)) {
+						rc.move(move);
+					}
+					else {
+						move.rotateLeftDegrees(90);
+						if (rc.canMove(move))
+						{
+							rc.move(move);	
+						}
+					}
+					TreeInfo trees[] = rc.senseNearbyTrees();
+					for (TreeInfo tree: trees)
+					{
+						if (tree.getContainedBullets() > 0)
+						{
+							MapLocation myLocation = rc.getLocation();
+							MapLocation treeLocation = tree.getLocation();
+							treeID = tree.getID();
+							busy = true;
+						}
+						break;
+					}
+				}
+				else if (busy)
+				{
+					if (rc.canMove(toTree)) {
+						rc.move(toTree);
+					}
+					else {
+						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int)toTree.getAngleDegrees());
+						rc.move(nextMove);
+					}
+					if (rc.canShake(treeID))
+					{
+						rc.shake(treeID);
+						busy = false;
+					}
 				}
 				Clock.yield();
 			} catch (Exception e) {
