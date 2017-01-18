@@ -555,6 +555,7 @@ public strictfp class RobotPlayer {
 				maxNumFound = x;
 			}
 		}
+		System.out.println(midPoints[maxNumFound]);
 		return midPoints[maxNumFound];
 	}
 }
