@@ -75,7 +75,8 @@ public strictfp class RobotPlayer {
 					// If this archons location matches the location with the
 					// greatest distance away, make a gardener
 					if (rc.getLocation() == maxDistanceArchonLocation) {
-						rc.hireGardener(nextUnoccupiedDirection(0));
+						Direction makeRobot = nextUnoccupiedDirection(0);
+						if (rc.canHireGardener(makeRobot)) rc.hireGardener(makeRobot);
 					}
 				}
 				Clock.yield();
