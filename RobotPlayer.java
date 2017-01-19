@@ -27,10 +27,10 @@ public strictfp class RobotPlayer {
 	static int MIN_MAP_HEIGHT_ARR = 7; // since float, multiply by 1000
 	static int ORIGIN_X_ARR = 8; // since float, multiply by 1000
 	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
-	// can send up to 4 requests, each requires 3 spots
+	//can send up to 4 requests, each requires 3 spots
 	static int LUMBERJACK_REQUESTS_START = 20;
 	static int LUMBERJACK_REQUESTS_END = 35;
-
+	
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
@@ -43,7 +43,7 @@ public strictfp class RobotPlayer {
 			runGardener();
 			break;
 		case SOLDIER:
-			runSoldier();
+			//runSoldier();
 			break;
 		case LUMBERJACK:
 			runLumberjack();
@@ -104,7 +104,7 @@ public strictfp class RobotPlayer {
 				if (rc.getTeamBullets() > 500) {
 					float teamBullets = rc.getTeamBullets();
 					float excessBullets = teamBullets - 500;
-					excessBullets = (excessBullets / 50);
+					excessBullets = Math.round((excessBullets/2)/10)*10;
 					System.out.println(excessBullets);
 					rc.donate(excessBullets);
 				}
@@ -134,7 +134,6 @@ public strictfp class RobotPlayer {
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
-					// move away from archon
 
 					if (tryMove(randomDirection(), (float) 20, 5)) {
 						count++;
@@ -221,6 +220,7 @@ public strictfp class RobotPlayer {
 		}
 
 	}
+	/*
 
 	static void runSoldier() throws GameActionException {
 		System.out.println("I'm an soldier!");
@@ -287,6 +287,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
+	*/
 
 	static void runLumberjack() throws GameActionException {
 		System.out.println("I'm an LumberJack!");
@@ -709,16 +710,15 @@ public strictfp class RobotPlayer {
 	static Direction randomDirection() {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
-
+	
 	/**
 	 * writes to Broadcast Array to request a lumberjack
-	 * 
-	 * @return returns false if fails (no more spots to request, should try
-	 *         again next round)
-	 * @throws GameActionException
+	 * @return returns false if fails (no more spots to request, should try again next round)
+	 * @throws GameActionException 
 	 */
 	static boolean requestLumberJack(TreeInfo tree, int NumLumberJacks) throws GameActionException {
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
+
 			// if empty spot in array, add
 			if (rc.readBroadcast(i) == 0) {
 				rc.broadcast(i, NumLumberJacks);
@@ -750,4 +750,5 @@ public strictfp class RobotPlayer {
 	 * //rc.broadcast(pos, rc.readBroadcast(pos) - 1); //return new
 	 * MapLocation((float) (x / 1000.0), (float) (y / 1000.0)); } }
 	 */
+
 }
