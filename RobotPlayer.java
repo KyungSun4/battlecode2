@@ -701,9 +701,9 @@ public strictfp class RobotPlayer {
 	 */
 
 	static MapLocation getLumberJackRequest() throws GameActionException {
-		int x=0;
-		int y=0;
-		int pos=LUMBERJACK_REQUESTS_START;
+		int x = 0;
+		int y = 0;
+		int pos = LUMBERJACK_REQUESTS_START;
 		double minDist = 1000000000;
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
 			if (rc.readBroadcast(i) > 0) {
@@ -716,15 +716,49 @@ public strictfp class RobotPlayer {
 					pos = i;
 					minDist = dist;
 				}
-
 			}
 		}
 		if (minDist == 1000000000) {
 			return null;
 		} else {
-			rc.broadcast(pos, rc.readBroadcast(pos) - 1); //return new
+			rc.broadcast(pos, rc.readBroadcast(pos) - 1); // return new
 			return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
 		}
+	}
+
+	/**
+	 * moves scout to initial archon location and looks for gardener
+	 * 
+	 * @param robots
+	 * @throws GameActionException
+	 */
+	static int scoutLookForGardners(RobotInfo[] robots) throws GameActionException {
+		tryMoveToLocation(rc.getInitialArchonLocations(rc.getTeam().opponent())[0], (float) 20, 2);
+		int gardnersFound = 0;
+		for (RobotInfo r : robots) {
+			if (r.getType() == RobotType.GARDENER && r.getTeam() == rc.getTeam().opponent()) {
+				gardnersFound++;
+			}
+		}
+		return gardnersFound;
+	}
+
+	static boolean attackGardner(RobotInfo[] robots) throws GameActionException {
+		MapLocation gardnerLocation = null;
+		for (RobotInfo r : robots) {
+			if (r.getType() == RobotType.GARDENER && r.getTeam() == rc.getTeam().opponent()) {
+				gardnerLocation = r.getLocation();
+			}
+		}
+		if (gardnerLocation == null) {
+			return false;
+		}
+		attackEnemy(gardnerLocation);
+		return true;
+	}
+
+	static void fufuilGardnerRequest() {
+
 	}
 
 }
