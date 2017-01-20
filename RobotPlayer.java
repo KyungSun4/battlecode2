@@ -27,10 +27,10 @@ public strictfp class RobotPlayer {
 	static int MIN_MAP_HEIGHT_ARR = 7; // since float, multiply by 1000
 	static int ORIGIN_X_ARR = 8; // since float, multiply by 1000
 	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
-	//can send up to 4 requests, each requires 3 spots
+	// can send up to 4 requests, each requires 3 spots
 	static int LUMBERJACK_REQUESTS_START = 20;
 	static int LUMBERJACK_REQUESTS_END = 35;
-	
+
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
@@ -43,7 +43,7 @@ public strictfp class RobotPlayer {
 			runGardener();
 			break;
 		case SOLDIER:
-			//runSoldier();
+			// runSoldier();
 			break;
 		case LUMBERJACK:
 			runLumberjack();
@@ -104,7 +104,7 @@ public strictfp class RobotPlayer {
 				if (rc.getTeamBullets() > 500) {
 					float teamBullets = rc.getTeamBullets();
 					float excessBullets = teamBullets - 500;
-					excessBullets = Math.round((excessBullets/2)/10)*10;
+					excessBullets = Math.round((excessBullets / 2) / 10) * 10;
 					System.out.println(excessBullets);
 					rc.donate(excessBullets);
 				}
@@ -124,7 +124,7 @@ public strictfp class RobotPlayer {
 	static void runGardener() throws GameActionException {
 		System.out.println("I'm an Gardner!");
 		Team enemy = rc.getTeam().opponent();
-		int state = 0;   // 0-finding location 1-building tree circle
+		int state = 0; // 0-finding location 1-building tree circle
 		int count = 0;
 		Direction move = randomDirection();
 		while (true) {
@@ -221,73 +221,33 @@ public strictfp class RobotPlayer {
 
 	}
 	/*
-
-	static void runSoldier() throws GameActionException {
-		System.out.println("I'm an soldier!");
-		Team enemy = rc.getTeam().opponent();
-		while (true) {
-			try {
-				MapLocation myLocation = rc.getLocation();
-				// See if there are any nearby enemy robots
-				RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
-				// If there are some...
-				if (robots.length > 0) {
-					// And we have enough bullets, and haven't attacked yet this
-					// turn...
-					if (rc.canFireSingleShot()) {
-						// ...Then fire a bullet in the direction of the enemy.
-						rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
-					}
-					Clock.yield();
-				}
-				else {
-					int movementRange[] = new int[2];  //possible range of movement in degrees
-					//if(tryMoveToLocation())
-					switch(getMapStats()) {
-					case "bottom":
-						movementRange[0] = 0;
-						movementRange[1] = 180;
-						break;
-					case "top":
-						movementRange[0] = 180;
-						movementRange[1] = 360;
-						break;
-					case "left":
-						movementRange[0] = -90;
-						movementRange[1] = 90;
-						break;
-					case "right":
-						movementRange[0] = 90;
-						movementRange[1] = 270;
-						break;
-					case "bottomLeft":
-						movementRange[0] = -45;
-						movementRange[1] = 135;
-						break;
-					case "bottomRight":
-						movementRange[0] = 45;
-						movementRange[1] = 225;
-						break;
-					case "topLeft":
-						movementRange[0] = -135;
-						movementRange[1] = 45;
-						break;
-					case "topRight":
-						movementRange[0] = 135;
-						movementRange[1] = 315;
-						break;
-					}
-					int degreeMove = parseInt((movementRange[1] - movementRange[0]) * Math.random()) + movementRange[0];
-					float radianMove = (float) ((degreeMove/360) * Math.PI * 2);
-					tryMove(new Direction(radianMove), (float) 10, 5);
-				}
-			} catch (Exception e) {
-				System.out.println("Soldier Exception");
-				e.printStackTrace();
-			}
-		}
-	}
-	*/
+	 * 
+	 * static void runSoldier() throws GameActionException {
+	 * System.out.println("I'm an soldier!"); Team enemy =
+	 * rc.getTeam().opponent(); while (true) { try { MapLocation myLocation =
+	 * rc.getLocation(); // See if there are any nearby enemy robots RobotInfo[]
+	 * robots = rc.senseNearbyRobots(-1, enemy); // If there are some... if
+	 * (robots.length > 0) { // And we have enough bullets, and haven't attacked
+	 * yet this // turn... if (rc.canFireSingleShot()) { // ...Then fire a
+	 * bullet in the direction of the enemy.
+	 * rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location)); }
+	 * Clock.yield(); } else { int movementRange[] = new int[2]; //possible
+	 * range of movement in degrees //if(tryMoveToLocation())
+	 * switch(getMapStats()) { case "bottom": movementRange[0] = 0;
+	 * movementRange[1] = 180; break; case "top": movementRange[0] = 180;
+	 * movementRange[1] = 360; break; case "left": movementRange[0] = -90;
+	 * movementRange[1] = 90; break; case "right": movementRange[0] = 90;
+	 * movementRange[1] = 270; break; case "bottomLeft": movementRange[0] = -45;
+	 * movementRange[1] = 135; break; case "bottomRight": movementRange[0] = 45;
+	 * movementRange[1] = 225; break; case "topLeft": movementRange[0] = -135;
+	 * movementRange[1] = 45; break; case "topRight": movementRange[0] = 135;
+	 * movementRange[1] = 315; break; } int degreeMove =
+	 * parseInt((movementRange[1] - movementRange[0]) * Math.random()) +
+	 * movementRange[0]; float radianMove = (float) ((degreeMove/360) * Math.PI
+	 * * 2); tryMove(new Direction(radianMove), (float) 10, 5); } } catch
+	 * (Exception e) { System.out.println("Soldier Exception");
+	 * e.printStackTrace(); } } }
+	 */
 
 	static void runLumberjack() throws GameActionException {
 		System.out.println("I'm an LumberJack!");
@@ -617,7 +577,7 @@ public strictfp class RobotPlayer {
 		return directionToEnemy;
 	}
 
-	//returns true if move was performed, false if not performed
+	// returns true if move was performed, false if not performed
 	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 
 		// First, try intended direction
@@ -710,11 +670,13 @@ public strictfp class RobotPlayer {
 	static Direction randomDirection() {
 		return new Direction((float) Math.random() * 2 * (float) Math.PI);
 	}
-	
+
 	/**
 	 * writes to Broadcast Array to request a lumberjack
-	 * @return returns false if fails (no more spots to request, should try again next round)
-	 * @throws GameActionException 
+	 * 
+	 * @return returns false if fails (no more spots to request, should try
+	 *         again next round)
+	 * @throws GameActionException
 	 */
 	static boolean requestLumberJack(TreeInfo tree, int NumLumberJacks) throws GameActionException {
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
@@ -734,21 +696,35 @@ public strictfp class RobotPlayer {
 	 * when a lumberjack is not busy it should run this method to find a task (
 	 * a tree to chop down)
 	 * 
-	 * @return returns if it can find a request
+	 * @return returns map Location of tree if no requests, returns null
 	 * @throws GameActionException
 	 */
-	/*
-	 * static MapLocation getLumberJackRequest() throws GameActionException {
-	 * int x; int y; int pos; int minDist = 1000000000; for (int i =
-	 * LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) { if
-	 * (rc.readBroadcast(i) > 0) { int treex = rc.readBroadcast(i + 1); int
-	 * treey = rc.readBroadcast(i + 2); if (Math.pow(x - treex, 2) + Math.pow(y
-	 * - treey, 2) < minDist) { x = treex; y = treey; pos = i; }
-	 * 
-	 * 
-	 * } } if (minDist == 1000000000) { return null; } else {
-	 * //rc.broadcast(pos, rc.readBroadcast(pos) - 1); //return new
-	 * MapLocation((float) (x / 1000.0), (float) (y / 1000.0)); } }
-	 */
+
+	static MapLocation getLumberJackRequest() throws GameActionException {
+		int x=0;
+		int y=0;
+		int pos=LUMBERJACK_REQUESTS_START;
+		double minDist = 1000000000;
+		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
+			if (rc.readBroadcast(i) > 0) {
+				int treex = rc.readBroadcast(i + 1);
+				int treey = rc.readBroadcast(i + 2);
+				double dist = Math.pow(rc.getLocation().x - treex, 2) + Math.pow(rc.getLocation().y - treey, 2);
+				if (dist < minDist) {
+					x = treex;
+					y = treey;
+					pos = i;
+					minDist = dist;
+				}
+
+			}
+		}
+		if (minDist == 1000000000) {
+			return null;
+		} else {
+			rc.broadcast(pos, rc.readBroadcast(pos) - 1); //return new
+			return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
+		}
+	}
 
 }
