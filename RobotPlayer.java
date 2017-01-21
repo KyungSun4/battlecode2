@@ -823,10 +823,46 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * sends scouts to find and harvest bullets
+	 * 
+	 * @author John
+	 * @param trees
 	 */
-	static void shakeTrees(TreeInfo[] trees) {
+	static boolean shakeTrees(TreeInfo[] trees) {
 		// find closet tree with bullets
+		TreeInfo closest = null;
+		float dist = 1000000000;
+		// if there are no trees detected return false
+		if (trees.length == 0) {
+			return false;
+		} else {
 
+		}
+		// for each detected tree
+		for (TreeInfo tree : trees) {
+			// if it contains bullets
+			if (tree.containedBullets > 0) {
+				// if no tree has yet been found with bullets set closest and
+				// dist
+				if (closest == null) {
+					closest = tree;
+					dist = closest.getLocation().distanceTo(rc.getLocation());
+				} else {
+					// otherwise see if it is closer the chosen one
+					float testDist = tree.getLocation().distanceTo(rc.getLocation());
+					if (testDist < dist) {
+						closest = tree;
+						dist = testDist;
+					}
+				}
+			}
+		}
+		// if no trees with bullets return false
+		if (closest == null) {
+			return false;
+		}
+		// try and shake tree
+
+		return true;
 	}
 
 }
