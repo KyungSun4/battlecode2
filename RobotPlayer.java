@@ -94,9 +94,11 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+
 	static void runGardener() throws GameActionException {
 		boolean aboutToDie = false;
 		System.out.println("I'm an Gardner!");
+
 
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		ArrayList<TreeInfo> requestedTrees = new ArrayList<TreeInfo>();
@@ -127,20 +129,8 @@ public strictfp class RobotPlayer {
 					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
 					// request lumberJacks for each
 					for (TreeInfo tree : neutralTrees) {
-						// check if not already requested
-						boolean alreadyRequested = false;
-						for (TreeInfo tree2 : requestedTrees) {
-							if (tree2 == tree) {
-								alreadyRequested = true;
-							}
-						}
 						// request number of lumberjacks based on tree health
-						if (!alreadyRequested && requestLumberJack(tree, 1 + (int) (tree.health / 41))) {
-							requestedTrees.add(tree);
-							System.out.println("resquesting Lumberjack " + tree);
-						}
-						// System.out.println("ReqstionLumberJack at :" +
-						// tree.getLocation());
+						requestLumberJack(tree, 1 + (int) (tree.health / 41));
 					}
 					maintainTreeRing();
 				}
@@ -157,7 +147,6 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
