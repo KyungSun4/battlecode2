@@ -113,6 +113,7 @@ public strictfp class RobotPlayer {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				if (rc.getRoundNum() == 2) {
 					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 =======
@@ -125,6 +126,10 @@ public strictfp class RobotPlayer {
 =======
 				System.out.println(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
+=======
+				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
+				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
+>>>>>>> parent of 54acc94... fix to previous commit
 =======
 				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
