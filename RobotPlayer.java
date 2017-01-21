@@ -150,11 +150,11 @@ public strictfp class RobotPlayer {
 					state = 1;
 				}
 				if (state == 1) {
-					//gets all neutralTrees that could be in the way
+					// gets all neutralTrees that could be in the way
 					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
-					//request lumberJacks for each
+					// request lumberJacks for each
 					for (TreeInfo tree : neutralTrees) {
-						//request number of lumberjacks based on tree health
+						// request number of lumberjacks based on tree health
 						requestLumberJack(tree, 1 + (int) (tree.health / 41));
 					}
 					maintainTreeRing();
@@ -279,23 +279,21 @@ public strictfp class RobotPlayer {
 	static void runLumberjack() throws GameActionException {
 		System.out.println("I'm an LumberJack!");
 		Team enemy = rc.getTeam().opponent();
-		MapLocation tree;
+
+		MapLocation tree = null;
 		while (true) {
 			try {
 				TreeInfo[] nearByTrees = rc.senseNearbyTrees();
+				// gets what tree it should look for
 
-				/*
-				 * tree = getLumberJackRequest(); if (tree != null) { TreeInfo[]
-				 * sensedTrees = rc.senseNearbyTrees(-1,
-				 * rc.getTeam().opponent()); boolean found = false; for (int x =
-				 * 0; x < sensedTrees.length; x++) { if
-				 * (Math.round(sensedTrees[x].getLocation().x * 100) / 100 ==
-				 * Math.round(tree.x * 100) / 100) { found = true; } } if (found
-				 * == true) { if (rc.canChop(tree)) { rc.chop(tree); } else {
-				 * tree = null; } } else { tryMoveToLocation(tree, 20, 6); }
-				 * 
-				 * }
-				 */
+				if (tree != null) {
+					if(1 == fufuilLumberJackRequest(tree,nearByTrees) ) {
+						tree = null;
+					}
+
+				} else {
+					tree = getLumberJackRequest();
+				}
 
 				Clock.yield();
 			} catch (Exception e) {
