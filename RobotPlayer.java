@@ -43,7 +43,7 @@ public strictfp class RobotPlayer {
 			runGardener();
 			break;
 		case SOLDIER:
-			runSoldier();
+			// runSoldier();
 			break;
 		case LUMBERJACK:
 			runLumberjack();
@@ -58,7 +58,9 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runArchon() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an archon!");
+		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 1) {
@@ -74,11 +76,14 @@ public strictfp class RobotPlayer {
 						rc.hireGardener(nextUnoccupiedDirection(RobotType.GARDENER, 0));
 					}
 				}
-				Direction hireDirection = nextUnoccupiedDirection(RobotType.GARDENER, 0);
-				if (rc.canHireGardener(hireDirection)) {
-					rc.hireGardener(hireDirection);
+
+				tryHireGardner(Direction.getNorth(), 10, 18);
+
+				convertVictoryPoints(500);
+				if (rc.getHealth() <= 5 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) - 1);
 				}
-				convertVictoryPoints();
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -88,18 +93,24 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runGardener() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an Gardner!");
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		ArrayList<TreeInfo> requestedTrees = new ArrayList<TreeInfo>();
 >>>>>>> origin/master
+=======
+		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
+>>>>>>> parent of 07a8f13... Moved stuff around
 		Team enemy = rc.getTeam().opponent();
 		int state = 0; // 0-finding location 1-building tree circle
 		int count = 0;
 		Direction move = randomDirection();
 		while (true) {
 			try {
+<<<<<<< HEAD
 <<<<<<< HEAD
 				if (rc.getRoundNum() == 2) {
 					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
@@ -110,6 +121,11 @@ public strictfp class RobotPlayer {
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
 >>>>>>> origin/master
+=======
+				System.out.println(rc.readBroadcast(SCOUT_COUNT_ARR));
+				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
+>>>>>>> parent of 07a8f13... Moved stuff around
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
@@ -143,8 +159,9 @@ public strictfp class RobotPlayer {
 					maintainTreeRing();
 				}
 				// update robot count
-				if (rc.getHealth() < 5) {
-
+				if (rc.getHealth() <= 5 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) - 1);
 				}
 				Clock.yield();
 
@@ -158,6 +175,8 @@ public strictfp class RobotPlayer {
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
+		boolean aboutToDie = false;
+		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 		boolean busy = false;
 		// 0 search and shake
 		int mode = 0;
@@ -172,7 +191,9 @@ public strictfp class RobotPlayer {
 					if (!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL))) {
 						avoidBullets(rc.senseNearbyBullets());
 						if (rc.canMove(randomDir)) {
-							rc.move(randomDir);
+							if (!rc.hasMoved()) {
+								rc.move(randomDir);
+							}
 						} else {
 							randomDir = randomDirection();
 						}
@@ -180,11 +201,15 @@ public strictfp class RobotPlayer {
 				}
 				if (!busy) {
 					if (rc.canMove(move)) {
-						rc.move(move);
+						if (!rc.hasMoved()) {
+							rc.move(move);
+						}
 					} else {
 						move.rotateLeftDegrees(90);
 						if (rc.canMove(move)) {
-							rc.move(move);
+							if (!rc.hasMoved()) {
+								rc.move(move);
+							}
 						}
 					}
 					TreeInfo trees[] = rc.senseNearbyTrees();
@@ -201,15 +226,23 @@ public strictfp class RobotPlayer {
 					}
 				} else if (busy) {
 					if (rc.canMove(toTree)) {
-						rc.move(toTree);
+						if (!rc.hasMoved()) {
+							rc.move(move);
+						}
 					} else {
 						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int) toTree.getAngleDegrees());
-						rc.move(nextMove);
+						if (!rc.hasMoved()) {
+							rc.move(nextMove);
+						}
 					}
 					if (rc.canShake(treeID)) {
 						rc.shake(treeID);
 						busy = false;
 					}
+				}
+				if (rc.getHealth() <= 5 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -220,11 +253,17 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runTank() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an Tank!");
+		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
+				if (rc.getHealth() <= 5 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
+				}
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -234,25 +273,39 @@ public strictfp class RobotPlayer {
 		}
 
 	}
-	
-	static void runSoldier() throws GameActionException {
-		System.out.println("I'm an Soldier!");
-		Team enemy = rc.getTeam().opponent();
-		while (true) {
-			try {
-				MapLocation myLocation = rc.getLocation();
-				Clock.yield();
-
-			} catch (Exception e) {
-				System.out.println("Soldier Exception");
-				e.printStackTrace();
-			}
-		}
-
-	}
+	/*
+	 *
+	 * static void runSoldier() throws GameActionException { boolean aboutToDie
+	 * = false;* System.out.println("I'm an soldier!"); Team enemy =
+	 * rc.getTeam().opponent(); while (true) { try { MapLocation myLocation =
+	 * rc.getLocation(); // See if there are any nearby enemy robots RobotInfo[]
+	 * robots = rc.senseNearbyRobots(-1, enemy); // If there are some... if
+	 * (robots.length > 0) { // And we have enough bullets, and haven't attacked
+	 * yet this // turn... if (rc.canFireSingleShot()) { // ...Then fire a
+	 * bullet in the direction of the enemy.
+	 * rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location)); }
+	 * Clock.yield(); } else { int movementRange[] = new int[2]; //possible
+	 * range of movement in degrees //if(tryMoveToLocation())
+	 * switch(getMapStats()) { case "bottom": movementRange[0] = 0;
+	 * movementRange[1] = 180; break; case "top": movementRange[0] = 180;
+	 * movementRange[1] = 360; break; case "left": movementRange[0] = -90;
+	 * movementRange[1] = 90; break; case "right": movementRange[0] = 90;
+	 * movementRange[1] = 270; break; case "bottomLeft": movementRange[0] = -45;
+	 * movementRange[1] = 135; break; case "bottomRight": movementRange[0] = 45;
+	 * movementRange[1] = 225; break; case "topLeft": movementRange[0] = -135;
+	 * movementRange[1] = 45; break; case "topRight": movementRange[0] = 135;
+	 * movementRange[1] = 315; break; } int degreeMove =
+	 * parseInt((movementRange[1] - movementRange[0]) * Math.random()) +
+	 * movementRange[0]; float radianMove = (float) ((degreeMove/360) * Math.PI
+	 * * 2); tryMove(new Direction(radianMove), (float) 10, 5); } } catch
+	 * (Exception e) { System.out.println("Soldier Exception");
+	 * e.printStackTrace(); } } }
+	 */
 
 	static void runLumberjack() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an LumberJack!");
+		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
 
 		MapLocation tree = null;
@@ -270,6 +323,10 @@ public strictfp class RobotPlayer {
 				} else {
 					tree = getLumberJackRequest();
 				}
+				if (rc.getHealth() <= 5 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
+				}
 
 				Clock.yield();
 			} catch (Exception e) {
@@ -279,13 +336,50 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-// ----------------------------------------------------------------------------------------------------------
+	/*
+	 * *************************************************************************
+	 * *****************************************************************
+	 */
+	/**
+	 * uses intial archon locations to guess the map size
+	 *
+	 * @author John
+	 * @return
+	 */
+	static float[] guessMapSize() {
 
+		float w = 0;// max distnace between arcons width
+		float h = 0;// max distance between arcons height
+		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
+		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
+		// gets distances between arcons and sets w and h to the maximum
+		// distances found
+		for (MapLocation MLA1 : ALocs) {
+			for (MapLocation MLB1 : BLocs) {
+				if (Math.abs(MLA1.x - MLB1.x) > w) {
+					w = Math.abs(MLA1.x - MLB1.x);
+				}
+				if (Math.abs(MLA1.y - MLB1.y) > h) {
+					h = Math.abs(MLA1.y - MLB1.y);
+				}
+			}
+			for (MapLocation MLA2 : ALocs) {
+				if (Math.abs(MLA1.x - MLA2.x) > w) {
+					w = Math.abs(MLA1.x - MLA2.x);
+				}
+				if (Math.abs(MLA1.y - MLA2.y) > h) {
+					h = Math.abs(MLA1.y - MLA2.y);
+				}
+			}
+		}
+		float[] max = { w + RobotType.ARCHON.bodyRadius * 2, h + RobotType.ARCHON.bodyRadius * 2 };
+		return max;
+	}
 
 	// Needs improvements.
 	/**
 	 * uses map location of robot to imrove the inital guess
-	 * 
+	 *
 	 * @author John
 	 * @param myLoc
 	 * @throws GameActionException
@@ -316,8 +410,8 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * maintains a flower tree around a gardner
-	 * 
+	 * maintains a flower tree around a gardener
+	 *
 	 * @author John
 	 * @throws GameActionException
 	 */
@@ -390,6 +484,73 @@ public strictfp class RobotPlayer {
 		return (perpendicularDist <= rc.getType().bodyRadius);
 	}
 
+	static String getMapStats() {
+		// Array of archon location friendly/enemy
+		MapLocation archonLocationF[] = rc.getInitialArchonLocations(rc.getTeam());
+		MapLocation archonLocationE[] = rc.getInitialArchonLocations(rc.getTeam().opponent());
+		for (MapLocation locationsF : archonLocationF) {
+			// This means it is symmetrical across the X axis
+			if (locationsF.x == archonLocationE[0].x) {
+				// If it is symmetrical across X, need to find if we start on
+				// the bottom or top
+				if (locationsF.y < archonLocationE[0].y) {
+					// Start on bottom
+					System.out.println("Bottom");
+					return "bottom";
+				} else {
+					// Start on top
+					System.out.println("Top");
+					return "top";
+				}
+			}
+			// This means it is symmetrical across the Y axis
+			else if (locationsF.y == archonLocationE[0].y) {
+				// If it is symmetrical across Y, need to find if we start on
+				// the left or right
+				if (locationsF.x < archonLocationE[0].x) {
+					// Start on left
+					System.out.println("Left");
+					return "left";
+				} else {
+					// Start on right
+					System.out.println("Right");
+					return "right";
+				}
+			}
+		}
+		// If not symmetrical on X or Y axis, assume symmetrical across the XY
+		// Need to find which corner we start in
+		float smallestX = archonLocationF[0].x;
+		float smallestY = archonLocationF[0].y;
+		// This for loop finds the smallest X and Y values for comparison
+		for (MapLocation locations : archonLocationF) {
+			if (locations.x < smallestX)
+				smallestX = locations.x;
+			if (locations.y < smallestY)
+				smallestY = locations.y;
+		}
+		// If an enemy archon's location is smaller than our smallest location,
+		// we know we are not in the bottom/left corner ect.
+		boolean isBottom = true;
+		boolean isLeft = true;
+		for (MapLocation locations : archonLocationE) {
+			if (smallestY > locations.y)
+				isBottom = false;
+			if (smallestX > locations.x)
+				isLeft = false;
+		}
+		if (isBottom == true && isLeft == true)
+			return "bottomLeft";
+		else if (isBottom == true && isLeft == false)
+			return "bottomRight";
+		else if (isBottom == false && isLeft == true)
+			return "topLeft";
+		else if (isBottom == false && isLeft == false)
+			return "topRight";
+		else
+			return "ERROR";
+	}
+
 	// Starts at east then rotates counter clockwise to find the next available
 	// space at increments of 30 degrees.
 	static Direction nextUnoccupiedDirection(int degrees) {
@@ -406,6 +567,83 @@ public strictfp class RobotPlayer {
 			testDirection = testDirection.rotateLeftDegrees(30);
 		}
 		return testDirection;
+	}
+
+	/**
+	 * @param start
+	 *            first diretion to check
+	 * @param degreeOffset
+	 *            degrees btwn checks
+	 * @param checksPerSide
+	 *            number of times on each side to check
+	 * @param robotType
+	 *            type of robot
+	 * @return if succeful
+	 * @throws GameActionException
+	 */
+	static boolean tryBuildRobot(Direction start, float degreeOffset, int checksPerSide, RobotType robotType)
+			throws GameActionException {
+		Direction ans = start;
+		if (rc.canBuildRobot(robotType, start)) {
+			rc.buildRobot(robotType, start);
+			return true;
+		}
+		// Now try a bunch of similar angles
+		int currentCheck = 1;
+		while (currentCheck <= checksPerSide) {
+			// Try the offset of the left side
+			if (rc.canBuildRobot(robotType, ans.rotateLeftDegrees(degreeOffset * currentCheck))) {
+				rc.buildRobot(robotType, ans.rotateLeftDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canBuildRobot(robotType, ans.rotateRightDegrees(degreeOffset * currentCheck))) {
+				rc.buildRobot(robotType, ans.rotateRightDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// No move performed, try slightly further
+			currentCheck++;
+		}
+		return false;
+	}
+
+	/**
+	 * same thing as tryBuildRobot but for try Hire Gardener
+	 *
+	 * @param start
+	 *            first diretion to check
+	 * @param degreeOffset
+	 *            degrees btwn checks
+	 * @param checksPerSide
+	 *            number of times on each side to check
+	 * @param robotType
+	 *            type of robot
+	 * @return if succeful
+	 * @throws GameActionException
+	 */
+	static boolean tryHireGardner(Direction start, float degreeOffset, int checksPerSide) throws GameActionException {
+		Direction ans = start;
+		if (rc.canHireGardener(start)) {
+			rc.hireGardener(start);
+			return true;
+		}
+		// Now try a bunch of similar angles
+		int currentCheck = 1;
+		while (currentCheck <= checksPerSide) {
+			// Try the offset of the left side
+			if (rc.canHireGardener(ans.rotateLeftDegrees(degreeOffset * currentCheck))) {
+				rc.hireGardener(ans.rotateLeftDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canHireGardener(ans.rotateRightDegrees(degreeOffset * currentCheck))) {
+				rc.hireGardener(ans.rotateRightDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// No move performed, try slightly further
+			currentCheck++;
+		}
+		return false;
 	}
 
 	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide)
@@ -538,15 +776,62 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * Gets the center of map based on inital Archon locations
-	 * 
+	 *
 	 * @return MapLocation of center
 	 * @author John
 	 */
-	
+	static MapLocation johnsgetMapCenter() {
+		// gets initial locations of both teams
+		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
+		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
+		// stores midpoints btwn
+		ArrayList<MapLocation> midPoints = new ArrayList<MapLocation>();
+		// store the number of times the midpoint is found
+		ArrayList<Integer> midPointCounts = new ArrayList<Integer>();
+		// compares each archon from one team with the archons from the other
+		// team
+		for (int i = 0; i < teamALocations.length; i++) {
+			for (int j = 0; j < teamBLocations.length; j++) {
+				// get midpoint btwn the two archons
+				MapLocation midPoint = new MapLocation(
+						(teamBLocations[j].x - teamALocations[i].x) / 2 + teamALocations[i].x,
+						(teamBLocations[j].y - teamALocations[i].y) / 2 + teamALocations[i].y);
+				// checks if this midpoint was already recorded, if yes, add to
+				// its count
+				boolean alreadyFound = false;
+				for (int k = 0; k < midPoints.size(); k++) {
+					if ((int) (midPoint.x) == (int) (midPoints.get(k).x)
+							&& (int) (midPoint.y) == (int) (midPoints.get(k).y)) {
+						midPointCounts.set(k, midPointCounts.get(k) + 1);
+						alreadyFound = true;
+					}
+				}
+				// if not already found add it
+				if (!alreadyFound) {
+					midPoints.add(midPoint);
+				}
+				midPointCounts.add(1);
+			}
+		}
+		// if there's only one midpoint then return it
+		if (midPoints.size() == 1) {
+			return midPoints.get(0);
+		}
+		// finds the midpoint with the most counts
+		int withMaxCount = 0;
+		for (int i = 0; i < midPoints.size(); i++) {
+			if (midPointCounts.get(i) > midPointCounts.get(withMaxCount)) {
+				withMaxCount = i;
+			}
+		}
+		System.out.println(midPoints);
+		System.out.println(midPoints.get(withMaxCount));
+		return midPoints.get(withMaxCount);
+	}
 
 	/**
 	 * Returns a random Direction
-	 * 
+	 *
 	 * @return a random Direction
 	 */
 	static Direction randomDirection() {
@@ -555,7 +840,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * writes to Broadcast Array to request a lumberjack
-	 * 
+	 *
 	 * @return returns false if fails (no more spots to request, should try
 	 *         again next round)
 	 * @throws GameActionException
@@ -578,7 +863,7 @@ public strictfp class RobotPlayer {
 	/**
 	 * when a lumberjack is not busy it should run this method to find a task (
 	 * a tree to chop down)
-	 * 
+	 *
 	 * @return returns map Location of tree if no requests, returns null
 	 * @throws GameActionException
 	 * @author John
@@ -615,7 +900,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * moves scout to initial archon location and looks for gardener
-	 * 
+	 *
 	 * @param robots
 	 * @throws GameActionException
 	 * @author John
@@ -634,7 +919,7 @@ public strictfp class RobotPlayer {
 	/**
 	 * attacks garder, used for scout to attack in begining preventing other
 	 * teams production
-	 * 
+	 *
 	 * @param robots
 	 * @return
 	 * @throws GameActionException
@@ -655,7 +940,7 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param tree
 	 * @param trees
 	 * @return 0 continue choping tree 1 cant find tree 2 cant move
@@ -691,7 +976,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * sends scouts to find and harvest bullets
-	 * 
+	 *
 	 * @author John
 	 * @param trees
 	 * @throws GameActionException
@@ -737,105 +1022,224 @@ public strictfp class RobotPlayer {
 		}
 		return true;
 	}
-// -------------------------------------------------------------------------------------------------------------------------
-	// Bullet methods
-	
+
 	// Converts bullets to victory points
 	static void convertVictoryPoints(int overflowRange) throws GameActionException {
 		System.out.println("bullet" + rc.getTeamBullets());
-		
+
 		if (rc.getTeamBullets() > overflowRange) {
 			float teamBullets = rc.getTeamBullets();
 			double excessBullets = teamBullets - overflowRange;
-			excessBullets = ((int)(excessBullets / (7.5 + (rc.getRoundNum()*12.5 / 3000)))) * ( 7.5 + rc.getRoundNum()*12.5 / 3000);
+			excessBullets = ((int) (excessBullets / (7.5 + (rc.getRoundNum() * 12.5 / 3000))))
+					* (7.5 + rc.getRoundNum() * 12.5 / 3000);
 			System.out.println(excessBullets);
-			rc.donate((float)(excessBullets));
+			rc.donate((float) (excessBullets));
 		}
 		// If we can win spend all bullets
-		if (rc.getTeamBullets() / (7.5 + (rc.getRoundNum())*12.5 / 3000) >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints())
+		if (rc.getTeamBullets() / (7.5 + (rc.getRoundNum()) * 12.5 / 3000) >= GameConstants.VICTORY_POINTS_TO_WIN
+				- rc.getTeamVictoryPoints())
 			rc.donate(rc.getTeamBullets());
 		// If we're on the last round, donate all bullets
 		if (rc.getRoundNum() == 2999)
 			rc.donate(rc.getTeamBullets());
 	}
 
-// --------------------------------------------------------------------------------------------------------------------------
-	
+	// -------------------------------------------------------------------------------------------------------
 	// Below are statements to get the orientation of map, map center, and
 	// assign the starting Archon.
 	// I think all of these can be called in the robot controller class
-	
+	static MapLocation assignStartingArchon() throws GameActionException {
+		MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
+		switch (getMapStartingOrientation()) {
+		case "bottom":
+		case "top":
+			// If we start on the top or bottom, we want to return the location
+			// of the middle archon
+			if (archonLocationF.length == 1) {
+				return archonLocationF[0];
+			} else if (archonLocationF.length == 2) {
+				// These statements check if the archon is surrounded by trees
+				if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[0], 3)) {
+					return archonLocationF[0];
+				} else {
+					return archonLocationF[1];
+				}
+			} else {
+				if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[1], 3)) {
+					return archonLocationF[1];
+				} else if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[0], 3)) {
+					return archonLocationF[0];
+				} else {
+					return archonLocationF[2];
+				}
+			}
+		case "left":
+		case "bottomLeft":
+		case "topLeft":
+			// If we start on the left side of the map, we want to return the
+			// closest archon to a corner
+			if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[0], 3))
+				return archonLocationF[0];
+			else if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[1], 3))
+				return archonLocationF[1];
+			else
+				return archonLocationF[2];
+		case "right":
+		case "bottomRight":
+		case "topRight":
+			// If we start on the right side of the map, we want to return the
+			// closest archon to a corner
+			if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[archonLocationF.length], 3))
+				return archonLocationF[archonLocationF.length];
+			else if (rc.isCircleOccupiedExceptByThisRobot(archonLocationF[archonLocationF.length - 1], 3))
+				return archonLocationF[archonLocationF.length - 1];
+			else
+				return archonLocationF[archonLocationF.length - 2];
+		}
+		return null;
+	}
+
 	static MapLocation getMapCenter() {
-		// gets initial locations of both teams
+		float xCoordinate = 0;
+		float yCoordinate = 0;
 		MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation[] archonLocationE = rc.getInitialArchonLocations(rc.getTeam().opponent());
-		ArrayList<MapLocation> midPoints = new ArrayList<MapLocation>();
-		// store the number of times the midpoint is found
-		ArrayList<Integer> midPointCounts = new ArrayList<Integer>();
-		// compares each archon from one team with the archons from the other team
-		for (int i = 0; i < archonLocationF.length; i++) {
-			for (int j = 0; j < archonLocationE.length; j++) {
-				// get midpoint between the two archons
-				MapLocation midPoint = new MapLocation((archonLocationE[j].x - archonLocationF[i].x) / 2 + archonLocationF[i].x,(archonLocationE[j].y - archonLocationF[i].y) / 2 + archonLocationF[i].y);
-				// checks if this midpoint was already recorded, if yes, add to its count
-				boolean alreadyFound = false;
-				for (int k = 0; k < midPoints.size(); k++) {
-					if ((int) (midPoint.x) == (int) (midPoints.get(k).x) && (int) (midPoint.y) == (int) (midPoints.get(k).y)) {
-						midPointCounts.set(k, midPointCounts.get(k) + 1);
-						alreadyFound = true;
-					}
-				}
-				// if not already found add it
-				if (!alreadyFound) {
-					midPoints.add(midPoint);
-				}
-				midPointCounts.add(1);
+		// Switch statement uses the getMapStartingOrientation method to
+		// calculate map center
+		switch (getMapStartingOrientation()) {
+		case "bottom":
+		case "top":
+			if (archonLocationF.length == 1) {
+				// If there is only one archon and the map is symmetric over the
+				// x-axis, the center is between them
+				xCoordinate = archonLocationF[0].x;
+				yCoordinate = (archonLocationE[0].y + archonLocationF[0].y) / 2;
+				MapLocation mapCenter = new MapLocation(xCoordinate, yCoordinate);
+				return mapCenter;
 			}
-		}
-		// if there's only one midpoint then return it
-		if (midPoints.size() == 1) {
-			return midPoints.get(0);
-		}
-		// finds the midpoint with the most counts
-		int maxCount = 0;
-		for (int i = 0; i < midPoints.size(); i++) {
-			if (midPointCounts.get(i) > midPointCounts.get(maxCount)) {
-				maxCount = i;
+			if (archonLocationF.length == 2) {
+				// If there are two archons, take the average x-values and set
+				// that equal to the map canter's x coordinate
+				xCoordinate = (archonLocationF[0].x + archonLocationF[1].x) / 2;
+				yCoordinate = (archonLocationE[0].y + archonLocationF[0].y) / 2;
+				MapLocation mapCenter = new MapLocation(xCoordinate, yCoordinate);
+				return mapCenter;
+			} else {
+				// If there are three archons, set the middle one's x-value to
+				// the center
+				xCoordinate = archonLocationF[1].x;
+				yCoordinate = (archonLocationE[0].y + archonLocationF[0].y) / 2;
+				MapLocation mapCenter = new MapLocation(xCoordinate, yCoordinate);
+				return mapCenter;
 			}
+		case "left":
+		case "right":
+			if (archonLocationF.length == 1) {
+				// If there is only one archon and the map is symmetric over the
+				// y-axis, the center is between them
+				xCoordinate = (archonLocationE[0].x + archonLocationF[0].x) / 2;
+				yCoordinate = archonLocationF[0].y;
+				MapLocation mapCenter = new MapLocation(xCoordinate, yCoordinate);
+				return mapCenter;
+			}
+			if (archonLocationF.length == 2) {
+				// If there are two archons, take the average y-values and set
+				// that equal to the map canter's y coordinate
+				xCoordinate = (archonLocationE[0].x + archonLocationF[0].x) / 2;
+				yCoordinate = (archonLocationF[0].y + archonLocationF[1].y) / 2;
+				MapLocation mapCenter = new MapLocation(xCoordinate, yCoordinate);
+				return mapCenter;
+			} else {
+				// If there are three archons, set the middle one's y-value to
+				// the center
+				xCoordinate = (archonLocationE[0].x + archonLocationF[0].x) / 2;
+				yCoordinate = archonLocationF[1].y;
+				MapLocation mapCenter = new MapLocation(xCoordinate, yCoordinate);
+				return mapCenter;
+			}
+		case "bottomLeft":
+		case "topLeft":
+		case "bottomRight":
+		case "topRight":
+			// If we start at the bottom left corner, the archon with the
+			// smallest x and y will always be in the first position of the
+			// array
+			// The archon with the largest x and y on the enemy team will be in
+			// the last spot of the array
+			MapLocation cornerArchonF = archonLocationF[0];
+			MapLocation cornerArchonE = archonLocationE[archonLocationE.length];
+			MapLocation mapCenter = new MapLocation((cornerArchonE.x + cornerArchonF.x) / 2,
+					(cornerArchonE.y + cornerArchonF.y) / 2);
+			return mapCenter;
 		}
-		System.out.println(midPoints);
-		System.out.println(midPoints.get(maxCount));
-		return midPoints.get(maxCount);
+		return null;
 	}
-	
-	static float[] guessMapSize() {
 
-		float w = 0;// max distnace between arcons width
-		float h = 0;// max distance between arcons height
-		MapLocation[] ALocs = rc.getInitialArchonLocations(Team.A);
-		MapLocation[] BLocs = rc.getInitialArchonLocations(Team.B);
-		// gets distances between arcons and sets w and h to the maximum
-		// distances found
-		for (MapLocation MLA1 : ALocs) {
-			for (MapLocation MLB1 : BLocs) {
-				if (Math.abs(MLA1.x - MLB1.x) > w) {
-					w = Math.abs(MLA1.x - MLB1.x);
-				}
-				if (Math.abs(MLA1.y - MLB1.y) > h) {
-					h = Math.abs(MLA1.y - MLB1.y);
+	static String getMapStartingOrientation() {
+		// Array of Archon location friendly/enemy
+		MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
+		MapLocation[] archonLocationE = rc.getInitialArchonLocations(rc.getTeam().opponent());
+		for (MapLocation locationsF : archonLocationF) {
+			// This means it is symmetrical across the X axis
+			if (locationsF.x == archonLocationE[0].x) {
+				// If it is symmetrical across X, need to find if we start on
+				// the bottom or top
+				if (locationsF.y < archonLocationE[0].y) {
+					// Start on bottom
+					System.out.println("Bottom");
+					return "bottom";
+				} else {
+					// Start on top
+					System.out.println("Top");
+					return "top";
 				}
 			}
-			for (MapLocation MLA2 : ALocs) {
-				if (Math.abs(MLA1.x - MLA2.x) > w) {
-					w = Math.abs(MLA1.x - MLA2.x);
-				}
-				if (Math.abs(MLA1.y - MLA2.y) > h) {
-					h = Math.abs(MLA1.y - MLA2.y);
+			// This means it is symmetrical across the Y axis
+			else if (locationsF.y == archonLocationE[0].y) {
+				// If it is symmetrical across Y, need to find if we start on
+				// the left or right
+				if (locationsF.x < archonLocationE[0].x) {
+					// Start on left
+					System.out.println("Left");
+					return "left";
+				} else {
+					// Start on right
+					System.out.println("Right");
+					return "right";
 				}
 			}
 		}
-		float[] max = { w + RobotType.ARCHON.bodyRadius * 2, h + RobotType.ARCHON.bodyRadius * 2 };
-		return max;
+		// If not symmetrical on X or Y axis, assume symmetrical across the XY
+		// Need to find which corner we start in
+		float smallestX = archonLocationF[0].x;
+		float smallestY = archonLocationF[0].y;
+		// This for loop finds the smallest X and Y values for comparison
+		for (MapLocation locations : archonLocationF) {
+			if (locations.x < smallestX)
+				smallestX = locations.x;
+			if (locations.y < smallestY)
+				smallestY = locations.y;
+		}
+		// If an enemy archon's location is smaller than our smallest location,
+		// we know we are not in the bottom/left corner ect.
+		boolean isBottom = true;
+		boolean isLeft = true;
+		for (MapLocation locations : archonLocationE) {
+			if (smallestY > locations.y)
+				isBottom = false;
+			if (smallestX > locations.x)
+				isLeft = false;
+		}
+		if (isBottom == true && isLeft == true)
+			return "bottomLeft";
+		else if (isBottom == true && isLeft == false)
+			return "bottomRight";
+		else if (isBottom == false && isLeft == true)
+			return "topLeft";
+		else if (isBottom == false && isLeft == false)
+			return "topRight";
+		else
+			return "ERROR";
 	}
 
 	// static String getMapTypes()
