@@ -101,20 +101,7 @@ public strictfp class RobotPlayer {
 					}
 
 				}
-				System.out.println("bullet" + rc.getTeamBullets());
-				// if can win spend all bullets
-				if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
-					rc.donate(rc.getTeamBullets());
-				}
-				if (rc.getTeamBullets() > 500) {
-					float teamBullets = rc.getTeamBullets();
-					float excessBullets = teamBullets - 500;
-					excessBullets = Math.round((excessBullets / 2) / 10) * 10;
-					System.out.println(excessBullets);
-
-					rc.donate(excessBullets);
-				}
-
+				convertVictoryPoints();
 				if (!rc.hasMoved()) {
 					Direction randomDir = randomDirection();
 					if (rc.canMove(randomDir))
@@ -906,6 +893,25 @@ public strictfp class RobotPlayer {
 			tryMoveToLocation(closest.getLocation(), 10, 3);
 		}
 		return true;
+	}
+
+	/**
+	 * converts bullets to victory points
+	 */
+	static void convertVictoryPoints() throws GameActionException {
+		System.out.println("bullet" + rc.getTeamBullets());
+		// if can win spend all bullets
+		if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
+			rc.donate(rc.getTeamBullets());
+		}
+		if (rc.getTeamBullets() > 500) {
+			float teamBullets = rc.getTeamBullets();
+			float excessBullets = teamBullets - 500;
+			excessBullets = Math.round((excessBullets / 2) / 10) * 10;
+			System.out.println(excessBullets);
+
+			rc.donate(excessBullets);
+		}
 	}
 
 }
