@@ -117,9 +117,9 @@ public strictfp class RobotPlayer {
 					}
 					maintainTreeRing();
 				}
-				//update robot count 
-				if(rc.getHealth()<5) {
-					
+				// update robot count
+				if (rc.getHealth() < 5) {
+
 				}
 				Clock.yield();
 
@@ -880,10 +880,10 @@ public strictfp class RobotPlayer {
 		if (rc.getTeamBullets() > 500) {
 			float teamBullets = rc.getTeamBullets();
 			float excessBullets = teamBullets - 500;
-			excessBullets = Math.round((excessBullets / 2) / 10) * 10;
+			excessBullets =  (float)((Math.round((excessBullets / 2) / (7.5 + (rc.getRoundNum())*12.5 / 3000))) *( 7.5 + (rc.getRoundNum())*12.5 / 3000));
 			System.out.println(excessBullets);
 
-			rc.donate(excessBullets);
+			rc.donate((float)(excessBullets + 0.001));
 		}
 	}
 
@@ -1090,6 +1090,5 @@ public strictfp class RobotPlayer {
 	// Big map, start off slow, don't send scouts
 	// Tree map, create many lumber jacks
 	// Open map, start making trees
-	
 
 }
