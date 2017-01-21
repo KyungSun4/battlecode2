@@ -870,21 +870,23 @@ public strictfp class RobotPlayer {
 		return true;
 	}
 
-	// converts bullets to victory points
-	static void convertVictoryPoints() throws GameActionException {
+	// Converts bullets to victory points
+	static void convertVictoryPoints(int overflowRange) throws GameActionException {
 		System.out.println("bullet" + rc.getTeamBullets());
-		// if can win spend all bullets
-		if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
-			rc.donate(rc.getTeamBullets());
-		}
-		if (rc.getTeamBullets() > 500) {
+		
+		if (rc.getTeamBullets() > overflowRange) {
 			float teamBullets = rc.getTeamBullets();
-			float excessBullets = teamBullets - 500;
-			excessBullets =  (float)((Math.round((excessBullets / 2) / (7.5 + (rc.getRoundNum())*12.5 / 3000))) *( 7.5 + (rc.getRoundNum())*12.5 / 3000));
+			double excessBullets = teamBullets - overflowRange;
+			excessBullets = ((int)(excessBullets / (7.5 + (rc.getRoundNum()*12.5 / 3000)))) * ( 7.5 + rc.getRoundNum()*12.5 / 3000);
 			System.out.println(excessBullets);
-
-			rc.donate((float)(excessBullets + 0.001));
+			rc.donate((float)(excessBullets));
 		}
+		// If we can win spend all bullets
+		if (rc.getTeamBullets() / (7.5 + (rc.getRoundNum())*12.5 / 3000) >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints())
+			rc.donate(rc.getTeamBullets());
+		// If we're on the last round, donate all bullets
+		if (rc.getRoundNum() == 2999)
+			rc.donate(rc.getTeamBullets());
 	}
 
 	// -------------------------------------------------------------------------------------------------------
