@@ -77,6 +77,8 @@ public strictfp class RobotPlayer {
 					}
 				}
 
+
+
 				tryHireGardner(Direction.getNorth(), 10, 18);
 
 				convertVictoryPoints(500);
@@ -95,47 +97,21 @@ public strictfp class RobotPlayer {
 	static void runGardener() throws GameActionException {
 		boolean aboutToDie = false;
 		System.out.println("I'm an Gardner!");
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
+
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		ArrayList<TreeInfo> requestedTrees = new ArrayList<TreeInfo>();
->>>>>>> origin/master
-=======
-		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
->>>>>>> parent of 07a8f13... Moved stuff around
 		Team enemy = rc.getTeam().opponent();
 		int state = 0; // 0-finding location 1-building tree circle
 		int count = 0;
 		Direction move = randomDirection();
 		while (true) {
 			try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-				if (rc.getRoundNum() == 2) {
-					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
-=======
 				if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.LUMBERJACK);
 				}
+				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
->>>>>>> origin/master
-=======
-				System.out.println(rc.readBroadcast(SCOUT_COUNT_ARR));
-				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
-=======
-				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
-				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
->>>>>>> parent of 54acc94... fix to previous commit
-=======
-				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
-				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
->>>>>>> parent of 54acc94... fix to previous commit
-					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
->>>>>>> parent of 07a8f13... Moved stuff around
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
@@ -187,6 +163,7 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm a scout!");
 		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 		boolean busy = false;
+		boolean aboutToDie = false;
 		// 0 search and shake
 		int mode = 0;
 		Direction move = Direction.getSouth().rotateLeftDegrees(45);
@@ -249,7 +226,8 @@ public strictfp class RobotPlayer {
 						busy = false;
 					}
 				}
-				if (rc.getHealth() <= 5 && aboutToDie) {
+
+				if (rc.getHealth() <= 5 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
@@ -269,7 +247,8 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-				if (rc.getHealth() <= 5 && aboutToDie) {
+
+				if (rc.getHealth() <= 5 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
@@ -332,7 +311,7 @@ public strictfp class RobotPlayer {
 				} else {
 					tree = getLumberJackRequest();
 				}
-				if (rc.getHealth() <= 5 && aboutToDie) {
+				if (rc.getHealth() <= 5 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
 				}
