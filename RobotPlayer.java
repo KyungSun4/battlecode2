@@ -101,18 +101,26 @@ public strictfp class RobotPlayer {
 					}
 
 				}
+				System.out.println("bullet" + rc.getTeamBullets());
+				// if can win spend all bullets
+				if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
+					rc.donate(rc.getTeamBullets());
+				}
 				if (rc.getTeamBullets() > 500) {
 					float teamBullets = rc.getTeamBullets();
 					float excessBullets = teamBullets - 500;
 					excessBullets = Math.round((excessBullets / 2) / 10) * 10;
 					System.out.println(excessBullets);
+
 					rc.donate(excessBullets);
 				}
+
 				if (!rc.hasMoved()) {
 					Direction randomDir = randomDirection();
 					if (rc.canMove(randomDir))
 						rc.move(randomDir);
 				}
+
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -157,11 +165,25 @@ public strictfp class RobotPlayer {
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
 		boolean busy = false;
+		//0 search and shake
+		int mode = 0;
 		Direction move = Direction.getSouth().rotateLeftDegrees(45);
 		Direction toTree = Direction.getEast();
+		Direction randomDir = randomDirection();
 		int treeID = 0;
 		while (true) {
 			try {
+				//
+				if(mode == 0) {
+					if(!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius,Team.NEUTRAL))) {
+						avoidBullets(rc.senseNearbyBullets());
+						if(rc.canMove(randomDir)) {
+							rc.move(randomDir);
+						} else {
+							randomDir = randomDirection();
+						}
+					}
+				}
 				if (!busy) {
 					if (rc.canMove(move)) {
 						rc.move(move);
@@ -389,7 +411,7 @@ public strictfp class RobotPlayer {
 				x = 7;
 			}
 			dir = dir.rotateRightRads((float) (Math.PI / 3));
-			System.out.println(dir);
+			// System.out.println(dir);
 
 		}
 
@@ -536,7 +558,15 @@ public strictfp class RobotPlayer {
 		}
 		return false;
 	}
-
+	/**
+	 * avoids bullets, the array comes pre sorted by closest, so if it can it will avoid the closest
+	 * should be made more effcient by includign return for avoidBullet to tell if it was succeful and if so end loop
+	 */
+	static void avoidBullets(BulletInfo[] bullets) {
+		for(BulletInfo bullet: bullets) {
+			avoidBullet(bullet);
+		}
+	}
 	static void avoidBullet(BulletInfo bullet) {
 		// These statements simply get info about the orientation and angles
 		// between the robot and bullet
@@ -826,8 +856,9 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @author John
 	 * @param trees
+	 * @throws GameActionException
 	 */
-	static boolean shakeTrees(TreeInfo[] trees) {
+	static boolean shakeTrees(TreeInfo[] trees) throws GameActionException {
 		// find closet tree with bullets
 		TreeInfo closest = null;
 		float dist = 1000000000;
@@ -861,7 +892,11 @@ public strictfp class RobotPlayer {
 			return false;
 		}
 		// try and shake tree
-
+		if (rc.canShake(closest.getLocation())) {
+			rc.shake(closest.getLocation());
+		} else {
+			tryMoveToLocation(closest.getLocation(), 10, 3);
+		}
 		return true;
 	}
 
