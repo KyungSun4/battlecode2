@@ -235,7 +235,6 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-
 				if (rc.getHealth() <= 5 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
@@ -299,7 +298,7 @@ public strictfp class RobotPlayer {
 				} else {
 					tree = getLumberJackRequest();
 				}
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
 				}
