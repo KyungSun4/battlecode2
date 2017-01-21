@@ -235,7 +235,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
