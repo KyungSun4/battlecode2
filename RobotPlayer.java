@@ -135,6 +135,7 @@ public strictfp class RobotPlayer {
 						// request number of lumberjacks based on tree health
 						if (!alreadyRequested && requestLumberJack(tree, 1 + (int) (tree.health / 41))) {
 							requestedTrees.add(tree);
+							System.out.println("resquesting Lumberjack " + tree);
 						}
 						// System.out.println("ReqstionLumberJack at :" +
 						// tree.getLocation());
@@ -586,12 +587,14 @@ public strictfp class RobotPlayer {
 		int x = 0;
 		int y = 0;
 		int pos = LUMBERJACK_REQUESTS_START;
-		double minDist = 1000000000;
+		double minDist = 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0;
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
 			if (rc.readBroadcast(i) > 0) {
+				System.out.println("gotrequest");
 				int treex = rc.readBroadcast(i + 1);
 				int treey = rc.readBroadcast(i + 2);
 				double dist = Math.pow(rc.getLocation().x - treex, 2) + Math.pow(rc.getLocation().y - treey, 2);
+				System.out.println(dist);
 				if (dist < minDist) {
 					x = treex;
 					y = treey;
@@ -604,7 +607,9 @@ public strictfp class RobotPlayer {
 			return null;
 		} else {
 			rc.broadcast(pos, rc.readBroadcast(pos) - 1); // return new
-			return new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
+			MapLocation requestLocation = new MapLocation((float) (x / 1000.0), (float) (y / 1000.0));
+			System.out.println("request Loc" + requestLocation);
+			return requestLocation;
 		}
 	}
 
@@ -661,6 +666,7 @@ public strictfp class RobotPlayer {
 		boolean found = false;
 		for (TreeInfo t : trees) {
 			if (Math.round(tree.x) == Math.round(t.getLocation().x)) {
+				tree = t.getLocation();
 				found = true;
 			}
 		}
