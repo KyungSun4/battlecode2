@@ -1072,5 +1072,5 @@ public strictfp class RobotPlayer {
 			rc.donate(excessBullets);
 		}
 	}
-
+	
 }
