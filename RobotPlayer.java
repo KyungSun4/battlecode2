@@ -134,16 +134,7 @@ public strictfp class RobotPlayer {
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-					if (tryMove(move, (float) 20, 5)) {
-=======
-					// move away from archon
-=======
->>>>>>> origin/master
-
 					if (tryMove(randomDirection(), (float) 20, 5)) {
->>>>>>> origin/master
 						count++;
 					}
 				}
@@ -700,8 +691,6 @@ public strictfp class RobotPlayer {
 		}
 		return false;
 	}
-<<<<<<< HEAD
-=======
 
 	/**
 	 * when a lumberjack is not busy it should run this method to find a task (
@@ -775,9 +764,7 @@ public strictfp class RobotPlayer {
 	 * @return 0 continue choping tree 1 cant find tree 2 cant move
 	 * @throws GameActionException
 	 */
-<<<<<<< HEAD
->>>>>>> origin/master
-=======
+
 	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
 		boolean found = false;
 		for (TreeInfo t : trees) {
@@ -804,5 +791,4 @@ public strictfp class RobotPlayer {
 		}
 	}
 
->>>>>>> origin/master
 }
