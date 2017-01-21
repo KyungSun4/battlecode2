@@ -140,7 +140,6 @@ public strictfp class RobotPlayer {
 					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) - 1);
 				}
 				Clock.yield();
-
 			} catch (Exception e) {
 				System.out.println("Gardern Exception");
 				e.printStackTrace();
