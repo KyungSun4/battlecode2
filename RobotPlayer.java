@@ -287,7 +287,7 @@ public strictfp class RobotPlayer {
 				// gets what tree it should look for
 
 				if (tree != null) {
-					if(1 == fufuilLumberJackRequest(tree,nearByTrees) ) {
+					if (1 == fufuilLumberJackRequest(tree, nearByTrees)) {
 						tree = null;
 					}
 
