@@ -150,6 +150,13 @@ public strictfp class RobotPlayer {
 					state = 1;
 				}
 				if (state == 1) {
+					//gets all neutralTrees that could be in the way
+					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
+					//request lumberJacks for each
+					for (TreeInfo tree : neutralTrees) {
+						//request number of lumberjacks based on tree health
+						requestLumberJack(tree, 1 + (int) (tree.health / 41));
+					}
 					maintainTreeRing();
 				}
 				Clock.yield();
