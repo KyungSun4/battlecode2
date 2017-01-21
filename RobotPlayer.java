@@ -59,6 +59,7 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an archon!");
+		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR)+1);
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 1) {
@@ -78,7 +79,10 @@ public strictfp class RobotPlayer {
 				if (rc.canHireGardener(hireDirection)) {
 					rc.hireGardener(hireDirection);
 				}
-				convertVictoryPoints();
+				convertVictoryPoints(500);
+				if (rc.getHealth() <= 5) {
+					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR)-1);
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -87,8 +91,9 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void runGardener() throws GameActionException {
+	static void runGardener() throws GameActionException {	
 		System.out.println("I'm an Gardner!");
+		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR)+1);
 		Team enemy = rc.getTeam().opponent();
 		int state = 0; // 0-finding location 1-building tree circle
 		int count = 0;
@@ -118,8 +123,8 @@ public strictfp class RobotPlayer {
 					maintainTreeRing();
 				}
 				// update robot count
-				if (rc.getHealth() < 5) {
-
+				if (rc.getHealth() <= 5) {
+					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR)-1);
 				}
 				Clock.yield();
 
@@ -133,6 +138,7 @@ public strictfp class RobotPlayer {
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
+		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR));
 		boolean busy = false;
 		// 0 search and shake
 		int mode = 0;
@@ -186,6 +192,9 @@ public strictfp class RobotPlayer {
 						busy = false;
 					}
 				}
+				if (rc.getHealth() <= 5) {
+					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR)-1);
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
@@ -196,10 +205,14 @@ public strictfp class RobotPlayer {
 
 	static void runTank() throws GameActionException {
 		System.out.println("I'm an Tank!");
+		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR));
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
+				if (rc.getHealth() <= 5) {
+					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR)-1);
+				}
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -240,6 +253,7 @@ public strictfp class RobotPlayer {
 
 	static void runLumberjack() throws GameActionException {
 		System.out.println("I'm an LumberJack!");
+		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 		Team enemy = rc.getTeam().opponent();
 
 		MapLocation tree = null;
