@@ -59,7 +59,7 @@ public strictfp class RobotPlayer {
 
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an archon!");
-		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR)+1);
+		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 1) {
@@ -75,13 +75,12 @@ public strictfp class RobotPlayer {
 						rc.hireGardener(nextUnoccupiedDirection(RobotType.GARDENER, 0));
 					}
 				}
-				Direction hireDirection = nextUnoccupiedDirection(RobotType.GARDENER, 0);
-				if (rc.canHireGardener(hireDirection)) {
-					rc.hireGardener(hireDirection);
-				}
+				
+				tryHireGardner(Direction.getNorth(),10,10);
+
 				convertVictoryPoints(500);
 				if (rc.getHealth() <= 5) {
-					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR)-1);
+					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) - 1);
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -91,17 +90,17 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void runGardener() throws GameActionException {	
+	static void runGardener() throws GameActionException {
 		System.out.println("I'm an Gardner!");
-		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR)+1);
+		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
 		int state = 0; // 0-finding location 1-building tree circle
 		int count = 0;
 		Direction move = randomDirection();
 		while (true) {
 			try {
-				if (rc.getRoundNum() == 2) {
-					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
+				if (rc.readBroadcast(SCOUT_COUNT_ARR)<=3) {
+					tryBuildRobot(Direction.getNorth(), 10, 10, RobotType.SCOUT);
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
@@ -124,7 +123,7 @@ public strictfp class RobotPlayer {
 				}
 				// update robot count
 				if (rc.getHealth() <= 5) {
-					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR)-1);
+					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) - 1);
 				}
 				Clock.yield();
 
@@ -193,7 +192,7 @@ public strictfp class RobotPlayer {
 					}
 				}
 				if (rc.getHealth() <= 5) {
-					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR)-1);
+					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -211,7 +210,7 @@ public strictfp class RobotPlayer {
 			try {
 				MapLocation myLocation = rc.getLocation();
 				if (rc.getHealth() <= 5) {
-					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR)-1);
+					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
 				Clock.yield();
 
@@ -353,7 +352,7 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * maintains a flower tree around a gardner
+	 * maintains a flower tree around a gardener
 	 * 
 	 * @author John
 	 * @throws GameActionException
@@ -510,6 +509,83 @@ public strictfp class RobotPlayer {
 			testDirection = testDirection.rotateLeftDegrees(30);
 		}
 		return testDirection;
+	}
+
+	/**
+	 * @param start
+	 *            first diretion to check
+	 * @param degreeOffset
+	 *            degrees btwn checks
+	 * @param checksPerSide
+	 *            number of times on each side to check
+	 * @param robotType
+	 *            type of robot
+	 * @return if succeful
+	 * @throws GameActionException
+	 */
+	static boolean tryBuildRobot(Direction start, float degreeOffset, int checksPerSide, RobotType robotType)
+			throws GameActionException {
+		Direction ans = start;
+		if (rc.canBuildRobot(robotType, start)) {
+			rc.buildRobot(robotType, start);
+			return true;
+		}
+		// Now try a bunch of similar angles
+		int currentCheck = 1;
+		while (currentCheck <= checksPerSide) {
+			// Try the offset of the left side
+			if (rc.canBuildRobot(robotType, ans.rotateLeftDegrees(degreeOffset * currentCheck))) {
+				rc.buildRobot(robotType, ans.rotateLeftDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canBuildRobot(robotType, ans.rotateRightDegrees(degreeOffset * currentCheck))) {
+				rc.buildRobot(robotType, ans.rotateRightDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// No move performed, try slightly further
+			currentCheck++;
+		}
+		return false;
+	}
+
+	/**
+	 * same thing as tryBuildRobot but for try Hire Gardener
+	 * 
+	 * @param start
+	 *            first diretion to check
+	 * @param degreeOffset
+	 *            degrees btwn checks
+	 * @param checksPerSide
+	 *            number of times on each side to check
+	 * @param robotType
+	 *            type of robot
+	 * @return if succeful
+	 * @throws GameActionException
+	 */
+	static boolean tryHireGardner(Direction start, float degreeOffset, int checksPerSide) throws GameActionException {
+		Direction ans = start;
+		if (rc.canHireGardener(start)) {
+			rc.hireGardener(start);
+			return true;
+		}
+		// Now try a bunch of similar angles
+		int currentCheck = 1;
+		while (currentCheck <= checksPerSide) {
+			// Try the offset of the left side
+			if (rc.canHireGardener(ans.rotateLeftDegrees(degreeOffset * currentCheck))) {
+				rc.hireGardener(ans.rotateLeftDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canHireGardener(ans.rotateRightDegrees(degreeOffset * currentCheck))) {
+				rc.hireGardener(ans.rotateRightDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// No move performed, try slightly further
+			currentCheck++;
+		}
+		return false;
 	}
 
 	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide)
@@ -887,16 +963,18 @@ public strictfp class RobotPlayer {
 	// Converts bullets to victory points
 	static void convertVictoryPoints(int overflowRange) throws GameActionException {
 		System.out.println("bullet" + rc.getTeamBullets());
-		
+
 		if (rc.getTeamBullets() > overflowRange) {
 			float teamBullets = rc.getTeamBullets();
 			double excessBullets = teamBullets - overflowRange;
-			excessBullets = ((int)(excessBullets / (7.5 + (rc.getRoundNum()*12.5 / 3000)))) * ( 7.5 + rc.getRoundNum()*12.5 / 3000);
+			excessBullets = ((int) (excessBullets / (7.5 + (rc.getRoundNum() * 12.5 / 3000))))
+					* (7.5 + rc.getRoundNum() * 12.5 / 3000);
 			System.out.println(excessBullets);
-			rc.donate((float)(excessBullets));
+			rc.donate((float) (excessBullets));
 		}
 		// If we can win spend all bullets
-		if (rc.getTeamBullets() / (7.5 + (rc.getRoundNum())*12.5 / 3000) >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints())
+		if (rc.getTeamBullets() / (7.5 + (rc.getRoundNum()) * 12.5 / 3000) >= GameConstants.VICTORY_POINTS_TO_WIN
+				- rc.getTeamVictoryPoints())
 			rc.donate(rc.getTeamBullets());
 		// If we're on the last round, donate all bullets
 		if (rc.getRoundNum() == 2999)
