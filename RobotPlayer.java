@@ -76,7 +76,7 @@ public strictfp class RobotPlayer {
 					}
 				}
 
-				tryHireGardner(Direction.getNorth(), 10, 10);
+				tryHireGardner(Direction.getNorth(), 10, 18);
 
 				convertVictoryPoints(500);
 				if (rc.getHealth() <= 5) {
@@ -99,8 +99,9 @@ public strictfp class RobotPlayer {
 		Direction move = randomDirection();
 		while (true) {
 			try {
+				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
-					tryBuildRobot(Direction.getNorth(), 10, 10, RobotType.SCOUT);
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
@@ -137,7 +138,7 @@ public strictfp class RobotPlayer {
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
-		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR));
+		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR)+1);
 		boolean busy = false;
 		// 0 search and shake
 		int mode = 0;
@@ -152,7 +153,9 @@ public strictfp class RobotPlayer {
 					if (!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL))) {
 						avoidBullets(rc.senseNearbyBullets());
 						if (rc.canMove(randomDir)) {
-							rc.move(randomDir);
+							if (!rc.hasMoved()) {
+								rc.move(randomDir);
+							}
 						} else {
 							randomDir = randomDirection();
 						}
@@ -160,11 +163,15 @@ public strictfp class RobotPlayer {
 				}
 				if (!busy) {
 					if (rc.canMove(move)) {
-						rc.move(move);
+						if (!rc.hasMoved()) {
+							rc.move(move);
+						}
 					} else {
 						move.rotateLeftDegrees(90);
 						if (rc.canMove(move)) {
-							rc.move(move);
+							if (!rc.hasMoved()) {
+								rc.move(move);
+							}
 						}
 					}
 					TreeInfo trees[] = rc.senseNearbyTrees();
@@ -181,10 +188,14 @@ public strictfp class RobotPlayer {
 					}
 				} else if (busy) {
 					if (rc.canMove(toTree)) {
-						rc.move(toTree);
+						if (!rc.hasMoved()) {
+							rc.move(move);
+						}
 					} else {
 						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int) toTree.getAngleDegrees());
-						rc.move(nextMove);
+						if (!rc.hasMoved()) {
+							rc.move(nextMove);
+						}
 					}
 					if (rc.canShake(treeID)) {
 						rc.shake(treeID);
