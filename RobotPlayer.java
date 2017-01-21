@@ -101,6 +101,13 @@ public strictfp class RobotPlayer {
 					state = 1;
 				}
 				if (state == 1) {
+					// gets all neutralTrees that could be in the way
+					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
+					// request lumberJacks for each
+					for (TreeInfo tree : neutralTrees) {
+						// request number of lumberjacks based on tree health
+						requestLumberJack(tree, 1 + (int) (tree.health / 41));
+					}
 					maintainTreeRing();
 				}
 				Clock.yield();
@@ -116,11 +123,25 @@ public strictfp class RobotPlayer {
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
 		boolean busy = false;
+		// 0 search and shake
+		int mode = 0;
 		Direction move = Direction.getSouth().rotateLeftDegrees(45);
 		Direction toTree = Direction.getEast();
+		Direction randomDir = randomDirection();
 		int treeID = 0;
 		while (true) {
 			try {
+				//
+				if (mode == 0) {
+					if (!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL))) {
+						avoidBullets(rc.senseNearbyBullets());
+						if (rc.canMove(randomDir)) {
+							rc.move(randomDir);
+						} else {
+							randomDir = randomDirection();
+						}
+					}
+				}
 				if (!busy) {
 					if (rc.canMove(move)) {
 						rc.move(move);
@@ -209,23 +230,21 @@ public strictfp class RobotPlayer {
 	static void runLumberjack() throws GameActionException {
 		System.out.println("I'm an LumberJack!");
 		Team enemy = rc.getTeam().opponent();
-		MapLocation tree;
+
+		MapLocation tree = null;
 		while (true) {
 			try {
 				TreeInfo[] nearByTrees = rc.senseNearbyTrees();
+				// gets what tree it should look for
 
-				/*
-				 * tree = getLumberJackRequest(); if (tree != null) { TreeInfo[]
-				 * sensedTrees = rc.senseNearbyTrees(-1,
-				 * rc.getTeam().opponent()); boolean found = false; for (int x =
-				 * 0; x < sensedTrees.length; x++) { if
-				 * (Math.round(sensedTrees[x].getLocation().x * 100) / 100 ==
-				 * Math.round(tree.x * 100) / 100) { found = true; } } if (found
-				 * == true) { if (rc.canChop(tree)) { rc.chop(tree); } else {
-				 * tree = null; } } else { tryMoveToLocation(tree, 20, 6); }
-				 * 
-				 * }
-				 */
+				if (tree != null) {
+					if (1 == fufuilLumberJackRequest(tree, nearByTrees)) {
+						tree = null;
+					}
+
+				} else {
+					tree = getLumberJackRequest();
+				}
 
 				Clock.yield();
 			} catch (Exception e) {
@@ -239,7 +258,12 @@ public strictfp class RobotPlayer {
 	 * *************************************************************************
 	 * *****************************************************************
 	 */
-
+	/**
+	 * uses intial archon locations to guess the map size
+	 * 
+	 * @author John
+	 * @return
+	 */
 	static float[] guessMapSize() {
 
 		float w = 0;// max distnace between arcons width
@@ -271,6 +295,13 @@ public strictfp class RobotPlayer {
 	}
 
 	// Needs improvements.
+	/**
+	 * uses map location of robot to imrove the inital guess
+	 * 
+	 * @author John
+	 * @param myLoc
+	 * @throws GameActionException
+	 */
 	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
 		int myx = (int) (myLoc.x * 1000);
 		int myy = (int) (myLoc.y * 1000);
@@ -296,6 +327,12 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	/**
+	 * maintains a flower tree around a gardner
+	 * 
+	 * @author John
+	 * @throws GameActionException
+	 */
 	static void maintainTreeRing() throws GameActionException {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3, rc.getTeam());
 		// all trees it can water are within 3 away
@@ -330,7 +367,7 @@ public strictfp class RobotPlayer {
 				x = 7;
 			}
 			dir = dir.rotateRightRads((float) (Math.PI / 3));
-			System.out.println(dir);
+			// System.out.println(dir);
 
 		}
 
@@ -478,6 +515,17 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
+	/**
+	 * avoids bullets, the array comes pre sorted by closest, so if it can it
+	 * will avoid the closest should be made more effcient by includign return
+	 * for avoidBullet to tell if it was succeful and if so end loop
+	 */
+	static void avoidBullets(BulletInfo[] bullets) {
+		for (BulletInfo bullet : bullets) {
+			avoidBullet(bullet);
+		}
+	}
+
 	static void avoidBullet(BulletInfo bullet) {
 		// These statements simply get info about the orientation and angles
 		// between the robot and bullet
@@ -571,6 +619,7 @@ public strictfp class RobotPlayer {
 	 * Gets the center of map based on inital Archon locations
 	 * 
 	 * @return MapLocation of center
+	 * @author John
 	 */
 	static MapLocation getMapCenter() {
 		// gets initial locations of both teams
@@ -636,6 +685,7 @@ public strictfp class RobotPlayer {
 	 * @return returns false if fails (no more spots to request, should try
 	 *         again next round)
 	 * @throws GameActionException
+	 * @author John
 	 */
 	static boolean requestLumberJack(TreeInfo tree, int NumLumberJacks) throws GameActionException {
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
@@ -657,8 +707,8 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @return returns map Location of tree if no requests, returns null
 	 * @throws GameActionException
+	 * @author John
 	 */
-
 	static MapLocation getLumberJackRequest() throws GameActionException {
 		int x = 0;
 		int y = 0;
@@ -690,6 +740,7 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @param robots
 	 * @throws GameActionException
+	 * @author John
 	 */
 	static int scoutLookForGardners(RobotInfo[] robots) throws GameActionException {
 		tryMoveToLocation(rc.getInitialArchonLocations(rc.getTeam().opponent())[0], (float) 20, 2);
@@ -702,6 +753,15 @@ public strictfp class RobotPlayer {
 		return gardnersFound;
 	}
 
+	/**
+	 * attacks garder, used for scout to attack in begining preventing other
+	 * teams production
+	 * 
+	 * @param robots
+	 * @return
+	 * @throws GameActionException
+	 * @author John
+	 */
 	static boolean attackGardner(RobotInfo[] robots) throws GameActionException {
 		MapLocation gardnerLocation = null;
 		for (RobotInfo r : robots) {
@@ -722,6 +782,7 @@ public strictfp class RobotPlayer {
 	 * @param trees
 	 * @return 0 continue choping tree 1 cant find tree 2 cant move
 	 * @throws GameActionException
+	 * @author John
 	 */
 	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
 		boolean found = false;
@@ -805,7 +866,7 @@ public strictfp class RobotPlayer {
 			return null;
 		}
 		
-		static MapLocation getMapCenter()
+		static MapLocation JohnsgetMapCenter()
 		{
 			float xCoordinate = 0;
 			float yCoordinate = 0;
@@ -945,5 +1006,71 @@ public strictfp class RobotPlayer {
 		// Big map, start off slow, don't send scouts
 		// Tree map, create many lumber jacks
 		// Open map, start making trees
+
+	/**
+	 * sends scouts to find and harvest bullets
+	 * 
+	 * @author John
+	 * @param trees
+	 * @throws GameActionException
+	 */
+	static boolean shakeTrees(TreeInfo[] trees) throws GameActionException {
+		// find closet tree with bullets
+		TreeInfo closest = null;
+		float dist = 1000000000;
+		// if there are no trees detected return false
+		if (trees.length == 0) {
+			return false;
+		} else {
+
+		}
+		// for each detected tree
+		for (TreeInfo tree : trees) {
+			// if it contains bullets
+			if (tree.containedBullets > 0) {
+				// if no tree has yet been found with bullets set closest and
+				// dist
+				if (closest == null) {
+					closest = tree;
+					dist = closest.getLocation().distanceTo(rc.getLocation());
+				} else {
+					// otherwise see if it is closer the chosen one
+					float testDist = tree.getLocation().distanceTo(rc.getLocation());
+					if (testDist < dist) {
+						closest = tree;
+						dist = testDist;
+					}
+				}
+			}
+		}
+		// if no trees with bullets return false
+		if (closest == null) {
+			return false;
+		}
+		// try and shake tree
+		if (rc.canShake(closest.getLocation())) {
+			rc.shake(closest.getLocation());
+		} else {
+			tryMoveToLocation(closest.getLocation(), 10, 3);
+		}
+		return true;
+	}
+
+	// converts bullets to victory points
+	static void convertVictoryPoints() throws GameActionException {
+		System.out.println("bullet" + rc.getTeamBullets());
+		// if can win spend all bullets
+		if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
+			rc.donate(rc.getTeamBullets());
+		}
+		if (rc.getTeamBullets() > 500) {
+			float teamBullets = rc.getTeamBullets();
+			float excessBullets = teamBullets - 500;
+			excessBullets = Math.round((excessBullets / 2) / 10) * 10;
+			System.out.println(excessBullets);
+
+			rc.donate(excessBullets);
+		}
+	}
 
 }
