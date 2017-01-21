@@ -75,8 +75,8 @@ public strictfp class RobotPlayer {
 						rc.hireGardener(nextUnoccupiedDirection(RobotType.GARDENER, 0));
 					}
 				}
-				
-				tryHireGardner(Direction.getNorth(),10,10);
+
+				tryHireGardner(Direction.getNorth(), 10, 10);
 
 				convertVictoryPoints(500);
 				if (rc.getHealth() <= 5) {
@@ -99,7 +99,7 @@ public strictfp class RobotPlayer {
 		Direction move = randomDirection();
 		while (true) {
 			try {
-				if (rc.readBroadcast(SCOUT_COUNT_ARR)<=3) {
+				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 10, RobotType.SCOUT);
 				}
 				MapLocation myLocation = rc.getLocation();
