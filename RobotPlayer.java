@@ -165,7 +165,7 @@ public strictfp class RobotPlayer {
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
 		boolean busy = false;
-		//0 search and shake
+		// 0 search and shake
 		int mode = 0;
 		Direction move = Direction.getSouth().rotateLeftDegrees(45);
 		Direction toTree = Direction.getEast();
@@ -174,10 +174,10 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				//
-				if(mode == 0) {
-					if(!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius,Team.NEUTRAL))) {
+				if (mode == 0) {
+					if (!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL))) {
 						avoidBullets(rc.senseNearbyBullets());
-						if(rc.canMove(randomDir)) {
+						if (rc.canMove(randomDir)) {
 							rc.move(randomDir);
 						} else {
 							randomDir = randomDirection();
@@ -558,15 +558,18 @@ public strictfp class RobotPlayer {
 		}
 		return false;
 	}
+
 	/**
-	 * avoids bullets, the array comes pre sorted by closest, so if it can it will avoid the closest
-	 * should be made more effcient by includign return for avoidBullet to tell if it was succeful and if so end loop
+	 * avoids bullets, the array comes pre sorted by closest, so if it can it
+	 * will avoid the closest should be made more effcient by includign return
+	 * for avoidBullet to tell if it was succeful and if so end loop
 	 */
 	static void avoidBullets(BulletInfo[] bullets) {
-		for(BulletInfo bullet: bullets) {
+		for (BulletInfo bullet : bullets) {
 			avoidBullet(bullet);
 		}
 	}
+
 	static void avoidBullet(BulletInfo bullet) {
 		// These statements simply get info about the orientation and angles
 		// between the robot and bullet
