@@ -92,6 +92,56 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	static void runGardener() throws GameActionException {
+		boolean aboutToDie = false;
+		System.out.println("I'm an Gardner!");
+		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
+		Team enemy = rc.getTeam().opponent();
+		int state = 0; // 0-finding location 1-building tree circle
+		int count = 0;
+		Direction move = randomDirection();
+		while (true) {
+			try {
+				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
+				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
+				}
+				MapLocation myLocation = rc.getLocation();
+				if (state == 0) {
+					if (tryMove(randomDirection(), (float) 20, 5)) {
+						count++;
+					}
+				}
+				if (count == 10) {
+					state = 1;
+				}
+				if (state == 1) {
+					// gets all neutralTrees that could be in the way
+					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
+					// request lumberJacks for each
+					for (TreeInfo tree : neutralTrees) {
+						// request number of lumberjacks based on tree health
+						requestLumberJack(tree, 1 + (int) (tree.health / 41));
+					}
+					maintainTreeRing();
+				}
+				// update robot count
+				if (rc.getHealth() <= 5 && aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) - 1);
+				}
+				Clock.yield();
+
+			} catch (Exception e) {
+				System.out.println("Gardern Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+
+>>>>>>> parent of 54acc94... fix to previous commit
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
