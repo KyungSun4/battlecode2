@@ -280,7 +280,12 @@ public strictfp class RobotPlayer {
 	 * *************************************************************************
 	 * *****************************************************************
 	 */
-
+	/**
+	 * uses intial archon locations to guess the map size
+	 * 
+	 * @author John
+	 * @return
+	 */
 	static float[] guessMapSize() {
 
 		float w = 0;// max distnace between arcons width
@@ -312,6 +317,13 @@ public strictfp class RobotPlayer {
 	}
 
 	// Needs improvements.
+	/**
+	 * uses map location of robot to imrove the inital guess
+	 * 
+	 * @author John
+	 * @param myLoc
+	 * @throws GameActionException
+	 */
 	static void improveMapGuesses(MapLocation myLoc) throws GameActionException {
 		int myx = (int) (myLoc.x * 1000);
 		int myy = (int) (myLoc.y * 1000);
@@ -337,6 +349,12 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	/**
+	 * maintains a flower tree around a gardner
+	 * 
+	 * @author John
+	 * @throws GameActionException
+	 */
 	static void maintainTreeRing() throws GameActionException {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3, rc.getTeam());
 		// all trees it can water are within 3 away
@@ -612,6 +630,7 @@ public strictfp class RobotPlayer {
 	 * Gets the center of map based on inital Archon locations
 	 * 
 	 * @return MapLocation of center
+	 * @author John
 	 */
 	static MapLocation getMapCenter() {
 		// gets initial locations of both teams
@@ -677,6 +696,7 @@ public strictfp class RobotPlayer {
 	 * @return returns false if fails (no more spots to request, should try
 	 *         again next round)
 	 * @throws GameActionException
+	 * @author John
 	 */
 	static boolean requestLumberJack(TreeInfo tree, int NumLumberJacks) throws GameActionException {
 		for (int i = LUMBERJACK_REQUESTS_START; i <= LUMBERJACK_REQUESTS_END; i += 3) {
@@ -698,8 +718,8 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @return returns map Location of tree if no requests, returns null
 	 * @throws GameActionException
+	 * @author John
 	 */
-
 	static MapLocation getLumberJackRequest() throws GameActionException {
 		int x = 0;
 		int y = 0;
@@ -731,6 +751,7 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @param robots
 	 * @throws GameActionException
+	 * @author John
 	 */
 	static int scoutLookForGardners(RobotInfo[] robots) throws GameActionException {
 		tryMoveToLocation(rc.getInitialArchonLocations(rc.getTeam().opponent())[0], (float) 20, 2);
@@ -743,6 +764,15 @@ public strictfp class RobotPlayer {
 		return gardnersFound;
 	}
 
+	/**
+	 * attacks garder, used for scout to attack in begining preventing other
+	 * teams production
+	 * 
+	 * @param robots
+	 * @return
+	 * @throws GameActionException
+	 * @author John
+	 */
 	static boolean attackGardner(RobotInfo[] robots) throws GameActionException {
 		MapLocation gardnerLocation = null;
 		for (RobotInfo r : robots) {
@@ -763,8 +793,8 @@ public strictfp class RobotPlayer {
 	 * @param trees
 	 * @return 0 continue choping tree 1 cant find tree 2 cant move
 	 * @throws GameActionException
+	 * @author John
 	 */
-
 	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
 		boolean found = false;
 		for (TreeInfo t : trees) {
@@ -789,6 +819,14 @@ public strictfp class RobotPlayer {
 			}
 			return 0;
 		}
+	}
+
+	/**
+	 * sends scouts to find and harvest bullets
+	 */
+	static void shakeTrees(TreeInfo[] trees) {
+		// find closet tree with bullets
+
 	}
 
 }
