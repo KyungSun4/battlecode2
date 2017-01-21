@@ -80,7 +80,7 @@ public strictfp class RobotPlayer {
 				tryHireGardner(Direction.getNorth(), 10, 18);
 
 				convertVictoryPoints(500);
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) - 1);
 				}
@@ -112,6 +112,7 @@ public strictfp class RobotPlayer {
 			try {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 				if (rc.getRoundNum() == 2) {
 					rc.buildRobot(RobotType.SCOUT, nextUnoccupiedDirection(0));
 =======
@@ -124,6 +125,10 @@ public strictfp class RobotPlayer {
 =======
 				System.out.println(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
+=======
+				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
+				if (rc.readBroadcast(SCOUT_COUNT_ARR) <= 3) {
+>>>>>>> parent of 54acc94... fix to previous commit
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
 >>>>>>> parent of 07a8f13... Moved stuff around
 				}
@@ -159,7 +164,7 @@ public strictfp class RobotPlayer {
 					maintainTreeRing();
 				}
 				// update robot count
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) - 1);
 				}
@@ -175,7 +180,6 @@ public strictfp class RobotPlayer {
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
-		boolean aboutToDie = false;
 		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 		boolean busy = false;
 		// 0 search and shake
@@ -240,7 +244,7 @@ public strictfp class RobotPlayer {
 						busy = false;
 					}
 				}
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
@@ -260,7 +264,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
@@ -323,7 +327,7 @@ public strictfp class RobotPlayer {
 				} else {
 					tree = getLumberJackRequest();
 				}
-				if (rc.getHealth() <= 5 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
 				}
