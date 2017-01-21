@@ -96,13 +96,16 @@ public strictfp class RobotPlayer {
 		boolean aboutToDie = false;
 		System.out.println("I'm an Gardner!");
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
+		ArrayList<TreeInfo> requestedTrees = new ArrayList<TreeInfo>();
 		Team enemy = rc.getTeam().opponent();
 		int state = 0; // 0-finding location 1-building tree circle
 		int count = 0;
 		Direction move = randomDirection();
 		while (true) {
 			try {
-				System.out.println(rc.readBroadcast(SCOUT_COUNT_ARR));
+				if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) < 3) {
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.LUMBERJACK);
+				}
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
 				}
@@ -120,8 +123,19 @@ public strictfp class RobotPlayer {
 					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
 					// request lumberJacks for each
 					for (TreeInfo tree : neutralTrees) {
+						// check if not already requested
+						boolean alreadyRequested = false;
+						for (TreeInfo tree2 : requestedTrees) {
+							if (tree2 == tree) {
+								alreadyRequested = true;
+							}
+						}
 						// request number of lumberjacks based on tree health
-						requestLumberJack(tree, 1 + (int) (tree.health / 41));
+						if (!alreadyRequested && requestLumberJack(tree, 1 + (int) (tree.health / 41))) {
+							requestedTrees.add(tree);
+						}
+						// System.out.println("ReqstionLumberJack at :" +
+						// tree.getLocation());
 					}
 					maintainTreeRing();
 				}
@@ -278,11 +292,12 @@ public strictfp class RobotPlayer {
 		MapLocation tree = null;
 		while (true) {
 			try {
+				System.out.println(tree);
 				TreeInfo[] nearByTrees = rc.senseNearbyTrees();
 				// gets what tree it should look for
 
 				if (tree != null) {
-					if (1 == fufuilLumberJackRequest(tree, nearByTrees)) {
+					if (fufuilLumberJackRequest(tree, nearByTrees) == 1) {
 						tree = null;
 					}
 
@@ -912,7 +927,7 @@ public strictfp class RobotPlayer {
 	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
 		boolean found = false;
 		for (TreeInfo t : trees) {
-			if (Math.round(tree.x * 100) == Math.round(t.getLocation().x)) {
+			if (Math.round(tree.x) == Math.round(t.getLocation().x)) {
 				found = true;
 			}
 		}
