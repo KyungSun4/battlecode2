@@ -188,7 +188,6 @@ public strictfp class RobotPlayer {
 					if (rc.canMove(toTree)) {
 						rc.move(toTree);
 					} else {
-						// why is a scout trying to shake??????
 						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int) toTree.getAngleDegrees());
 						rc.move(nextMove);
 					}
@@ -255,6 +254,8 @@ public strictfp class RobotPlayer {
 		MapLocation tree;
 		while (true) {
 			try {
+				TreeInfo[] nearByTrees = rc.senseNearbyTrees();
+
 				/*
 				 * tree = getLumberJackRequest(); if (tree != null) { TreeInfo[]
 				 * sensedTrees = rc.senseNearbyTrees(-1,
@@ -757,8 +758,37 @@ public strictfp class RobotPlayer {
 		return true;
 	}
 
-	static void fufuilGardnerRequest() {
-
+	/**
+	 * 
+	 * @param tree
+	 * @param trees
+	 * @return 0 continue choping tree 1 cant find tree 2 cant move
+	 * @throws GameActionException
+	 */
+	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
+		boolean found = false;
+		for (TreeInfo t : trees) {
+			if (Math.round(tree.x * 100) == Math.round(t.getLocation().x)) {
+				found = true;
+			}
+		}
+		if (found) {
+			if (rc.canChop(tree)) {
+				rc.canChop(tree);
+				return 0;
+			} else if (!tryMoveToLocation(tree, 20, 5)) {
+				return 2;
+			}
+			return 0;
+		} else {
+			if (tree.distanceTo(rc.getLocation()) < rc.getType().sensorRadius) {
+				return 1;
+			}
+			if (!tryMoveToLocation(tree, 20, 5)) {
+				return 2;
+			}
+			return 0;
+		}
 	}
 
 }
