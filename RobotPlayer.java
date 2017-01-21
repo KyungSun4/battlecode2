@@ -621,7 +621,7 @@ public strictfp class RobotPlayer {
 	 * @return MapLocation of center
 	 * @author John
 	 */
-	static MapLocation getMapCenter() {
+	static MapLocation johnsgetMapCenter() {
 		// gets initial locations of both teams
 		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
@@ -810,6 +810,73 @@ public strictfp class RobotPlayer {
 		}
 	}
 	
+
+	/**
+	 * sends scouts to find and harvest bullets
+	 * 
+	 * @author John
+	 * @param trees
+	 * @throws GameActionException
+	 */
+	static boolean shakeTrees(TreeInfo[] trees) throws GameActionException {
+		// find closet tree with bullets
+		TreeInfo closest = null;
+		float dist = 1000000000;
+		// if there are no trees detected return false
+		if (trees.length == 0) {
+			return false;
+		} else {
+
+		}
+		// for each detected tree
+		for (TreeInfo tree : trees) {
+			// if it contains bullets
+			if (tree.containedBullets > 0) {
+				// if no tree has yet been found with bullets set closest and
+				// dist
+				if (closest == null) {
+					closest = tree;
+					dist = closest.getLocation().distanceTo(rc.getLocation());
+				} else {
+					// otherwise see if it is closer the chosen one
+					float testDist = tree.getLocation().distanceTo(rc.getLocation());
+					if (testDist < dist) {
+						closest = tree;
+						dist = testDist;
+					}
+				}
+			}
+		}
+		// if no trees with bullets return false
+		if (closest == null) {
+			return false;
+		}
+		// try and shake tree
+		if (rc.canShake(closest.getLocation())) {
+			rc.shake(closest.getLocation());
+		} else {
+			tryMoveToLocation(closest.getLocation(), 10, 3);
+		}
+		return true;
+	}
+
+	// converts bullets to victory points
+	static void convertVictoryPoints() throws GameActionException {
+		System.out.println("bullet" + rc.getTeamBullets());
+		// if can win spend all bullets
+		if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
+			rc.donate(rc.getTeamBullets());
+		}
+		if (rc.getTeamBullets() > 500) {
+			float teamBullets = rc.getTeamBullets();
+			float excessBullets = teamBullets - 500;
+			excessBullets = Math.round((excessBullets / 2) / 10) * 10;
+			System.out.println(excessBullets);
+
+			rc.donate(excessBullets);
+		}
+	}
+	
 	//-------------------------------------------------------------------------------------------------------
 		// Below are statements to get the orientation of map, map center, and assign the starting Archon.
 		// I think all of these can be called in the robot controller class
@@ -866,7 +933,7 @@ public strictfp class RobotPlayer {
 			return null;
 		}
 		
-		static MapLocation JohnsgetMapCenter()
+		static MapLocation getMapCenter()
 		{
 			float xCoordinate = 0;
 			float yCoordinate = 0;
@@ -1006,71 +1073,4 @@ public strictfp class RobotPlayer {
 		// Big map, start off slow, don't send scouts
 		// Tree map, create many lumber jacks
 		// Open map, start making trees
-
-	/**
-	 * sends scouts to find and harvest bullets
-	 * 
-	 * @author John
-	 * @param trees
-	 * @throws GameActionException
-	 */
-	static boolean shakeTrees(TreeInfo[] trees) throws GameActionException {
-		// find closet tree with bullets
-		TreeInfo closest = null;
-		float dist = 1000000000;
-		// if there are no trees detected return false
-		if (trees.length == 0) {
-			return false;
-		} else {
-
-		}
-		// for each detected tree
-		for (TreeInfo tree : trees) {
-			// if it contains bullets
-			if (tree.containedBullets > 0) {
-				// if no tree has yet been found with bullets set closest and
-				// dist
-				if (closest == null) {
-					closest = tree;
-					dist = closest.getLocation().distanceTo(rc.getLocation());
-				} else {
-					// otherwise see if it is closer the chosen one
-					float testDist = tree.getLocation().distanceTo(rc.getLocation());
-					if (testDist < dist) {
-						closest = tree;
-						dist = testDist;
-					}
-				}
-			}
-		}
-		// if no trees with bullets return false
-		if (closest == null) {
-			return false;
-		}
-		// try and shake tree
-		if (rc.canShake(closest.getLocation())) {
-			rc.shake(closest.getLocation());
-		} else {
-			tryMoveToLocation(closest.getLocation(), 10, 3);
-		}
-		return true;
-	}
-
-	// converts bullets to victory points
-	static void convertVictoryPoints() throws GameActionException {
-		System.out.println("bullet" + rc.getTeamBullets());
-		// if can win spend all bullets
-		if (rc.getTeamBullets() / 10 >= GameConstants.VICTORY_POINTS_TO_WIN - rc.getTeamVictoryPoints()) {
-			rc.donate(rc.getTeamBullets());
-		}
-		if (rc.getTeamBullets() > 500) {
-			float teamBullets = rc.getTeamBullets();
-			float excessBullets = teamBullets - 500;
-			excessBullets = Math.round((excessBullets / 2) / 10) * 10;
-			System.out.println(excessBullets);
-
-			rc.donate(excessBullets);
-		}
-	}
-
 }
