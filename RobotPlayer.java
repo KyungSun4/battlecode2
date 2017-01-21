@@ -58,6 +58,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runArchon() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an archon!");
 		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
 		while (true) {
@@ -79,7 +80,8 @@ public strictfp class RobotPlayer {
 				tryHireGardner(Direction.getNorth(), 10, 18);
 
 				convertVictoryPoints(500);
-				if (rc.getHealth() <= 5) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
+					aboutToDie = true;
 					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) - 1);
 				}
 				Clock.yield();
@@ -91,6 +93,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runGardener() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an Gardner!");
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
@@ -123,7 +126,8 @@ public strictfp class RobotPlayer {
 					maintainTreeRing();
 				}
 				// update robot count
-				if (rc.getHealth() <= 5) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
+					aboutToDie = true;
 					rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) - 1);
 				}
 				Clock.yield();
@@ -138,7 +142,7 @@ public strictfp class RobotPlayer {
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
-		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR)+1);
+		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 		boolean busy = false;
 		// 0 search and shake
 		int mode = 0;
@@ -202,7 +206,8 @@ public strictfp class RobotPlayer {
 						busy = false;
 					}
 				}
-				if (rc.getHealth() <= 5) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
+					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
 				Clock.yield();
@@ -214,13 +219,15 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runTank() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an Tank!");
-		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR));
+		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
 		while (true) {
 			try {
 				MapLocation myLocation = rc.getLocation();
-				if (rc.getHealth() <= 5) {
+				if (rc.getHealth() <= 5 && aboutToDie) {
+					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
 				Clock.yield();
@@ -233,9 +240,9 @@ public strictfp class RobotPlayer {
 
 	}
 	/*
-	 * 
-	 * static void runSoldier() throws GameActionException {
-	 * System.out.println("I'm an soldier!"); Team enemy =
+	 *
+	 * static void runSoldier() throws GameActionException { boolean aboutToDie
+	 * = false;* System.out.println("I'm an soldier!"); Team enemy =
 	 * rc.getTeam().opponent(); while (true) { try { MapLocation myLocation =
 	 * rc.getLocation(); // See if there are any nearby enemy robots RobotInfo[]
 	 * robots = rc.senseNearbyRobots(-1, enemy); // If there are some... if
@@ -262,8 +269,9 @@ public strictfp class RobotPlayer {
 	 */
 
 	static void runLumberjack() throws GameActionException {
+		boolean aboutToDie = false;
 		System.out.println("I'm an LumberJack!");
-		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR));
+		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
 
 		MapLocation tree = null;
@@ -280,6 +288,10 @@ public strictfp class RobotPlayer {
 				} else {
 					tree = getLumberJackRequest();
 				}
+				if (rc.getHealth() <= 5 && aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
+				}
 
 				Clock.yield();
 			} catch (Exception e) {
@@ -295,7 +307,7 @@ public strictfp class RobotPlayer {
 	 */
 	/**
 	 * uses intial archon locations to guess the map size
-	 * 
+	 *
 	 * @author John
 	 * @return
 	 */
@@ -332,7 +344,7 @@ public strictfp class RobotPlayer {
 	// Needs improvements.
 	/**
 	 * uses map location of robot to imrove the inital guess
-	 * 
+	 *
 	 * @author John
 	 * @param myLoc
 	 * @throws GameActionException
@@ -364,7 +376,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * maintains a flower tree around a gardener
-	 * 
+	 *
 	 * @author John
 	 * @throws GameActionException
 	 */
@@ -562,7 +574,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * same thing as tryBuildRobot but for try Hire Gardener
-	 * 
+	 *
 	 * @param start
 	 *            first diretion to check
 	 * @param degreeOffset
@@ -729,7 +741,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * Gets the center of map based on inital Archon locations
-	 * 
+	 *
 	 * @return MapLocation of center
 	 * @author John
 	 */
@@ -784,7 +796,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * Returns a random Direction
-	 * 
+	 *
 	 * @return a random Direction
 	 */
 	static Direction randomDirection() {
@@ -793,7 +805,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * writes to Broadcast Array to request a lumberjack
-	 * 
+	 *
 	 * @return returns false if fails (no more spots to request, should try
 	 *         again next round)
 	 * @throws GameActionException
@@ -816,7 +828,7 @@ public strictfp class RobotPlayer {
 	/**
 	 * when a lumberjack is not busy it should run this method to find a task (
 	 * a tree to chop down)
-	 * 
+	 *
 	 * @return returns map Location of tree if no requests, returns null
 	 * @throws GameActionException
 	 * @author John
@@ -849,7 +861,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * moves scout to initial archon location and looks for gardener
-	 * 
+	 *
 	 * @param robots
 	 * @throws GameActionException
 	 * @author John
@@ -868,7 +880,7 @@ public strictfp class RobotPlayer {
 	/**
 	 * attacks garder, used for scout to attack in begining preventing other
 	 * teams production
-	 * 
+	 *
 	 * @param robots
 	 * @return
 	 * @throws GameActionException
@@ -889,7 +901,7 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param tree
 	 * @param trees
 	 * @return 0 continue choping tree 1 cant find tree 2 cant move
@@ -924,7 +936,7 @@ public strictfp class RobotPlayer {
 
 	/**
 	 * sends scouts to find and harvest bullets
-	 * 
+	 *
 	 * @author John
 	 * @param trees
 	 * @throws GameActionException
