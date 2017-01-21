@@ -216,6 +216,7 @@ public strictfp class RobotPlayer {
 				}
 
 				if (rc.getHealth() <= 5 && !aboutToDie) {
+
 					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
