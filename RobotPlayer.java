@@ -955,7 +955,7 @@ public strictfp class RobotPlayer {
 
 	static boolean chopNearestTrees(TreeInfo[] trees) throws GameActionException {
 		TreeInfo closest = null;
-		float dist = (float)1000000000000000000000000000.0;
+		float dist = (float) 1000000000000000000000000000.0;
 		// if there are no trees detected return false
 		if (trees.length == 0) {
 			return false;
@@ -963,7 +963,7 @@ public strictfp class RobotPlayer {
 		// for each detected tree
 		for (TreeInfo tree : trees) {
 			// if it contains bullets
-			if (tree.getTeam()==Team.NEUTRAL||tree.getTeam()==rc.getTeam().opponent()) {
+			if (tree.getTeam() == Team.NEUTRAL || tree.getTeam() == rc.getTeam().opponent()) {
 				// if no tree has yet been found with bullets set closest and
 				// dist
 				if (closest == null) {
@@ -1001,7 +1001,7 @@ public strictfp class RobotPlayer {
 	 */
 	static boolean shakeTrees(TreeInfo[] treeList) throws GameActionException {
 		TreeInfo closestTree = null;
-		float dist = (float)10000000000000000000000000000000000000000000000.00;
+		float dist = (float) 10000000000000000000000000000000000000000000000.00;
 		// if there are no trees detected return false
 		if (treeList.length == 0) {
 			return false;
@@ -1057,17 +1057,138 @@ public strictfp class RobotPlayer {
 			rc.donate(rc.getTeamBullets());
 	}
 
+	static MapLocation getNextPathLocation(TreeInfo[] treeList, RobotInfo[] robotList) {
+		MapLocation location = null;
+
+		ArrayList<ArrayList<Object>> listOfConnectedGroups = new ArrayList<ArrayList<Object>>();
+		for (TreeInfo tree : treeList) {
+			// check if already in group
+			ArrayList<Object> myGroup = null;
+			for (int i = 0; i < listOfConnectedGroups.size(); i++) {
+				for (Object object : listOfConnectedGroups.get(i)) {
+					if (object == tree) {
+						myGroup = listOfConnectedGroups.get(i);
+					}
+				}
+			}
+			if (myGroup == null) {
+				ArrayList<Object> tempList = new ArrayList<Object>();
+				tempList.add(tree);
+				listOfConnectedGroups.add(tempList);
+				myGroup = tempList;
+			}
+			for (TreeInfo tree2 : treeList) {
+				if (tree2 != tree) {
+					if (tree2.getLocation().distanceTo(tree.getLocation()) < rc.getType().bodyRadius + tree2.radius
+							+ tree.radius) {
+						// if already has group, merge groups else merge groups
+						ArrayList<Object> tree2Group = null;
+						for (int i = 0; i < listOfConnectedGroups.size(); i++) {
+							for (Object object : listOfConnectedGroups.get(i)) {
+								if (object == tree) {
+									tree2Group = listOfConnectedGroups.get(i);
+								}
+							}
+						}
+						if (tree2Group != myGroup) {
+							if (tree2Group == null) {
+								myGroup.add(tree2);
+							} else {
+								myGroup.addAll(tree2Group);
+								listOfConnectedGroups.remove(tree2Group);
+							}
+						}
+					}
+				}
+			}
+			for (RobotInfo robot : robotList) {
+				if (robot.getLocation().distanceTo(tree.getLocation()) < rc.getType().bodyRadius
+						+ robot.getType().bodyRadius + tree.radius) {
+					// if already has group, merge groups else merge groups
+					ArrayList<Object> robotGroup = null;
+					for (int i = 0; i < listOfConnectedGroups.size(); i++) {
+						for (Object object : listOfConnectedGroups.get(i)) {
+							if (object == tree) {
+								robotGroup = listOfConnectedGroups.get(i);
+							}
+						}
+					}
+					if (robotGroup != myGroup) {
+						if (robotGroup == null) {
+							myGroup.add(robot);
+						} else {
+							myGroup.addAll(robotGroup);
+							listOfConnectedGroups.remove(robotGroup);
+						}
+					}
+				}
+
+			}
+		}
+		for (RobotInfo robot : robotList) {
+			// check if already in group
+			ArrayList<Object> myGroup = null;
+			for (int i = 0; i < listOfConnectedGroups.size(); i++) {
+				for (Object object : listOfConnectedGroups.get(i)) {
+					if (object == robot) {
+						myGroup = listOfConnectedGroups.get(i);
+					}
+				}
+			}
+			if (myGroup == null) {
+				ArrayList<Object> tempList = new ArrayList<Object>();
+				tempList.add(robot);
+				listOfConnectedGroups.add(tempList);
+				myGroup = tempList;
+			}
+			for (RobotInfo robot2 : robotList) {
+				if (robot2 != robot) {
+					if (robot2.getLocation().distanceTo(robot.getLocation()) < rc.getType().bodyRadius
+							+ robot2.getType().bodyRadius + robot.getType().bodyRadius) {
+						// if already has group, merge groups else merge groups
+						ArrayList<Object> robot2Group = null;
+						for (int i = 0; i < listOfConnectedGroups.size(); i++) {
+							for (Object object : listOfConnectedGroups.get(i)) {
+								if (object == robot) {
+									robot2Group = listOfConnectedGroups.get(i);
+								}
+							}
+						}
+						if (robot2Group != myGroup) {
+							if (robot2Group == null) {
+								myGroup.add(robot2);
+							} else {
+								myGroup.addAll(robot2Group);
+								listOfConnectedGroups.remove(robot2Group);
+							}
+						}
+					}
+				}
+			}
+		}
+		// find group edges
+		ArrayList<MapLocation> edges = new ArrayList<MapLocation>();
+		for (ArrayList<Object> group : listOfConnectedGroups) {
+			MapLocation leftEdge;
+			MapLocation rightEdge;
+
+		}
+		return location;
+	}
+
+	static void smartMoveToLocation() {
+
+	}
+
 	// -------------------------------------------------------------------------------------------------------
 	// Below are statements to get the orientation of map, map center, and
 	// assign the starting Archon.
 	// I think all of these can be called in the robot controller class
 
-	}
-
-	// static String getMapTypes()
-	// Close map - Create soldiers instantly
-	// Big map, start off slow, don't send scouts
-	// Tree map, create many lumber jacks
-	// Open map, start making trees
-
 }
+
+// static String getMapTypes()
+// Close map - Create soldiers instantly
+// Big map, start off slow, don't send scouts
+// Tree map, create many lumber jacks
+// Open map, start making trees
