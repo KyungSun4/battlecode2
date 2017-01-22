@@ -627,6 +627,33 @@ public strictfp class RobotPlayer {
 		Direction dirTo = rc.getLocation().directionTo(loc);
 		return tryMove(dirTo, degreeOffset, checksPerSide);
 	}
+	
+	// returns true if move was performed, false if not performed
+	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
+		// First, try intended direction
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+			return true;
+		}
+		// Now try a bunch of similar angles
+		int currentCheck = 1;
+		while (currentCheck <= checksPerSide) {
+			// Try the offset of the left side
+			if (rc.canMove(dir.rotateLeftDegrees(degreeOffset * currentCheck))) {
+				rc.move(dir.rotateLeftDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canMove(dir.rotateRightDegrees(degreeOffset * currentCheck))) {
+				rc.move(dir.rotateRightDegrees(degreeOffset * currentCheck));
+				return true;
+			}
+			// No move performed, try slightly further
+			currentCheck++;
+		}
+		// A move never happened, so return false.
+		return false;
+	}
 
 	// Method is called if an enemy is sensed
 	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
@@ -717,37 +744,6 @@ public strictfp class RobotPlayer {
 			}
 		}
 		return directionToEnemy;
-	}
-
-	// returns true if move was performed, false if not performed
-	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
-
-		// First, try intended direction
-		if (rc.canMove(dir)) {
-			rc.move(dir);
-			return true;
-		}
-
-		// Now try a bunch of similar angles
-		int currentCheck = 1;
-
-		while (currentCheck <= checksPerSide) {
-			// Try the offset of the left side
-			if (rc.canMove(dir.rotateLeftDegrees(degreeOffset * currentCheck))) {
-				rc.move(dir.rotateLeftDegrees(degreeOffset * currentCheck));
-				return true;
-			}
-			// Try the offset on the right side
-			if (rc.canMove(dir.rotateRightDegrees(degreeOffset * currentCheck))) {
-				rc.move(dir.rotateRightDegrees(degreeOffset * currentCheck));
-				return true;
-			}
-			// No move performed, try slightly further
-			currentCheck++;
-		}
-
-		// A move never happened, so return false.
-		return false;
 	}
 
 	/**
@@ -1001,26 +997,25 @@ public strictfp class RobotPlayer {
 	 */
 	static boolean shakeTrees(TreeInfo[] treeList) throws GameActionException {
 		TreeInfo closestTree = null;
-		float dist = (float)10000000000000000000000000000000000000000000000.00;
-		// if there are no trees detected return false
+		float distance = 0;
+		// if there are no trees in the list return false
 		if (treeList.length == 0) {
 			return false;
 		}
 		// for each detected tree
 		for (TreeInfo tree : treeList) {
-			// if it contains bullets
 			if (tree.containedBullets > 0) {
-				// if no tree has yet been found with bullets set closest and
-				// dist
+				// if no tree has yet been found with bullets set closestTree and distance
 				if (closestTree == null) {
 					closestTree = tree;
-					dist = closestTree.getLocation().distanceTo(rc.getLocation());
-				} else {
+					distance = rc.getLocation().distanceTo(closestTree.getLocation());
+				} 
+				else {
 					// otherwise see if it is closer the chosen one
-					float testDist = tree.getLocation().distanceTo(rc.getLocation());
-					if (testDist < dist) {
+					float testDist = rc.getLocation().distanceTo(tree.getLocation());
+					if (testDist < distance) {
 						closestTree = tree;
-						dist = testDist;
+						distance = testDist;
 					}
 				}
 			}
@@ -1033,7 +1028,10 @@ public strictfp class RobotPlayer {
 		if (rc.canShake(closestTree.getLocation())) {
 			rc.shake(closestTree.getLocation());
 		} else {
-			tryMoveToLocation(closestTree.getLocation(), 10, 3);
+			while(closestTree.getContainedBullets() > 0) {
+				tryMoveToLocation(closestTree.getLocation(), 10, 3);
+				Clock.yield();
+			}
 		}
 		return true;
 	}
