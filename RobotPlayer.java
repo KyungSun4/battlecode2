@@ -159,8 +159,8 @@ public strictfp class RobotPlayer {
 			try {
 				//
 				if (mode == 0) {
+					avoidBullets(rc.senseNearbyBullets());
 					if (!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL))) {
-						avoidBullets(rc.senseNearbyBullets());
 						if (rc.canMove(randomDir)) {
 							if (!rc.hasMoved()) {
 								rc.move(randomDir);
@@ -1002,7 +1002,7 @@ public strictfp class RobotPlayer {
 	static boolean shakeTrees(TreeInfo[] trees) throws GameActionException {
 		// find closet tree with bullets
 		TreeInfo closest = null;
-		float dist = 1000000000;
+		float dist = (float)10000000000000000000000000000000000000000000000.00;
 		// if there are no trees detected return false
 		if (trees.length == 0) {
 			return false;
@@ -1043,8 +1043,6 @@ public strictfp class RobotPlayer {
 
 	// Converts bullets to victory points
 	static void convertVictoryPoints(int overflowRange) throws GameActionException {
-		System.out.println("bullet" + rc.getTeamBullets());
-
 		if (rc.getTeamBullets() > overflowRange) {
 			float teamBullets = rc.getTeamBullets();
 			double excessBullets = teamBullets - overflowRange;
