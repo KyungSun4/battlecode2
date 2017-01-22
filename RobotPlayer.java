@@ -64,9 +64,9 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				if (rc.getRoundNum() == 1) {
-					MapLocation startingArchon = assignStartingArchon();
-					rc.broadcast(0, (int) startingArchon.x);
-					rc.broadcast(1, (int) startingArchon.y);
+					// MapLocation startingArchon = assignStartingArchon();
+					// rc.broadcast(0, (int) startingArchon.x);
+					// rc.broadcast(1, (int) startingArchon.y);
 					// If this robot is in the same location as the assigned
 					// starting archon's location, save this robot's ID to the
 					// array
@@ -627,7 +627,7 @@ public strictfp class RobotPlayer {
 		Direction dirTo = rc.getLocation().directionTo(loc);
 		return tryMove(dirTo, degreeOffset, checksPerSide);
 	}
-	
+
 	// returns true if move was performed, false if not performed
 	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
 		// First, try intended direction
@@ -951,7 +951,7 @@ public strictfp class RobotPlayer {
 
 	static boolean chopNearestTrees(TreeInfo[] trees) throws GameActionException {
 		TreeInfo closest = null;
-		float dist = (float)1000000000000000000000000000.0;
+		float dist = (float) 1000000000000000000000000000.0;
 		// if there are no trees detected return false
 		if (trees.length == 0) {
 			return false;
@@ -959,7 +959,7 @@ public strictfp class RobotPlayer {
 		// for each detected tree
 		for (TreeInfo tree : trees) {
 			// if it contains bullets
-			if (tree.getTeam()==Team.NEUTRAL||tree.getTeam()==rc.getTeam().opponent()) {
+			if (tree.getTeam() == Team.NEUTRAL || tree.getTeam() == rc.getTeam().opponent()) {
 				// if no tree has yet been found with bullets set closest and
 				// dist
 				if (closest == null) {
@@ -1005,12 +1005,12 @@ public strictfp class RobotPlayer {
 		// for each detected tree
 		for (TreeInfo tree : treeList) {
 			if (tree.containedBullets > 0) {
-				// if no tree has yet been found with bullets set closestTree and distance
+				// if no tree has yet been found with bullets set closestTree
+				// and distance
 				if (closestTree == null) {
 					closestTree = tree;
 					distance = rc.getLocation().distanceTo(closestTree.getLocation());
-				} 
-				else {
+				} else {
 					// otherwise see if it is closer the chosen one
 					float testDist = rc.getLocation().distanceTo(tree.getLocation());
 					if (testDist < distance) {
@@ -1028,7 +1028,7 @@ public strictfp class RobotPlayer {
 		if (rc.canShake(closestTree.getLocation())) {
 			rc.shake(closestTree.getLocation());
 		} else {
-			while(closestTree.getContainedBullets() > 0) {
+			while (closestTree.getContainedBullets() > 0) {
 				tryMoveToLocation(closestTree.getLocation(), 10, 3);
 				Clock.yield();
 			}
@@ -1060,12 +1060,10 @@ public strictfp class RobotPlayer {
 	// assign the starting Archon.
 	// I think all of these can be called in the robot controller class
 
-	}
-
-	// static String getMapTypes()
-	// Close map - Create soldiers instantly
-	// Big map, start off slow, don't send scouts
-	// Tree map, create many lumber jacks
-	// Open map, start making trees
-
 }
+
+// static String getMapTypes()
+// Close map - Create soldiers instantly
+// Big map, start off slow, don't send scouts
+// Tree map, create many lumber jacks
+// Open map, start making trees
