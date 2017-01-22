@@ -77,8 +77,6 @@ public strictfp class RobotPlayer {
 					}
 				}
 
-
-
 				tryHireGardner(Direction.getNorth(), 10, 18);
 
 				convertVictoryPoints(500);
@@ -94,11 +92,9 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-
 	static void runGardener() throws GameActionException {
 		boolean aboutToDie = false;
 		System.out.println("I'm an Gardner!");
-
 
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		ArrayList<TreeInfo> requestedTrees = new ArrayList<TreeInfo>();
@@ -146,6 +142,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
+
 	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
@@ -292,8 +289,11 @@ public strictfp class RobotPlayer {
 				// gets what tree it should look for
 
 				if (tree != null) {
-					if (fufuilLumberJackRequest(tree, nearByTrees) == 1) {
+					int result = fufuilLumberJackRequest(tree, nearByTrees);
+					if (result == 1) {
 						tree = null;
+					} else if (result == 2) {
+						chopNearestTrees(nearByTrees);
 					}
 
 				} else {
@@ -924,18 +924,21 @@ public strictfp class RobotPlayer {
 	 * @author John
 	 */
 	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
+		int id = 0;
 		boolean found = false;
 		for (TreeInfo t : trees) {
 			if (Math.round(tree.x) == Math.round(t.getLocation().x)) {
+				id = t.getID();
 				tree = t.getLocation();
 				found = true;
 			}
 		}
 		if (found) {
-			if (rc.canChop(tree)) {
-				rc.canChop(tree);
+			System.out.println(id);
+			if (rc.canChop(id)) {
+				rc.canChop(id);
 				return 0;
-			} else if (!tryMoveToLocation(tree, 20, 5)) {
+			} else if (!tryMoveToLocation(tree, 1, 80)) {
 				return 2;
 			}
 			return 0;
@@ -943,11 +946,50 @@ public strictfp class RobotPlayer {
 			if (tree.distanceTo(rc.getLocation()) < rc.getType().sensorRadius) {
 				return 1;
 			}
-			if (!tryMoveToLocation(tree, 20, 5)) {
+			if (!tryMoveToLocation(tree, 1, 80)) {
 				return 2;
 			}
 			return 0;
 		}
+	}
+
+	static boolean chopNearestTrees(TreeInfo[] trees) throws GameActionException {
+		TreeInfo closest = null;
+		float dist = (float)1000000000000000000000000000.0;
+		// if there are no trees detected return false
+		if (trees.length == 0) {
+			return false;
+		}
+		// for each detected tree
+		for (TreeInfo tree : trees) {
+			// if it contains bullets
+			if (tree.getTeam()==Team.NEUTRAL||tree.getTeam()==rc.getTeam().opponent()) {
+				// if no tree has yet been found with bullets set closest and
+				// dist
+				if (closest == null) {
+					closest = tree;
+					dist = closest.getLocation().distanceTo(rc.getLocation());
+				} else {
+					// otherwise see if it is closer the chosen one
+					float testDist = tree.getLocation().distanceTo(rc.getLocation());
+					if (testDist < dist) {
+						closest = tree;
+						dist = testDist;
+					}
+				}
+			}
+		}
+		if (closest == null) {
+			return false;
+		}
+		// try and chop tree
+		if (rc.canChop(closest.getLocation())) {
+			rc.chop(closest.getLocation());
+		} else {
+			tryMoveToLocation(closest.getLocation(), 10, 3);
+		}
+
+		return false;
 	}
 
 	/**
