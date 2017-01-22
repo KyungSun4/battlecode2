@@ -143,84 +143,71 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	// Scout fuckery
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
-		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
-		boolean busy = false;
-		boolean aboutToDie = false;
-		// 0 search and shake
-		int mode = 0;
-		Direction move = Direction.getSouth().rotateLeftDegrees(45);
-		Direction toTree = Direction.getEast();
-		Direction randomDir = randomDirection();
-		int treeID = 0;
+		Direction moveDirection = randomDirection();
+		boolean combatMode = false;
 		while (true) {
 			try {
-				//
-				if (mode == 0) {
-					avoidBullets(rc.senseNearbyBullets());
-					if (!shakeTrees(rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL))) {
-						if (rc.canMove(randomDir)) {
-							if (!rc.hasMoved()) {
-								rc.move(randomDir);
-							}
-						} else {
-							randomDir = randomDirection();
-						}
-					}
-				}
-				if (!busy) {
-					if (rc.canMove(move)) {
-						if (!rc.hasMoved()) {
-							rc.move(move);
-						}
-					} else {
-						move.rotateLeftDegrees(90);
-						if (rc.canMove(move)) {
-							if (!rc.hasMoved()) {
-								rc.move(move);
-							}
-						}
-					}
-					TreeInfo trees[] = rc.senseNearbyTrees();
-					for (TreeInfo tree : trees) {
+				if (!combatMode) {
+					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
+					for (TreeInfo tree: treeLocation)
+					{
 						if (tree.getContainedBullets() > 0) {
-							MapLocation myLocation = rc.getLocation();
-							MapLocation treeLocation = tree.getLocation();
-							treeID = tree.getID();
-							busy = true;
-						}
-						break;
-						// why is is this break here, only the first tree get
-						// checked then it breaks
-					}
-				} else if (busy) {
-					if (rc.canMove(toTree)) {
-						if (!rc.hasMoved()) {
-							rc.move(move);
-						}
-					} else {
-						Direction nextMove = nextUnoccupiedDirection(rc.getType(), (int) toTree.getAngleDegrees());
-						if (!rc.hasMoved()) {
-							rc.move(nextMove);
+							shakeTree(treeLocation);
 						}
 					}
-					if (rc.canShake(treeID)) {
-						rc.shake(treeID);
-						busy = false;
+					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
+						rc.move(moveDirection);
+					}
+					else {
+						moveDirection = randomDirection();
+						if (!rc.canMove(moveDirection)) {
+							tryMove(moveDirection, 10, 20);
+							//Work on this not being in a random direction
+						}
+					}
+					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+					for (RobotInfo enemy: enemyLocation) {
+						if (enemy.getType() != RobotType.SCOUT) {
+							combatMode = true;
+							break;
+						}
 					}
 				}
-
-				if (rc.getHealth() <= 5 && !aboutToDie) {
-
-					aboutToDie = true;
-					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
+				else if (combatMode)
+				{
+					
 				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
 				e.printStackTrace();
+			}
+		}
+	}
+	
+	static void scoutMove() {
+		
+	}
+	
+	static void shakeTree(TreeInfo[] treeList) throws GameActionException {
+		TreeInfo[] treeLocation = treeList;
+		for (TreeInfo tree: treeLocation) {
+			while (tree.getContainedBullets() > 0) {
+				MapLocation treeLoc = tree.getLocation();
+				Direction moveDirection = rc.getLocation().directionTo(treeLoc);
+				if (rc.canShake(treeLoc)) {
+					rc.shake(treeLoc);
+					break;
+				}
+				else if (rc.canMove(moveDirection)) {
+					rc.move(moveDirection);
+				}
+				else
+				{
+					tryMove(moveDirection, 10, 5);
+				}
 			}
 		}
 	}
@@ -988,53 +975,6 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	/**
-	 * sends scouts to find and harvest bullets
-	 *
-	 * @author John
-	 * @param trees
-	 * @throws GameActionException
-	 */
-	static boolean shakeTrees(TreeInfo[] treeList) throws GameActionException {
-		TreeInfo closestTree = null;
-		float distance = 0;
-		// if there are no trees in the list return false
-		if (treeList.length == 0) {
-			return false;
-		}
-		// for each detected tree
-		for (TreeInfo tree : treeList) {
-			if (tree.containedBullets > 0) {
-				// if no tree has yet been found with bullets set closestTree
-				// and distance
-				if (closestTree == null) {
-					closestTree = tree;
-					distance = rc.getLocation().distanceTo(closestTree.getLocation());
-				} else {
-					// otherwise see if it is closer the chosen one
-					float testDist = rc.getLocation().distanceTo(tree.getLocation());
-					if (testDist < distance) {
-						closestTree = tree;
-						distance = testDist;
-					}
-				}
-			}
-		}
-		// if no trees with bullets return false
-		if (closestTree == null) {
-			return false;
-		}
-		// try and shake tree
-		if (rc.canShake(closestTree.getLocation())) {
-			rc.shake(closestTree.getLocation());
-		} else {
-			while (closestTree.getContainedBullets() > 0) {
-				tryMoveToLocation(closestTree.getLocation(), 10, 3);
-				Clock.yield();
-			}
-		}
-		return true;
-	}
 
 	// Converts bullets to victory points
 	static void convertVictoryPoints(int overflowRange) throws GameActionException {
