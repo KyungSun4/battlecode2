@@ -151,33 +151,30 @@ public strictfp class RobotPlayer {
 			try {
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree: treeLocation)
-					{
+					for (TreeInfo tree : treeLocation) {
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					}
-					else {
+					} else {
 						moveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							tryMove(moveDirection, 10, 20);
-							//Work on this not being in a random direction
+							// Work on this not being in a random direction
 						}
 					}
-					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
-					for (RobotInfo enemy: enemyLocation) {
+					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
+							rc.getTeam().opponent());
+					for (RobotInfo enemy : enemyLocation) {
 						if (enemy.getType() != RobotType.SCOUT) {
 							combatMode = true;
 							break;
 						}
 					}
-				}
-				else if (combatMode)
-				{
-					
+				} else if (combatMode) {
+
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -186,26 +183,23 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-	
+
 	static void scoutMove() {
-		
+
 	}
-	
+
 	static void shakeTree(TreeInfo[] treeList) throws GameActionException {
 		TreeInfo[] treeLocation = treeList;
-		for (TreeInfo tree: treeLocation) {
+		for (TreeInfo tree : treeLocation) {
 			while (tree.getContainedBullets() > 0) {
 				MapLocation treeLoc = tree.getLocation();
 				Direction moveDirection = rc.getLocation().directionTo(treeLoc);
 				if (rc.canShake(treeLoc)) {
 					rc.shake(treeLoc);
 					break;
-				}
-				else if (rc.canMove(moveDirection)) {
+				} else if (rc.canMove(moveDirection)) {
 					rc.move(moveDirection);
-				}
-				else
-				{
+				} else {
 					tryMove(moveDirection, 10, 5);
 				}
 			}
@@ -975,7 +969,6 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-
 	// Converts bullets to victory points
 	static void convertVictoryPoints(int overflowRange) throws GameActionException {
 		if (rc.getTeamBullets() > overflowRange) {
@@ -998,65 +991,81 @@ public strictfp class RobotPlayer {
 	static MapLocation getNextPathLocation(TreeInfo[] treeList, RobotInfo[] robotList) {
 		MapLocation location = null;
 
-		ArrayList<ArrayList<Object>> listOfConnectedGroups = new ArrayList<ArrayList<Object>>();
+		ArrayList<ArrayList<RobotInfo>> listOfConnectedRobotGroups = new ArrayList<ArrayList<RobotInfo>>();
+		ArrayList<ArrayList<TreeInfo>> listOfConnectedTreeGroups = new ArrayList<ArrayList<TreeInfo>>();
 		for (TreeInfo tree : treeList) {
 			// check if already in group
-			ArrayList<Object> myGroup = null;
-			for (int i = 0; i < listOfConnectedGroups.size(); i++) {
-				for (Object object : listOfConnectedGroups.get(i)) {
+			ArrayList<TreeInfo> myTreeGroup = null;
+			ArrayList<RobotInfo> myRobotGroup = null;
+			for (int i = 0; i < listOfConnectedTreeGroups.size(); i++) {
+				for (Object object : listOfConnectedTreeGroups.get(i)) {
 					if (object == tree) {
-						myGroup = listOfConnectedGroups.get(i);
+						myTreeGroup = listOfConnectedTreeGroups.get(i);
+						myRobotGroup = listOfConnectedRobotGroups.get(i);
 					}
 				}
 			}
-			if (myGroup == null) {
-				ArrayList<Object> tempList = new ArrayList<Object>();
-				tempList.add(tree);
-				listOfConnectedGroups.add(tempList);
-				myGroup = tempList;
+			if (myTreeGroup == null) {
+				ArrayList<TreeInfo> tempTreeList = new ArrayList<TreeInfo>();
+				ArrayList<RobotInfo> tempRobotList = new ArrayList<RobotInfo>();
+				tempTreeList.add(tree);
+				listOfConnectedTreeGroups.add(tempTreeList);
+				listOfConnectedRobotGroups.add(tempRobotList);
+				myTreeGroup = tempTreeList;
+				myRobotGroup = tempRobotList;
+
 			}
 			for (TreeInfo tree2 : treeList) {
 				if (tree2 != tree) {
 					if (tree2.getLocation().distanceTo(tree.getLocation()) < rc.getType().bodyRadius + tree2.radius
 							+ tree.radius) {
-						// if already has group, merge groups else merge groups
-						ArrayList<Object> tree2Group = null;
-						for (int i = 0; i < listOfConnectedGroups.size(); i++) {
-							for (Object object : listOfConnectedGroups.get(i)) {
-								if (object == tree) {
-									tree2Group = listOfConnectedGroups.get(i);
+						// if already has group, merge groups else add to group
+						ArrayList<TreeInfo> tree2Group = null;
+						ArrayList<RobotInfo> tree2RobotGroup = null;
+						for (int i = 0; i < listOfConnectedTreeGroups.size(); i++) {
+							for (Object object : listOfConnectedTreeGroups.get(i)) {
+								if (object == tree2) {
+									tree2Group = listOfConnectedTreeGroups.get(i);
+									tree2RobotGroup = listOfConnectedRobotGroups.get(i);
 								}
 							}
 						}
-						if (tree2Group != myGroup) {
+						if (tree2Group != myTreeGroup) {
 							if (tree2Group == null) {
-								myGroup.add(tree2);
+								myTreeGroup.add(tree2);
 							} else {
-								myGroup.addAll(tree2Group);
-								listOfConnectedGroups.remove(tree2Group);
+								myTreeGroup.addAll(tree2Group);
+								myRobotGroup.addAll(tree2RobotGroup);
+								listOfConnectedTreeGroups.remove(tree2Group);
+								listOfConnectedRobotGroups.remove(tree2RobotGroup);
 							}
 						}
 					}
 				}
 			}
 			for (RobotInfo robot : robotList) {
+
 				if (robot.getLocation().distanceTo(tree.getLocation()) < rc.getType().bodyRadius
 						+ robot.getType().bodyRadius + tree.radius) {
-					// if already has group, merge groups else merge groups
-					ArrayList<Object> robotGroup = null;
-					for (int i = 0; i < listOfConnectedGroups.size(); i++) {
-						for (Object object : listOfConnectedGroups.get(i)) {
-							if (object == tree) {
-								robotGroup = listOfConnectedGroups.get(i);
+					// if already has group, merge groups else add to group
+					ArrayList<TreeInfo> robotTreeGroup = null;
+					ArrayList<RobotInfo> robotRobotGroup = null;
+					for (int i = 0; i < listOfConnectedRobotGroups.size(); i++) {
+						for (Object object : listOfConnectedRobotGroups.get(i)) {
+							if (object == robot) {
+								robotTreeGroup = listOfConnectedTreeGroups.get(i);
+								robotRobotGroup = listOfConnectedRobotGroups.get(i);
 							}
 						}
 					}
-					if (robotGroup != myGroup) {
-						if (robotGroup == null) {
-							myGroup.add(robot);
+					if (robotTreeGroup != myTreeGroup) {
+						if (robotRobotGroup == null) {
+							myRobotGroup.add(robot);
 						} else {
-							myGroup.addAll(robotGroup);
-							listOfConnectedGroups.remove(robotGroup);
+							myTreeGroup.addAll(robotTreeGroup);
+							myRobotGroup.addAll(robotRobotGroup);
+							listOfConnectedTreeGroups.remove(robotTreeGroup);
+							listOfConnectedRobotGroups.remove(robotRobotGroup);
 						}
 					}
 				}
@@ -1065,39 +1074,49 @@ public strictfp class RobotPlayer {
 		}
 		for (RobotInfo robot : robotList) {
 			// check if already in group
-			ArrayList<Object> myGroup = null;
-			for (int i = 0; i < listOfConnectedGroups.size(); i++) {
-				for (Object object : listOfConnectedGroups.get(i)) {
+			ArrayList<TreeInfo> myTreeGroup = null;
+			ArrayList<RobotInfo> myRobotGroup = null;
+			for (int i = 0; i < listOfConnectedRobotGroups.size(); i++) {
+				for (Object object : listOfConnectedRobotGroups.get(i)) {
 					if (object == robot) {
-						myGroup = listOfConnectedGroups.get(i);
+						myTreeGroup = listOfConnectedTreeGroups.get(i);
+						myRobotGroup = listOfConnectedRobotGroups.get(i);
 					}
 				}
 			}
-			if (myGroup == null) {
-				ArrayList<Object> tempList = new ArrayList<Object>();
-				tempList.add(robot);
-				listOfConnectedGroups.add(tempList);
-				myGroup = tempList;
+			if (myTreeGroup == null) {
+				ArrayList<TreeInfo> tempTreeList = new ArrayList<TreeInfo>();
+				ArrayList<RobotInfo> tempRobotList = new ArrayList<RobotInfo>();
+				tempRobotList.add(robot);
+				listOfConnectedTreeGroups.add(tempTreeList);
+				listOfConnectedRobotGroups.add(tempRobotList);
+				myTreeGroup = tempTreeList;
+				myRobotGroup = tempRobotList;
+
 			}
 			for (RobotInfo robot2 : robotList) {
 				if (robot2 != robot) {
 					if (robot2.getLocation().distanceTo(robot.getLocation()) < rc.getType().bodyRadius
 							+ robot2.getType().bodyRadius + robot.getType().bodyRadius) {
-						// if already has group, merge groups else merge groups
-						ArrayList<Object> robot2Group = null;
-						for (int i = 0; i < listOfConnectedGroups.size(); i++) {
-							for (Object object : listOfConnectedGroups.get(i)) {
-								if (object == robot) {
-									robot2Group = listOfConnectedGroups.get(i);
+						// if already has group, merge groups else add to group
+						ArrayList<TreeInfo> robot2TreeGroup = null;
+						ArrayList<RobotInfo> robot2RobotGroup = null;
+						for (int i = 0; i < listOfConnectedRobotGroups.size(); i++) {
+							for (Object object : listOfConnectedRobotGroups.get(i)) {
+								if (object == robot2) {
+									robot2TreeGroup = listOfConnectedTreeGroups.get(i);
+									robot2RobotGroup = listOfConnectedRobotGroups.get(i);
 								}
 							}
 						}
-						if (robot2Group != myGroup) {
-							if (robot2Group == null) {
-								myGroup.add(robot2);
+						if (robot2RobotGroup != myRobotGroup) {
+							if (robot2RobotGroup == null) {
+								myRobotGroup.add(robot2);
 							} else {
-								myGroup.addAll(robot2Group);
-								listOfConnectedGroups.remove(robot2Group);
+								myTreeGroup.addAll(robot2TreeGroup);
+								myRobotGroup.addAll(robot2RobotGroup);
+								listOfConnectedTreeGroups.remove(robot2TreeGroup);
+								listOfConnectedRobotGroups.remove(robot2RobotGroup);
 							}
 						}
 					}
@@ -1106,12 +1125,13 @@ public strictfp class RobotPlayer {
 		}
 		// find group edges
 		ArrayList<MapLocation> edges = new ArrayList<MapLocation>();
-		for (ArrayList<Object> group : listOfConnectedGroups) {
+		for (ArrayList<TreeInfo> group : listOfConnectedTreeGroups) {
 			MapLocation leftEdge;
 			MapLocation rightEdge;
 
 		}
 		return location;
+
 	}
 
 	static void smartMoveToLocation() {
