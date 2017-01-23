@@ -1137,6 +1137,68 @@ public strictfp class RobotPlayer {
 	static void smartMoveToLocation() {
 
 	}
+	
+	static boolean willCollideWithMe(BulletInfo bullet, MapLocation robotLocation, float extraRadius) {
+		// Get relevant bullet information
+		Direction propagationDirection = bullet.dir;
+		MapLocation bulletLocation = bullet.location;
+
+		// Calculate bullet relations to this robot
+		Direction directionToRobot = bulletLocation.directionTo(robotLocation);
+		float distToRobot = bulletLocation.distanceTo(robotLocation);
+		float theta = propagationDirection.radiansBetween(directionToRobot);
+		if (Math.abs(theta) > Math.PI / 2) {
+			return false;
+		}
+		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta));
+		return (perpendicularDist <= (rc.getType().bodyRadius + extraRadius));
+	}
+
+	
+	static void avoidBullet(Direction optimalDirection) throws GameActionException {
+		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
+		System.out.println("Number of bullets detected "+ allNearbyBullets.length);
+		ArrayList<BulletInfo> incomingBullets = new ArrayList<BulletInfo>();
+		for (BulletInfo checkBullet: allNearbyBullets) {
+			if (willCollideWithMe(checkBullet, rc.getLocation(), rc.getType().strideRadius)) {
+				incomingBullets.add(checkBullet);
+			}
+		}
+		
+		//EVERYTHING BELOW THIS HAS TO BE FIXED
+		
+		System.out.println("Number Of bullets that will potentially hit me is " + incomingBullets.size());
+		/*if (incomingBullets.size() > 0) {
+			// This for loop computes the optimal direction that the robot can travel in to avoid all bullets
+			// The following two statements will dictate where the robot will move if there is not spot that has 0 collisions
+			
+			Direction bestDirection = optimalDirection;
+			int lowestNumberOfTimesHit = incomingBullets.size();
+			int numberOfTimesHit = 0;
+
+			for (int angle = 0; angle < 360; angle = angle + 45) {
+				// This is so that it will search through the left and right side
+				Direction newDirection = optimalDirection.rotateLeftDegrees(angle);
+				// Generate new location using the old location then adding the stride radius and new direction
+				MapLocation newLocation = rc.getLocation().add(newDirection, rc.getType().strideRadius);
+				// Searches through the list of potential collisions and see which ones still collide
+				for (BulletInfo checkBullet: incomingBullets) {
+					if (willCollideWithMe(checkBullet, newLocation, 0)) {
+						numberOfTimesHit++;
+					}
+				}
+				if (numberOfTimesHit < lowestNumberOfTimesHit) {
+					lowestNumberOfTimesHit = numberOfTimesHit;
+					bestDirection = newDirection;
+					System.out.println("Changed!");
+				}
+			}
+			if (rc.canMove(bestDirection)) {
+				rc.move(bestDirection);
+				System.out.println(lowestNumberOfTimesHit);
+			}
+		}*/
+	}
 
 	// -------------------------------------------------------------------------------------------------------
 	// Below are statements to get the orientation of map, map center, and
