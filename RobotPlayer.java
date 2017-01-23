@@ -76,7 +76,8 @@ public strictfp class RobotPlayer {
 						rc.hireGardener(nextUnoccupiedDirection(RobotType.GARDENER, 0));
 					}
 				}
-
+				// getNextPathLocation(rc.senseNearbyTrees(),
+				// rc.senseNearbyRobots());
 				tryHireGardner(Direction.getNorth(), 10, 18);
 
 				convertVictoryPoints(500);
@@ -989,8 +990,8 @@ public strictfp class RobotPlayer {
 	}
 
 	static MapLocation getNextPathLocation(TreeInfo[] treeList, RobotInfo[] robotList) {
+		int bytesBefore = Clock.getBytecodeNum();
 		MapLocation location = null;
-
 		ArrayList<ArrayList<RobotInfo>> listOfConnectedRobotGroups = new ArrayList<ArrayList<RobotInfo>>();
 		ArrayList<ArrayList<TreeInfo>> listOfConnectedTreeGroups = new ArrayList<ArrayList<TreeInfo>>();
 		for (TreeInfo tree : treeList) {
@@ -1125,11 +1126,30 @@ public strictfp class RobotPlayer {
 		}
 		// find group edges
 		ArrayList<MapLocation> edges = new ArrayList<MapLocation>();
-		for (ArrayList<TreeInfo> group : listOfConnectedTreeGroups) {
-			MapLocation leftEdge;
-			MapLocation rightEdge;
 
+		for (int x = 0; x < listOfConnectedTreeGroups.size(); x++) {
+			MapLocation leftEdge;
+			float leftDegrees = 0;
+			float rightDegrees = 0;
+			MapLocation rightEdge;
+			boolean firstFound = false;
+			// for each pair
+			for (int r = 0; r < listOfConnectedRobotGroups.get(x).size(); r++) {
+				for (int r2 = 0; r < listOfConnectedRobotGroups.get(x).size(); r2++) {
+					//check for objects inside and outside, if all on same side, then these are the droids we are looking for
+					
+				}
+				for (int t = 0; t < listOfConnectedTreeGroups.get(x).size(); t++) {
+
+				}
+			}
+			for (int t = 0; t < listOfConnectedTreeGroups.get(x).size(); t++) {
+				for (int t2 = 0; t < listOfConnectedTreeGroups.get(x).size(); t2++) {
+
+				}
+			}
 		}
+		System.out.println("used " + (Clock.getBytecodeNum() - bytesBefore) + "Byte Codes");
 		return location;
 
 	}
