@@ -95,7 +95,7 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		boolean aboutToDie = false;
-		System.out.println("I'm an Gardner!");
+		System.out.println("I'm a Gardner!");
 
 		rc.broadcast(GARDNER_COUNT_ARR, rc.readBroadcast(GARDNER_COUNT_ARR) + 1);
 		ArrayList<TreeInfo> requestedTrees = new ArrayList<TreeInfo>();
@@ -111,6 +111,9 @@ public strictfp class RobotPlayer {
 				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
+				}
+				if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 3) {
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SOLDIER);
 				}
 				MapLocation myLocation = rc.getLocation();
 				if (state == 0) {
@@ -229,19 +232,28 @@ public strictfp class RobotPlayer {
 
 	}
 	static void runSoldier() throws GameActionException {
-		System.out.println("I'm an soldier!");
+		System.out.println("I'm a soldier!");
 		while (true) {
 			try {
 				RobotInfo[] enemies = rc.senseNearbyRobots(7, rc.getTeam().opponent());
-				if (rc.getTeam() == Team.B) {
-					avoidBullet(rc.getLocation().directionTo(enemies[0].getLocation()));
-				}
-				if (rc.getTeam() == Team.A)
-				{
+				
+				//change this later with updated bullet avoidance method
+				BulletInfo[] nearbyBullets = rc.senseNearbyBullets(7);
+				//change the above later with updated bullet avoidance method
+				
+				if(enemies[0] != null) {
 					Direction toEnemy = rc.getLocation().directionTo(enemies[0].getLocation());
 					rc.fireSingleShot(toEnemy);
 					System.out.println("SHOT");
+					
+					//change below with updated bullet avoidance method
+					if(nearbyBullets[0] != null) {
+						avoidBullets(nearbyBullets);
+					}
+					//change above with bullet avoidance method
 				}
+			
+				
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
