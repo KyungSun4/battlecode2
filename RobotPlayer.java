@@ -324,24 +324,6 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm a soldier!");
 		while (true) {
 			try {
-				RobotInfo[] enemies = rc.senseNearbyRobots(7, rc.getTeam().opponent());
-
-				// change this later with updated bullet avoidance method
-				BulletInfo[] nearbyBullets = rc.senseNearbyBullets(7);
-				// change the above later with updated bullet avoidance method
-				// this i throwing an exception
-				// if (enemies[0] != null) {
-				if (enemies.length > 0) {
-					Direction toEnemy = rc.getLocation().directionTo(enemies[0].getLocation());
-					rc.fireSingleShot(toEnemy);
-					System.out.println("SHOT");
-
-					// change below with updated bullet avoidance method
-					if (nearbyBullets[0] != null) {
-						avoidBullets(nearbyBullets);
-					}
-					// change above with bullet avoidance method
-				}
 
 				Clock.yield();
 			} catch (Exception e) {
@@ -807,31 +789,6 @@ public strictfp class RobotPlayer {
 		MapLocation myLocation = rc.getLocation();
 		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
 		rc.fireSingleShot(directionToEnemy);
-	}
-
-	// Called if a bullet is sensed within the robots. A robot will sense nearby
-	// bullets and will run this code for each one of the bullets
-	static boolean ifNeedToAvoidBullet(BulletInfo bullet) {
-		MapLocation myLocation = rc.getLocation();
-		MapLocation bulletlocation = bullet.getLocation();
-		float distanceToBullet = myLocation.distanceTo(bulletlocation);
-		float bulletSpeed = bullet.getSpeed();
-		if (willCollideWithMe(bullet) && bulletSpeed / (distanceToBullet + rc.getType().bodyRadius) >= .5) {
-			System.out.print("Need to evade bullet!");
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * avoids bullets, the array comes pre sorted by closest, so if it can it
-	 * will avoid the closest should be made more effcient by includign return
-	 * for avoidBullet to tell if it was succeful and if so end loop
-	 */
-	static void avoidBullets(BulletInfo[] bullets) {
-		for (BulletInfo bullet : bullets) {
-			avoidBullet(bullet);
-		}
 	}
 
 	
