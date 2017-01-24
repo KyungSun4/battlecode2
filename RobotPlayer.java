@@ -938,7 +938,7 @@ public strictfp class RobotPlayer {
 				tryMoveToLocation(tree, 1, 20);
 				System.out.println("Choping Request id: "+id);
 				return 0;
-			} else if (!tryMoveToLocation(tree, 1, 30)) {
+			} else if (!tryMoveToLocation(tree, 1, 80)) {
 				return 2;
 			}
 			return 0;
@@ -946,7 +946,7 @@ public strictfp class RobotPlayer {
 			if (tree.distanceTo(rc.getLocation()) < rc.getType().sensorRadius) {
 				return 1;
 			}
-			if (!tryMoveToLocation(tree, 1, 30)) {
+			if (!tryMoveToLocation(tree, 1, 80)) {
 				return 2;
 			}
 			return 0;
