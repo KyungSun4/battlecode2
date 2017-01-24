@@ -489,35 +489,6 @@ public strictfp class RobotPlayer {
 
 	}
 
-	static boolean willCollideWithMe(BulletInfo bullet) {
-		MapLocation myLocation = rc.getLocation();
-
-		// Get relevant bullet information
-		Direction propagationDirection = bullet.dir;
-		MapLocation bulletLocation = bullet.location;
-
-		// Calculate bullet relations to this robot
-		Direction directionToRobot = bulletLocation.directionTo(myLocation);
-		float distToRobot = bulletLocation.distanceTo(myLocation);
-		float theta = propagationDirection.radiansBetween(directionToRobot);
-
-		// If theta > 90 degrees, then the bullet is traveling away from us and
-		// we can break early
-		if (Math.abs(theta) > Math.PI / 2) {
-			return false;
-		}
-
-		// distToRobot is our hypotenuse, theta is our angle, and we want to
-		// know this length of the opposite leg.
-		// This is the distance of a line that goes from myLocation and
-		// intersects perpendicularly with propagationDirection.
-		// This corresponds to the smallest radius circle centered at our
-		// location that would intersect with the
-		// line that is the path of the bullet.
-		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta));
-		return (perpendicularDist <= rc.getType().bodyRadius);
-	}
-
 	static String getMapStats() {
 		// Array of archon location friendly/enemy
 		MapLocation archonLocationF[] = rc.getInitialArchonLocations(rc.getTeam());
@@ -1445,84 +1416,59 @@ public strictfp class RobotPlayer {
 		return nextPathLocation;
 	}
 
-	static boolean willCollideWithMe(BulletInfo bullet, MapLocation robotLocation, float extraRadius) {
+	static boolean willCollideWithMe(BulletInfo bullet) {
+		MapLocation myLocation = rc.getLocation();
+
 		// Get relevant bullet information
 		Direction propagationDirection = bullet.dir;
 		MapLocation bulletLocation = bullet.location;
 
 		// Calculate bullet relations to this robot
-		Direction directionToRobot = bulletLocation.directionTo(robotLocation);
-		float distToRobot = bulletLocation.distanceTo(robotLocation);
+		Direction directionToRobot = bulletLocation.directionTo(myLocation);
+		float distToRobot = bulletLocation.distanceTo(myLocation);
 		float theta = propagationDirection.radiansBetween(directionToRobot);
-		if (Math.abs(theta) > Math.PI / 2) {
-			return false;
-		}
-		float perpendicularDist = (float) Math.abs(distToRobot * Math.sin(theta));
-		return (perpendicularDist <= (rc.getType().bodyRadius + extraRadius));
+
+		float perpendicularDist = (float) Math.abs(distToRobot * (float) Math.sin(theta)); 
+		perpendicularDist = Math.round(perpendicularDist*1000);
+		float bodyRadius = Math.round((rc.getType().bodyRadius)*1000);
+		System.out.println("Perpendicular Distance: " + perpendicularDist);
+		System.out.println("Body radius: " + bodyRadius);
+		if (perpendicularDist <= bodyRadius)
+			return true;
+		return false;
 	}
-
-	static void avoidBullet(Direction optimalDirection) throws GameActionException {
+	
+	static void avoidBullet2() throws GameActionException {
 		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
-		System.out.println("Number of bullets detected " + allNearbyBullets.length);
-		ArrayList<BulletInfo> incomingBullets = new ArrayList<BulletInfo>();
-		for (BulletInfo checkBullet : allNearbyBullets) {
-			if (willCollideWithMe(checkBullet, rc.getLocation(), rc.getType().strideRadius)) {
-				incomingBullets.add(checkBullet);
-			}
-		}
-
-		System.out.println(Clock.getBytecodeNum());
-
-		// EVERYTHING BELOW THIS HAS TO BE FIXED
-
-		System.out.println("Number Of bullets that will potentially hit me is " + incomingBullets.size());
-		if (incomingBullets.size() > 0) {
-			// This for loop computes the optimal direction that the robot can
-			// travel in to avoid all bullets
-			// The following two statements will dictate where the robot will
-			// move if there is not spot that has 0 collisions
-
-			Direction bestDirection = optimalDirection;
-			int lowestNumberOfTimesHit = incomingBullets.size();
-			int numberOfTimesHit = 0;
-
-			for (int angle = 0; angle < 360; angle = angle + 45) {
-				Direction newDirection = optimalDirection.rotateLeftDegrees(angle);
-				// Generate new location using the old location then adding the
-				// stride radius and new direction
-				MapLocation newLocation = rc.getLocation().add(newDirection, rc.getType().strideRadius);
-				// Searches through the list of potential collisions and see
-				// which ones still collide
-				for (BulletInfo checkBullet : incomingBullets) {
-					MapLocation bulletLocation = checkBullet.getLocation();
-					float distanceToBullet = newLocation.distanceTo(bulletLocation) - rc.getType().bodyRadius;
-					float bulletSpeed = checkBullet.getSpeed();
-					if ((distanceToBullet / bulletSpeed) <= 1) {
-						numberOfTimesHit++;
+		//System.out.println("Number of bullets detected "+ allNearbyBullets.length);
+		if (allNearbyBullets.length > 0) {
+			for (BulletInfo bullet: allNearbyBullets) {
+				if (willCollideWithMe(bullet)) {
+					Direction propagationDirection = bullet.dir;
+					MapLocation bulletLocation = bullet.location;
+					MapLocation myLocation = rc.getLocation();
+					Direction directionToRobot = bulletLocation.directionTo(myLocation);
+					Direction moveToAvoid;
+					// Sets the direction it wants to move based on what portion of the
+					// robot the bullet will hit
+					System.out.println(bullet.getID());					
+					if (directionToRobot.radiansBetween(propagationDirection) >= 0) {
+						// Sets moveToAvoid a direction perpendicular to the direction
+						// of the bullet
+						moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
+						System.out.println("MOVED RIGHT");
+					} else {
+						moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
 					}
-				}
-				System.out.println("I will be hit by: " + numberOfTimesHit + "bullets next round");
-				if (numberOfTimesHit == 0) {
-					if (rc.canMove(newDirection)) {
-						rc.move(newDirection);
-						System.out.println("I am not going to be hit next turn!!!!!!!!!");
+					// Checks if the direction it wants to move is clear before moving.
+					if (rc.canMove(moveToAvoid) && !rc.hasMoved()) {
+						rc.move(moveToAvoid);
 						return;
 					}
 				}
-				if (numberOfTimesHit < lowestNumberOfTimesHit) {
-					lowestNumberOfTimesHit = numberOfTimesHit;
-					bestDirection = newDirection;
-					System.out.println("Changed!");
-				}
 			}
-			if (rc.canMove(bestDirection)) {
-				rc.move(bestDirection);
-				System.out.println(lowestNumberOfTimesHit);
-			}
-			Clock.yield();
 		}
-
-	}
+	}  
 
 	// -------------------------------------------------------------------------------------------------------
 	// Below are statements to get the orientation of map, map center, and
