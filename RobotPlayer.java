@@ -8,7 +8,7 @@ public strictfp class RobotPlayer {
 	static int TREE_POS_ARR_START = 50; // the position in the broadcast array
 										// where the tree positions are first
 										// stored and continues till end
-	static int ARCHON_COUNT_ARR = 0; // the position in the broadcast array
+	static int ARCHON_COUNT_ARR = 237; // the position in the broadcast array
 										// where the count of archon is stored
 
 	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
@@ -835,46 +835,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void avoidBullet(BulletInfo bullet) {
-		// These statements simply get info about the orientation and angles
-		// between the robot and bullet
-		Direction propagationDirection = bullet.dir;
-		MapLocation bulletLocation = bullet.location;
-		MapLocation myLocation = rc.getLocation();
-		Direction directionToRobot = bulletLocation.directionTo(myLocation);
-		try {
-			Direction moveToAvoid;
-			// Sets the direction it wants to move based on what portion of the
-			// robot the bullet will hit
-			if ((directionToRobot.getAngleDegrees() - propagationDirection.getAngleDegrees()) >= 0) {
-				// Sets moveToAvoid a direction perpendicular to the direction
-				// of the bullet
-				moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
-			} else {
-				moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
-			}
-			// Checks if the direction it wants to move is clear before moving.
-			if (rc.canMove(moveToAvoid)) {
-				rc.move(moveToAvoid);
-			}
-			// If the space it wants to move to is occupied it will use the
-			// nextUnoccupiedDirection method to move
-			else {
-				// This if statement is to check the direction the bullet is
-				// coming. You dont want to move into the path of the bullet
-				if (directionToRobot.getAngleDegrees() > 180) {
-					rc.move(nextUnoccupiedDirection(rc.getType(), 180));
-				} else {
-					rc.move(nextUnoccupiedDirection(rc.getType(), 0));
-				}
-			}
-			System.out.println("Avoided successfully?");
-		} catch (Exception e) {
-			System.out.println("FAILED TO AVOID BULLET!");
-			e.printStackTrace();
-		}
-	}
-
 	static Direction directionToClosestEnemy() {
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
 		MapLocation myLocation = rc.getLocation();
@@ -1675,7 +1635,7 @@ public strictfp class RobotPlayer {
 		return nextPathLocation;
 	}
 
-	static boolean willCollideWithMe(BulletInfo bullet) {
+	static boolean willCollideWithMe(BulletInfo bullet) throws GameActionException {
 		MapLocation myLocation = rc.getLocation();
 
 		// Get relevant bullet information
@@ -1687,50 +1647,48 @@ public strictfp class RobotPlayer {
 		float distToRobot = bulletLocation.distanceTo(myLocation);
 		float theta = propagationDirection.radiansBetween(directionToRobot);
 
-		float perpendicularDist = (float) Math.abs(distToRobot * (float) Math.sin(theta));
-		perpendicularDist = Math.round(perpendicularDist * 1000);
-		float bodyRadius = Math.round((rc.getType().bodyRadius) * 1000);
+		float perpendicularDist = (float) (distToRobot * Math.sin(theta));
+		perpendicularDist = Math.round(perpendicularDist * 1000) / 1000;
+		float bodyRadius = Math.round((rc.getType().bodyRadius) * 1000) / 1000;
 		System.out.println("Perpendicular Distance: " + perpendicularDist);
 		System.out.println("Body radius: " + bodyRadius);
-		if (perpendicularDist <= bodyRadius)
+
+		if (Math.abs(perpendicularDist) <= bodyRadius) {
+			if (perpendicularDist <= 0) {
+				if (rc.canMove(propagationDirection.rotateRightRads((float) Math.PI / 2))) {
+					System.out.println("Perpendicular Distance: " + perpendicularDist);
+					System.out.println("Moved Right!");
+					rc.move(propagationDirection.rotateRightRads((float) Math.PI / 2));
+				} else {
+
+				}
+			} else {
+				if (rc.canMove(propagationDirection.rotateLeftRads((float) Math.PI / 2))) {
+					System.out.println("Perpendicular Distance: " + perpendicularDist);
+					System.out.println("Moved Left!");
+					rc.move(propagationDirection.rotateLeftRads((float) Math.PI / 2));
+				} else {
+
+				}
+			}
 			return true;
+		}
 		return false;
 	}
 
-	static void avoidBullet2() throws GameActionException {
+	static void avoidBullet() throws GameActionException {
 		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
 		// System.out.println("Number of bullets detected "+
 		// allNearbyBullets.length);
 		if (allNearbyBullets.length > 0) {
 			for (BulletInfo bullet : allNearbyBullets) {
 				if (willCollideWithMe(bullet)) {
-					Direction propagationDirection = bullet.dir;
-					MapLocation bulletLocation = bullet.location;
-					MapLocation myLocation = rc.getLocation();
-					Direction directionToRobot = bulletLocation.directionTo(myLocation);
-					Direction moveToAvoid;
-					// Sets the direction it wants to move based on what portion
-					// of the
-					// robot the bullet will hit
-					System.out.println(bullet.getID());
-					if (directionToRobot.radiansBetween(propagationDirection) >= 0) {
-						// Sets moveToAvoid a direction perpendicular to the
-						// direction
-						// of the bullet
-						moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
-						System.out.println("MOVED RIGHT");
-					} else {
-						moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
-					}
-					// Checks if the direction it wants to move is clear before
-					// moving.
-					if (rc.canMove(moveToAvoid) && !rc.hasMoved()) {
-						rc.move(moveToAvoid);
-						return;
-					}
+					System.out.println("Dodged bullet!");
+					return;
 				}
 			}
 		}
+
 	}
 
 	/**
@@ -1768,12 +1726,12 @@ public strictfp class RobotPlayer {
 		return 5;
 	}
 
-	// -------------------------------------------------------------------------------------------------------
-	// Below are statements to get the orientation of map, map center, and
-	// assign the starting Archon.
-	// I think all of these can be called in the robot controller class
-
 }
+
+// -------------------------------------------------------------------------------------------------------
+// Below are statements to get the orientation of map, map center, and
+// assign the starting Archon.
+// I think all of these can be called in the robot controller class
 
 // static String getMapTypes()
 // Close map - Create soldiers instantly
