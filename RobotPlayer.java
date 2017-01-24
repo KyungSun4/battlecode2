@@ -58,83 +58,85 @@ public strictfp class RobotPlayer {
 			break;
 		}
 	}
-// ----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
 	// ARCHON PLAYER & METHODS
-	
-		static void runArchon() throws GameActionException {
-			System.out.println("I'm an archon!");
-			while (true) {
+
+	static void runArchon() throws GameActionException {
+		System.out.println("I'm an archon!");
+		while (true) {
+			try {
+				roundOneCommands();
+				roundTwoCommands();
+				if (rc.readBroadcast(1) == rc.getID()) {
+
+				}
+				Clock.yield();
+			} catch (Exception e) {
+				System.out.println("Archon Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// Methods specifically for the archon method. Returns true if the archon is
+	// not surrounded
+	static boolean isNotSurrounded() {
+		Direction test = Direction.getEast();
+		for (int angle = 0; angle <= 360; angle = angle + 45) {
+			test = test.rotateLeftDegrees(angle);
+			if (rc.canMove(test)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// This method will find the archon farthest away from the center. If this
+	// archon is not surrounded by trees, it will be set as the default archon
+	static void roundOneCommands() {
+		if (rc.getRoundNum() == 1) {
+			MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
+			MapLocation mapCenter = getMapCenter();
+			MapLocation farthestArchonLocation = mapCenter;
+			float largestDistance = 0;
+			for (MapLocation archonLocation : archonLocationF) {
+				if (archonLocation.distanceTo(mapCenter) > largestDistance) {
+					largestDistance = archonLocation.distanceTo(mapCenter);
+					farthestArchonLocation = archonLocation;
+				}
+			}
+			if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
 				try {
-					roundOneCommands();
-					roundTwoCommands();
-					if (rc.readBroadcast(1) == rc.getID()) {
-						
-					}
-					Clock.yield();
-				} catch (Exception e) {
-					System.out.println("Archon Exception");
+					rc.broadcast(1, rc.getID());
+					tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 1, 180, RobotType.GARDENER);
+				} catch (GameActionException e) {
+					System.out.println("Round one archon exception!");
 					e.printStackTrace();
 				}
 			}
 		}
-		
-		// Methods specifically for the archon method. Returns true if the archon is not surrounded
-		static boolean isNotSurrounded()
-		{
-			Direction test = Direction.getEast();
-			for (int angle = 0; angle <= 360; angle = angle + 45) {
-				test = test.rotateLeftDegrees(angle);
-				if (rc.canMove(test)) {
-					return true;
-				}
-			}
-			return false;			
-		}
-		
-		// This method will find the archon farthest away from the center. If this archon is not surrounded by trees, it will be set as the default archon
-		static void roundOneCommands() {
-			if (rc.getRoundNum() == 1) {
-				MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
-				MapLocation mapCenter = getMapCenter();
-				MapLocation farthestArchonLocation = mapCenter;
-				float largestDistance = 0;
-				for (MapLocation archonLocation: archonLocationF) {
-					if (archonLocation.distanceTo(mapCenter) > largestDistance) {
-						largestDistance = archonLocation.distanceTo(mapCenter);
-						farthestArchonLocation = archonLocation;
-					}
-				}
-				if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
-					try {
-						rc.broadcast(1, rc.getID());
-						tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 1, 180, RobotType.GARDENER);
-					} catch (GameActionException e) {
-						System.out.println("Round one archon exception!");
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		
-		// If no default archon has been set in round one, set a different archon as the default then build a gardener
-		static void roundTwoCommands() throws GameActionException {
-			if (rc.getRoundNum() == 2) {
-				if (rc.readBroadcast(1) == 0 && isNotSurrounded()) {
-					try {
-						rc.broadcast(1, rc.getID());
-						MapLocation myLocation = rc.getLocation();
-						tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
-					} catch (GameActionException e) {
-						System.out.println("Roudn two archon exception!");
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+	}
 
-// ------------------------------------------------------------------------------
-	// GARDENER METHODS	
-	
+	// If no default archon has been set in round one, set a different archon as
+	// the default then build a gardener
+	static void roundTwoCommands() throws GameActionException {
+		if (rc.getRoundNum() == 2) {
+			if (rc.readBroadcast(1) == 0 && isNotSurrounded()) {
+				try {
+					rc.broadcast(1, rc.getID());
+					MapLocation myLocation = rc.getLocation();
+					tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
+				} catch (GameActionException e) {
+					System.out.println("Roudn two archon exception!");
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------------------
+	// GARDENER METHODS
+
 	static void runGardener() throws GameActionException {
 		boolean aboutToDie = false;
 		System.out.println("I'm a Gardner!");
@@ -265,7 +267,7 @@ public strictfp class RobotPlayer {
 					}
 				} else {
 					// we are combatMode
-					
+
 				}
 				rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
@@ -310,6 +312,8 @@ public strictfp class RobotPlayer {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
+				
+				
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -322,9 +326,45 @@ public strictfp class RobotPlayer {
 
 	static void runSoldier() throws GameActionException {
 		System.out.println("I'm a soldier!");
+		
+		Direction tempMoveDirection;
+		Direction moveDirection;
+		// where did we start from? -> where we should initially move
+		float radianMove;
+		switch (getMapStats()) {
+		case "bottom":
+			radianMove = (float) Math.PI / 2;
+			break;
+		case "top":
+			radianMove = (float) Math.PI * 3 / 2;
+			break;
+		case "left":
+			radianMove = (float) 0;
+			break;
+		case "right":
+			radianMove = (float) Math.PI;
+			break;
+		case "bottomRight":
+			radianMove = (float) Math.PI * 3 / 4;
+			break;
+		case "bottomLeft":
+			radianMove = (float) Math.PI * 1 / 4;
+			break;
+		case "topLeft":
+			radianMove = (float) Math.PI * 7 / 4;
+			break;
+		case "topRight":
+			radianMove = (float) Math.PI * 5 / 4;
+			break;
+		default:
+			System.out.println("DEFAULT");
+			radianMove = (float) Math.random() * 2 * (float) Math.PI;
+			break;
+		}
+		moveDirection = new Direction(radianMove);
+		
 		while (true) {
 			try {
-
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
@@ -700,58 +740,57 @@ public strictfp class RobotPlayer {
 		boolean result = tryMove(dirTo, degreeOffset, checksPerSide);
 		return result;
 	}
-	
+
 	static boolean tryShoot() throws GameActionException {
-		//shoots with correct number of bullets in correct distance. Use as a conditional to check if there is an enemy in range and call this function
-		
-		//0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot single
+		// shoots with correct number of bullets in correct distance. Use as a
+		// conditional to check if there is an enemy in range and call this
+		// function
+
+		// 0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot
+		// single
 		RobotInfo[] enemies;
 		int shotType;
 		boolean didShoot = true;
 		Direction dir;
-		
-		//decide which shot to shoot
-		if(rc.senseNearbyRobots((float) 2)[0] != null) {
+
+		// decide which shot to shoot
+		if (rc.senseNearbyRobots((float) 2)[0] != null) {
 			shotType = 5;
 			enemies = rc.senseNearbyRobots((float) 2);
-		}
-		else if (rc.senseNearbyRobots((float) 5)[0] != null){
+		} else if (rc.senseNearbyRobots((float) 5)[0] != null) {
 			shotType = 3;
 			enemies = rc.senseNearbyRobots((float) 5);
-		}
-		else if (rc.senseNearbyRobots((float) -1)[0] != null){
+		} else if (rc.senseNearbyRobots((float) -1)[0] != null) {
 			shotType = 1;
 			enemies = rc.senseNearbyRobots((float) -1);
-		}
-		else {
+		} else {
 			shotType = -1;
 			enemies = new RobotInfo[0];
 		}
-		
-		//determine direction of shooting
+
+		// determine direction of shooting
 		dir = shotType == 1 ? rc.getLocation().directionTo(enemies[0].getLocation()) : null;
-		
-		
+
 		switch (shotType) {
-			case 5:
-				if(rc.canFirePentadShot()) {
-					rc.firePentadShot(dir);
-				}
-				break;
-			case 3:
-				if(rc.canFireTriadShot()) {
-					rc.fireTriadShot(dir);
-				}
-				break;
-			case 1:
-				if(rc.canFireSingleShot()) {
-					rc.fireSingleShot(dir);
-				}
-				break;
-			default:
-				didShoot = false;
-				System.out.println("Did not shoot :(");
-				break;
+		case 5:
+			if (rc.canFirePentadShot()) {
+				rc.firePentadShot(dir);
+			}
+			break;
+		case 3:
+			if (rc.canFireTriadShot()) {
+				rc.fireTriadShot(dir);
+			}
+			break;
+		case 1:
+			if (rc.canFireSingleShot()) {
+				rc.fireSingleShot(dir);
+			}
+			break;
+		default:
+			didShoot = false;
+			System.out.println("Did not shoot :(");
+			break;
 		}
 		return didShoot;
 	}
@@ -791,7 +830,6 @@ public strictfp class RobotPlayer {
 		rc.fireSingleShot(directionToEnemy);
 	}
 
-	
 	static Direction directionToClosestEnemy() {
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
 		MapLocation myLocation = rc.getLocation();
@@ -1559,15 +1597,15 @@ public strictfp class RobotPlayer {
 						// we
 						// are looking for if
 						if (!between && outside) {
-							//edges.add(tree.getLocation());
-							//edges.add(tree2.getLocation());
+							// edges.add(tree.getLocation());
+							// edges.add(tree2.getLocation());
 							// need something to stop looking for pairs if this
 							// part
 							// runs
-						} else if(!outside && between ) {
-							
+						} else if (!outside && between) {
+
 						}
-						
+
 					}
 				}
 			}
@@ -1591,8 +1629,7 @@ public strictfp class RobotPlayer {
 		}
 		return nextPathLocation;
 	}
-	
-	
+
 	static boolean willCollideWithMe(BulletInfo bullet) throws GameActionException {
 		MapLocation myLocation = rc.getLocation();
 
@@ -1605,31 +1642,28 @@ public strictfp class RobotPlayer {
 		float distToRobot = bulletLocation.distanceTo(myLocation);
 		float theta = propagationDirection.radiansBetween(directionToRobot);
 
-		float perpendicularDist = (float)(distToRobot * Math.sin(theta)); 
-		perpendicularDist = Math.round(perpendicularDist*1000)/1000;
-		float bodyRadius = Math.round((rc.getType().bodyRadius)*1000)/1000;
+		float perpendicularDist = (float) (distToRobot * Math.sin(theta));
+		perpendicularDist = Math.round(perpendicularDist * 1000) / 1000;
+		float bodyRadius = Math.round((rc.getType().bodyRadius) * 1000) / 1000;
 		System.out.println("Perpendicular Distance: " + perpendicularDist);
 		System.out.println("Body radius: " + bodyRadius);
-		
+
 		if (Math.abs(perpendicularDist) <= bodyRadius) {
 			if (perpendicularDist <= 0) {
 				if (rc.canMove(propagationDirection.rotateRightRads((float) Math.PI / 2))) {
 					System.out.println("Perpendicular Distance: " + perpendicularDist);
 					System.out.println("Moved Right!");
 					rc.move(propagationDirection.rotateRightRads((float) Math.PI / 2));
+				} else {
+
 				}
-				else {
-						
-				}
-			}
-			else {
+			} else {
 				if (rc.canMove(propagationDirection.rotateLeftRads((float) Math.PI / 2))) {
 					System.out.println("Perpendicular Distance: " + perpendicularDist);
 					System.out.println("Moved Left!");
 					rc.move(propagationDirection.rotateLeftRads((float) Math.PI / 2));
-				}
-				else {
-					
+				} else {
+
 				}
 			}
 			return true;
@@ -1639,22 +1673,60 @@ public strictfp class RobotPlayer {
 
 	static void avoidBullet() throws GameActionException {
 		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
-		//System.out.println("Number of bullets detected "+ allNearbyBullets.length);
+		// System.out.println("Number of bullets detected "+
+		// allNearbyBullets.length);
 		if (allNearbyBullets.length > 0) {
-			for (BulletInfo bullet: allNearbyBullets) {
+			for (BulletInfo bullet : allNearbyBullets) {
 				if (willCollideWithMe(bullet)) {
 					System.out.println("Dodged bullet!");
 					return;
 				}
 			}
 		}
-	}  
-	// -------------------------------------------------------------------------------------------------------
-	// Below are statements to get the orientation of map, map center, and
-	// assign the starting Archon.
-	// I think all of these can be called in the robot controller class
+
+	}
+
+	/**
+	 * gets the Map Type based on size and nubmer of trees nearby
+	 * 
+	 * @return
+	 */
+	static int getMapType() {
+		boolean enclosed = false;
+		boolean small = true;
+		// count number of trees nearby
+		TreeInfo[] trees = rc.senseNearbyTrees();
+		// may need to adjust number
+		if (trees.length > 10) {
+			enclosed = true;
+		}
+		float[] size = guessMapSize();
+		// if greater than a certain area
+		if (size[0] * size[1] > 1000) {
+			small = false;
+		}
+		if (small && enclosed) {
+			return 1;
+		}
+		if (small && !enclosed) {
+			return 2;
+		}
+		if (!small && enclosed) {
+			return 3;
+		}
+		if (!small && !enclosed) {
+			return 4;
+		}
+		// should never return 5;
+		return 5;
+	}
 
 }
+
+// -------------------------------------------------------------------------------------------------------
+// Below are statements to get the orientation of map, map center, and
+// assign the starting Archon.
+// I think all of these can be called in the robot controller class
 
 // static String getMapTypes()
 // Close map - Create soldiers instantly
