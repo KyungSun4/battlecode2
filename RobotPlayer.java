@@ -58,43 +58,83 @@ public strictfp class RobotPlayer {
 			break;
 		}
 	}
-
-	static void runArchon() throws GameActionException {
-		boolean aboutToDie = false;
-		System.out.println("I'm an archon!");
-		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
-		while (true) {
-			try {
-				if (rc.getRoundNum() == 1) {
-					// MapLocation startingArchon = assignStartingArchon();
-					// rc.broadcast(0, (int) startingArchon.x);
-					// rc.broadcast(1, (int) startingArchon.y);
-					// If this robot is in the same location as the assigned
-					// starting archon's location, save this robot's ID to the
-					// array
-					int xCoordinate = rc.readBroadcast(0);
-					int yCoordinate = rc.readBroadcast(1);
-					if ((int) rc.getLocation().x == xCoordinate && (int) rc.getLocation().y == yCoordinate) {
-						rc.hireGardener(nextUnoccupiedDirection(RobotType.GARDENER, 0));
+// ----------------------------------------------------------------------------------------------
+	// ARCHON PLAYER & METHODS
+	
+		static void runArchon() throws GameActionException {
+			System.out.println("I'm an archon!");
+			while (true) {
+				try {
+					roundOneCommands();
+					roundTwoCommands();
+					if (rc.readBroadcast(1) == rc.getID()) {
+						
 					}
+					Clock.yield();
+				} catch (Exception e) {
+					System.out.println("Archon Exception");
+					e.printStackTrace();
 				}
-				// getNextPathLocation(rc.senseNearbyTrees(),
-				// rc.senseNearbyRobots());
-				tryHireGardner(Direction.getNorth(), 10, 18);
-
-				convertVictoryPoints(500);
-				if (rc.getHealth() <= 5 && aboutToDie) {
-					aboutToDie = true;
-					rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) - 1);
-				}
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Archon Exception");
-				e.printStackTrace();
 			}
 		}
-	}
+		
+		// Methods specifically for the archon method. Returns true if the archon is not surrounded
+		static boolean isNotSurrounded()
+		{
+			Direction test = Direction.getEast();
+			for (int angle = 0; angle <= 360; angle = angle + 45) {
+				test = test.rotateLeftDegrees(angle);
+				if (rc.canMove(test)) {
+					return true;
+				}
+			}
+			return false;			
+		}
+		
+		// This method will find the archon farthest away from the center. If this archon is not surrounded by trees, it will be set as the default archon
+		static void roundOneCommands() {
+			if (rc.getRoundNum() == 1) {
+				MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
+				MapLocation mapCenter = getMapCenter();
+				MapLocation farthestArchonLocation = mapCenter;
+				float largestDistance = 0;
+				for (MapLocation archonLocation: archonLocationF) {
+					if (archonLocation.distanceTo(mapCenter) > largestDistance) {
+						largestDistance = archonLocation.distanceTo(mapCenter);
+						farthestArchonLocation = archonLocation;
+					}
+				}
+				if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
+					try {
+						rc.broadcast(1, rc.getID());
+						tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 1, 180, RobotType.GARDENER);
+					} catch (GameActionException e) {
+						System.out.println("Round one archon exception!");
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		// If no default archon has been set in round one, set a different archon as the default then build a gardener
+		static void roundTwoCommands() throws GameActionException {
+			if (rc.getRoundNum() == 2) {
+				if (rc.readBroadcast(1) == 0 && isNotSurrounded()) {
+					try {
+						rc.broadcast(1, rc.getID());
+						MapLocation myLocation = rc.getLocation();
+						tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
+					} catch (GameActionException e) {
+						System.out.println("Roudn two archon exception!");
+						e.printStackTrace();
+					}
+				}
+			}
+		}
 
+// ------------------------------------------------------------------------------
+	// GARDENER METHODS	
+	
 	static void runGardener() throws GameActionException {
 		boolean aboutToDie = false;
 		System.out.println("I'm a Gardner!");
