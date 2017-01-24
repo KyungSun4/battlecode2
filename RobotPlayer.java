@@ -27,9 +27,11 @@ public strictfp class RobotPlayer {
 	static int MIN_MAP_HEIGHT_ARR = 7; // since float, multiply by 1000
 	static int ORIGIN_X_ARR = 8; // since float, multiply by 1000
 	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
-	// can send up to 4 requests, each requires 3 spots
+	// can send up to 6? requests, each requires 3 spots
 	static int LUMBERJACK_REQUESTS_START = 20;
-	static int LUMBERJACK_REQUESTS_END = 35;
+	static int LUMBERJACK_REQUESTS_END = 41;//uses 42 and 43 also i think
+	static int TREE_REMOVED_START = 50;
+	static int TREE_REMOVED_END = 71;
 
 	@SuppressWarnings("unused")
 
@@ -902,7 +904,7 @@ public strictfp class RobotPlayer {
 				}
 			}
 		}
-		if (minDist == 1000000000) {
+		if (minDist == 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0) {
 			return null;
 		} else {
 			rc.broadcast(pos, rc.readBroadcast(pos) - 1); // return new
