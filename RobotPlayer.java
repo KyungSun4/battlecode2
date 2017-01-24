@@ -243,25 +243,24 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				RobotInfo[] enemies = rc.senseNearbyRobots(7, rc.getTeam().opponent());
-				
-				//change this later with updated bullet avoidance method
+
+				// change this later with updated bullet avoidance method
 				BulletInfo[] nearbyBullets = rc.senseNearbyBullets(7);
-				//change the above later with updated bullet avoidance method
-				
-				if(enemies[0] != null) {
+				// change the above later with updated bullet avoidance method
+
+				if (enemies[0] != null) {
 
 					Direction toEnemy = rc.getLocation().directionTo(enemies[0].getLocation());
 					rc.fireSingleShot(toEnemy);
 					System.out.println("SHOT");
-					
-					//change below with updated bullet avoidance method
-					if(nearbyBullets[0] != null) {
+
+					// change below with updated bullet avoidance method
+					if (nearbyBullets[0] != null) {
 						avoidBullets(nearbyBullets);
 					}
-					//change above with bullet avoidance method
+					// change above with bullet avoidance method
 				}
-			
-				
+
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
@@ -292,9 +291,11 @@ public strictfp class RobotPlayer {
 						tree = null;
 					} else if (result == 2) {
 						if (!chopNearestTrees(nearByTrees)) {
-							destination = tree;
-							nextPathLocation = smartMoveToLocation(nextPathLocation, destination, nearByTrees,
-									rc.senseNearbyRobots());
+							// destination = tree;
+							// nextPathLocation =
+							// smartMoveToLocation(nextPathLocation,
+							// destination, nearByTrees,
+							// rc.senseNearbyRobots());
 						}
 					}
 
