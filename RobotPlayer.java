@@ -316,6 +316,8 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an LumberJack!");
 		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
+		int stuckCount = 0;
+		Direction randDir = randomDirection();
 
 		MapLocation tree = null;
 		while (true) {
@@ -331,6 +333,7 @@ public strictfp class RobotPlayer {
 						tree = null;
 					} else if (result == 2) {
 						if (!chopNearestTrees(nearByTrees)) {
+							System.out.println("Stuck");
 							// destination = tree;
 							// nextPathLocation =
 							// smartMoveToLocation(nextPathLocation,
@@ -342,6 +345,17 @@ public strictfp class RobotPlayer {
 				} else {
 					tree = getLumberJackRequest();
 					chopNearestTrees(nearByTrees);
+					if(!rc.hasMoved()) {
+						int x =0;
+						while(!rc.canMove(randDir)&&x<20) {
+							randDir = randomDirection();
+							x++;
+						}
+						if(rc.canMove(randDir)) {
+							rc.move(randDir);
+						}
+						
+					}
 				}
 				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
@@ -980,7 +994,7 @@ public strictfp class RobotPlayer {
 				tryMoveToLocation(tree, 1, 20);
 				System.out.println("Choping Request id: "+id);
 				return 0;
-			} else if (!tryMoveToLocation(tree, 1, 80)) {
+			} else if (!tryMoveToLocation(tree, 1, 70)) {
 				return 2;
 			}
 			return 0;
@@ -988,7 +1002,7 @@ public strictfp class RobotPlayer {
 			if (tree.distanceTo(rc.getLocation()) < rc.getType().sensorRadius) {
 				return 1;
 			}
-			if (!tryMoveToLocation(tree, 1, 80)) {
+			if (!tryMoveToLocation(tree, 1, 70)) {
 				return 2;
 			}
 			return 0;
