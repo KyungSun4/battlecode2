@@ -172,13 +172,13 @@ public strictfp class RobotPlayer {
 						}
 					}
 					// Check every turn if there is an enemy nearby
-					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+					/*RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
 					for (RobotInfo enemy: enemyLocation) {
 						if (enemy.getType() != RobotType.SCOUT) {
 							combatMode = true;
 							break;
 						}
-					}
+					}*/
 				}
 				else if (combatMode)
 				{
