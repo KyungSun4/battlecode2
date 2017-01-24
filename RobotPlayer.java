@@ -982,7 +982,7 @@ public strictfp class RobotPlayer {
 			rc.donate(rc.getTeamBullets());
 	}
 
-	static MapLocation getNextPathLocation(TreeInfo[] treeList, RobotInfo[] robotList) {
+	static MapLocation getNextPathLocation(TreeInfo[] treeList, RobotInfo[] robotList, MapLocation destination) {
 		int bytesBefore = Clock.getBytecodeNum();
 		MapLocation location = null;
 		ArrayList<ArrayList<RobotInfo>> listOfConnectedRobotGroups = new ArrayList<ArrayList<RobotInfo>>();
@@ -1325,6 +1325,16 @@ public strictfp class RobotPlayer {
 				}
 			}
 		}
+		// get the edge closest to destination
+		MapLocation closestEdge = edges.get(0);
+		Direction dirToDest = rc.getLocation().directionTo(destination);
+		for (int x = 0; x < edges.size(); x++) {
+			if (Math.abs(dirToDest.radians - rc.getLocation().directionTo(edges.get(x)).radians) > Math
+					.abs(dirToDest.radians - rc.getLocation().directionTo(closestEdge).radians)) {
+				closestEdge = edges.get(x);
+			}
+		}
+		location = closestEdge;
 		System.out.println("used " + (Clock.getBytecodeNum() - bytesBefore) + "Byte Codes");
 		return location;
 
