@@ -898,7 +898,7 @@ public strictfp class RobotPlayer {
 	 * @return MapLocation of center
 	 * @author John
 	 */
-	static MapLocation johnsgetMapCenter() {
+	static MapLocation getMapCenter() {
 		// gets initial locations of both teams
 		MapLocation[] teamALocations = rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation[] teamBLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
