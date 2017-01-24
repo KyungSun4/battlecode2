@@ -925,7 +925,7 @@ public strictfp class RobotPlayer {
 		int id = 0;
 		boolean found = false;
 		for (TreeInfo t : trees) {
-			if (Math.round(tree.x) == Math.round(t.getLocation().x)) {
+			if (Math.round(tree.x) == Math.round(t.getLocation().x)&&Math.round(tree.y) == Math.round(t.getLocation().y)) {
 				id = t.getID();
 				tree = t.getLocation();
 				found = true;
