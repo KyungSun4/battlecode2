@@ -935,6 +935,8 @@ public strictfp class RobotPlayer {
 			System.out.println(id);
 			if (rc.canChop(id)) {
 				rc.chop(id);
+				tryMoveToLocation(tree, 1, 20);
+				System.out.println("Choping Request id: "+id);
 				return 0;
 			} else if (!tryMoveToLocation(tree, 1, 30)) {
 				return 2;
