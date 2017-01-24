@@ -153,33 +153,38 @@ public strictfp class RobotPlayer {
 		boolean combatMode = false;
 		while (true) {
 			try {
+				// If a scout does not see an enemy, it will run this code
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree : treeLocation) {
+					for (TreeInfo tree: treeLocation) {
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					} else {
+					}
+					else {
 						moveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							tryMove(moveDirection, 10, 20);
-							// Work on this not being in a random direction
+							//Work on this not being in a random direction
 						}
 					}
-					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
-							rc.getTeam().opponent());
-					for (RobotInfo enemy : enemyLocation) {
+					// Check every turn if there is an enemy nearby
+					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+					for (RobotInfo enemy: enemyLocation) {
 						if (enemy.getType() != RobotType.SCOUT) {
 							combatMode = true;
 							break;
 						}
 					}
-				} else if (combatMode) {
-
 				}
+				else if (combatMode)
+				{
+					
+				}
+				rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
@@ -187,6 +192,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
+	
 
 	static void scoutMove() {
 
