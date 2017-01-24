@@ -180,6 +180,7 @@ public strictfp class RobotPlayer {
 					}
 					maintainTreeRing();
 				}
+
 				// update robot count
 				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
@@ -191,6 +192,19 @@ public strictfp class RobotPlayer {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * moves and maintains a tree grid
+	 * 
+	 * @throws GameActionException
+	 */
+	static void maintainTreeGrid() {
+		//direction is stored in gardener, grid should have edge constraints in message array
+		//if find spot without tree, if doesent need to move plant tree, else move to that spot
+		//if didnt move to align move in grid, go forward or turn right
+		//water weakest tree that can water
+				
 	}
 
 	static void runScout() throws GameActionException {
@@ -312,8 +326,7 @@ public strictfp class RobotPlayer {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
-				
-				
+
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -326,7 +339,7 @@ public strictfp class RobotPlayer {
 
 	static void runSoldier() throws GameActionException {
 		System.out.println("I'm a soldier!");
-		
+
 		Direction tempMoveDirection;
 		Direction moveDirection;
 		// where did we start from? -> where we should initially move
@@ -362,7 +375,7 @@ public strictfp class RobotPlayer {
 			break;
 		}
 		moveDirection = new Direction(radianMove);
-		
+
 		while (true) {
 			try {
 				Clock.yield();
