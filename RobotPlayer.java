@@ -29,7 +29,7 @@ public strictfp class RobotPlayer {
 	static int ORIGIN_Y_ARR = 9; // since float, multiply by 1000
 	// can send up to 6? requests, each requires 3 spots
 	static int LUMBERJACK_REQUESTS_START = 20;
-	static int LUMBERJACK_REQUESTS_END = 41;//uses 42 and 43 also i think
+	static int LUMBERJACK_REQUESTS_END = 41;// uses 42 and 43 also i think
 	static int TREE_REMOVED_START = 50;
 	static int TREE_REMOVED_END = 71;
 
@@ -130,9 +130,9 @@ public strictfp class RobotPlayer {
 					// gets all neutralTrees that could be in the way
 					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
 					// request lumberJacks for each
-					
+
 					for (TreeInfo tree : neutralTrees) {
-						System.out.println("requesting tree id:" +tree.ID);
+						System.out.println("requesting tree id:" + tree.ID);
 						// request number of lumberjacks based on tree health
 						requestLumberJack(tree, 1 + (int) (tree.health / 41));
 					}
@@ -155,76 +155,75 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm a scout!");
 		Direction tempMoveDirection;
 		Direction moveDirection;
-		
-		//where did we start from? -> where we should initially move
+
+		// where did we start from? -> where we should initially move
 		float radianMove;
 		switch (getMapStats()) {
-			case "bottom":	
-				radianMove = (float) Math.PI / 2;
-				break;
-			case "top": 
-				radianMove = (float) Math.PI * 3 / 2;
-				break;
-			case "left":
-				radianMove = (float) 0;
-				break;
-			case "right":
-				radianMove = (float) Math.PI;
-				break;
-			case "bottomRight":
-				radianMove = (float) Math.PI * 3 / 4;
-				break;
-			case "bottomLeft":
-				radianMove = (float) Math.PI * 1 / 4;
-				break;
-			case "topLeft": 
-				radianMove = (float) Math.PI * 7 / 4;
-				break;
-			case "topRight":
-				radianMove = (float) Math.PI * 5 / 4;
-				break;
-			default: 
-				System.out.println("DEFAULT");
-				//radianMove = (float) Math.random() * 2 * (float) Math.PI;
-				radianMove = (float) Math.PI * 5 / 4;
-				break;
+		case "bottom":
+			radianMove = (float) Math.PI / 2;
+			break;
+		case "top":
+			radianMove = (float) Math.PI * 3 / 2;
+			break;
+		case "left":
+			radianMove = (float) 0;
+			break;
+		case "right":
+			radianMove = (float) Math.PI;
+			break;
+		case "bottomRight":
+			radianMove = (float) Math.PI * 3 / 4;
+			break;
+		case "bottomLeft":
+			radianMove = (float) Math.PI * 1 / 4;
+			break;
+		case "topLeft":
+			radianMove = (float) Math.PI * 7 / 4;
+			break;
+		case "topRight":
+			radianMove = (float) Math.PI * 5 / 4;
+			break;
+		default:
+			System.out.println("DEFAULT");
+			// radianMove = (float) Math.random() * 2 * (float) Math.PI;
+			radianMove = (float) Math.PI * 5 / 4;
+			break;
 		}
 		moveDirection = new Direction(radianMove);
-		
-		//if()
+
+		// if()
 		boolean combatMode = false;
 		while (true) {
 			try {
 				// If a scout does not see an enemy, it will run this code
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree: treeLocation) {
+					for (TreeInfo tree : treeLocation) {
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					}
-					else {
+					} else {
 						tempMoveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							tryMove(tempMoveDirection, 10, 20);
-							//Work on this not being in a random direction
+							// Work on this not being in a random direction
 						}
 					}
-					
-					//check for enemy robots
-					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
-					for (RobotInfo enemy: enemyLocation) {
+
+					// check for enemy robots
+					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
+							rc.getTeam().opponent());
+					for (RobotInfo enemy : enemyLocation) {
 						if (enemy.getType() != RobotType.SCOUT) {
 							combatMode = true;
 							break;
 						}
 					}
-				}
-				else {
-					//we are combatMode
+				} else {
+					// we are combatMode
 				}
 				rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
@@ -234,7 +233,6 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-	
 
 	static void scoutMove() {
 
@@ -322,10 +320,19 @@ public strictfp class RobotPlayer {
 		MapLocation tree = null;
 		while (true) {
 			try {
+
 				System.out.println(tree);
 				TreeInfo[] nearByTrees = rc.senseNearbyTrees();
+				tryUseStrike();
+				tryShake(nearByTrees);
 				// gets what tree it should look for
-
+				/*
+				 * if (stuckCount > 0) { stuckCount--; int x = 0; if
+				 * (rc.canMove(randDir)) { rc.move(randDir); } else { while
+				 * (!rc.canMove(randDir) && x < 20) { randDir =
+				 * randomDirection(); x++; } if (rc.canMove(randDir)) {
+				 * rc.move(randDir); } } }
+				 */
 				if (tree != null) {
 
 					int result = fufuilLumberJackRequest(tree, nearByTrees);
@@ -334,6 +341,7 @@ public strictfp class RobotPlayer {
 					} else if (result == 2) {
 						if (!chopNearestTrees(nearByTrees)) {
 							System.out.println("Stuck");
+							stuckCount = 5;
 							// destination = tree;
 							// nextPathLocation =
 							// smartMoveToLocation(nextPathLocation,
@@ -343,18 +351,25 @@ public strictfp class RobotPlayer {
 					}
 
 				} else {
-					tree = getLumberJackRequest();
-					chopNearestTrees(nearByTrees);
-					if(!rc.hasMoved()) {
-						int x =0;
-						while(!rc.canMove(randDir)&&x<20) {
-							randDir = randomDirection();
-							x++;
+					// tree = getLumberJackRequest();
+					if (tree == null) {
+						tree = getNextTreeLocation(nearByTrees);
+					}
+					if (tree == null) {
+						if (!chopNearestTrees(nearByTrees)) {
+							if (!rc.hasMoved()) {
+								int x = 0;
+								if (tryMove(randDir, 2, 15)) {
+
+								} else {
+									while (!rc.canMove(randDir) && x < 20) {
+										randDir = randomDirection();
+										x++;
+									}
+								}
+
+							}
 						}
-						if(rc.canMove(randDir)) {
-							rc.move(randDir);
-						}
-						
 					}
 				}
 				if (rc.getHealth() <= 5 && aboutToDie) {
@@ -654,7 +669,12 @@ public strictfp class RobotPlayer {
 	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide)
 			throws GameActionException {
 		Direction dirTo = rc.getLocation().directionTo(loc);
-		return tryMove(dirTo, degreeOffset, checksPerSide);
+		if (rc.hasMoved()) {
+			System.out.print("already moved");
+			return false;
+		}
+		boolean result = tryMove(dirTo, degreeOffset, checksPerSide);
+		return result;
 	}
 
 	// returns true if move was performed, false if not performed
@@ -952,7 +972,8 @@ public strictfp class RobotPlayer {
 		int id = 0;
 		boolean found = false;
 		for (TreeInfo t : trees) {
-			if (Math.round(tree.x) == Math.round(t.getLocation().x)&&Math.round(tree.y) == Math.round(t.getLocation().y)) {
+			if (Math.round(tree.x) == Math.round(t.getLocation().x)
+					&& Math.round(tree.y) == Math.round(t.getLocation().y)) {
 				id = t.getID();
 				tree = t.getLocation();
 				found = true;
@@ -963,7 +984,7 @@ public strictfp class RobotPlayer {
 			if (rc.canChop(id)) {
 				rc.chop(id);
 				tryMoveToLocation(tree, 1, 20);
-				System.out.println("Choping Request id: "+id);
+				System.out.println("Choping Request id: " + id);
 				return 0;
 			} else if (!tryMoveToLocation(tree, 1, 70)) {
 				return 2;
@@ -989,10 +1010,8 @@ public strictfp class RobotPlayer {
 		}
 		// for each detected tree
 		for (TreeInfo tree : trees) {
-			// if it contains bullets
+
 			if (tree.getTeam() == Team.NEUTRAL || tree.getTeam() == rc.getTeam().opponent()) {
-				// if no tree has yet been found with bullets set closest and
-				// dist
 				if (closest == null) {
 					closest = tree;
 					dist = closest.getLocation().distanceTo(rc.getLocation());
@@ -1016,6 +1035,51 @@ public strictfp class RobotPlayer {
 			return tryMoveToLocation(closest.getLocation(), 1, 30);
 		}
 
+		return false;
+	}
+
+	static MapLocation getNextTreeLocation(TreeInfo[] trees) {
+		if (trees.length == 0) {
+			return null;
+		}
+		// prioritize ones with robots
+		for (TreeInfo tree : trees) {
+			if (tree.containedRobot != null) {
+				return tree.getLocation();
+			}
+		}
+		// return closest eneym or neutral tree
+		for (TreeInfo tree : trees) {
+			if (tree.getTeam() == rc.getTeam().opponent() || tree.getTeam() == Team.NEUTRAL) {
+				return tree.getLocation();
+			}
+		}
+		return null;
+
+	}
+
+	static boolean tryUseStrike() throws GameActionException {
+		for (TreeInfo tree : rc.senseNearbyTrees(3, rc.getTeam())) {
+			return false;
+		}
+		for (TreeInfo tree : rc.senseNearbyTrees(3, Team.NEUTRAL)) {
+			if (tree.getHealth() < 6)
+				return false;
+		}
+		for (RobotInfo robot : rc.senseNearbyRobots(3, rc.getTeam())) {
+			return false;
+		}
+		rc.strike();
+		return true;
+	}
+
+	static boolean tryShake(TreeInfo[] trees) throws GameActionException {
+		for (TreeInfo tree : trees) {
+			if (tree.getContainedBullets() > 0 && rc.canShake(tree.ID)) {
+				rc.shake(tree.ID);
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -1428,39 +1492,43 @@ public strictfp class RobotPlayer {
 		float distToRobot = bulletLocation.distanceTo(myLocation);
 		float theta = propagationDirection.radiansBetween(directionToRobot);
 
-		float perpendicularDist = (float) Math.abs(distToRobot * (float) Math.sin(theta)); 
-		perpendicularDist = Math.round(perpendicularDist*1000);
-		float bodyRadius = Math.round((rc.getType().bodyRadius)*1000);
+		float perpendicularDist = (float) Math.abs(distToRobot * (float) Math.sin(theta));
+		perpendicularDist = Math.round(perpendicularDist * 1000);
+		float bodyRadius = Math.round((rc.getType().bodyRadius) * 1000);
 		System.out.println("Perpendicular Distance: " + perpendicularDist);
 		System.out.println("Body radius: " + bodyRadius);
 		if (perpendicularDist <= bodyRadius)
 			return true;
 		return false;
 	}
-	
+
 	static void avoidBullet2() throws GameActionException {
 		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
-		//System.out.println("Number of bullets detected "+ allNearbyBullets.length);
+		// System.out.println("Number of bullets detected "+
+		// allNearbyBullets.length);
 		if (allNearbyBullets.length > 0) {
-			for (BulletInfo bullet: allNearbyBullets) {
+			for (BulletInfo bullet : allNearbyBullets) {
 				if (willCollideWithMe(bullet)) {
 					Direction propagationDirection = bullet.dir;
 					MapLocation bulletLocation = bullet.location;
 					MapLocation myLocation = rc.getLocation();
 					Direction directionToRobot = bulletLocation.directionTo(myLocation);
 					Direction moveToAvoid;
-					// Sets the direction it wants to move based on what portion of the
+					// Sets the direction it wants to move based on what portion
+					// of the
 					// robot the bullet will hit
-					System.out.println(bullet.getID());					
+					System.out.println(bullet.getID());
 					if (directionToRobot.radiansBetween(propagationDirection) >= 0) {
-						// Sets moveToAvoid a direction perpendicular to the direction
+						// Sets moveToAvoid a direction perpendicular to the
+						// direction
 						// of the bullet
 						moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
 						System.out.println("MOVED RIGHT");
 					} else {
 						moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
 					}
-					// Checks if the direction it wants to move is clear before moving.
+					// Checks if the direction it wants to move is clear before
+					// moving.
 					if (rc.canMove(moveToAvoid) && !rc.hasMoved()) {
 						rc.move(moveToAvoid);
 						return;
@@ -1468,7 +1536,7 @@ public strictfp class RobotPlayer {
 				}
 			}
 		}
-	}  
+	}
 
 	// -------------------------------------------------------------------------------------------------------
 	// Below are statements to get the orientation of map, map center, and
