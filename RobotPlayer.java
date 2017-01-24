@@ -228,34 +228,27 @@ public strictfp class RobotPlayer {
 		}
 
 	}
-	/*
-	 *
-	 * static void runSoldier() throws GameActionException { boolean aboutToDie
-	 * = false;* System.out.println("I'm an soldier!"); Team enemy =
-	 * rc.getTeam().opponent(); while (true) { try { MapLocation myLocation =
-	 * rc.getLocation(); // See if there are any nearby enemy robots RobotInfo[]
-	 * robots = rc.senseNearbyRobots(-1, enemy); // If there are some... if
-	 * (robots.length > 0) { // And we have enough bullets, and haven't attacked
-	 * yet this // turn... if (rc.canFireSingleShot()) { // ...Then fire a
-	 * bullet in the direction of the enemy.
-	 * rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location)); }
-	 * Clock.yield(); } else { int movementRange[] = new int[2]; //possible
-	 * range of movement in degrees //if(tryMoveToLocation())
-	 * switch(getMapStats()) { case "bottom": movementRange[0] = 0;
-	 * movementRange[1] = 180; break; case "top": movementRange[0] = 180;
-	 * movementRange[1] = 360; break; case "left": movementRange[0] = -90;
-	 * movementRange[1] = 90; break; case "right": movementRange[0] = 90;
-	 * movementRange[1] = 270; break; case "bottomLeft": movementRange[0] = -45;
-	 * movementRange[1] = 135; break; case "bottomRight": movementRange[0] = 45;
-	 * movementRange[1] = 225; break; case "topLeft": movementRange[0] = -135;
-	 * movementRange[1] = 45; break; case "topRight": movementRange[0] = 135;
-	 * movementRange[1] = 315; break; } int degreeMove =
-	 * parseInt((movementRange[1] - movementRange[0]) * Math.random()) +
-	 * movementRange[0]; float radianMove = (float) ((degreeMove/360) * Math.PI
-	 * * 2); tryMove(new Direction(radianMove), (float) 10, 5); } } catch
-	 * (Exception e) { System.out.println("Soldier Exception");
-	 * e.printStackTrace(); } } }
-	 */
+	static void runSoldier() throws GameActionException {
+		System.out.println("I'm an soldier!");
+		while (true) {
+			try {
+				RobotInfo[] enemies = rc.senseNearbyRobots(7, rc.getTeam().opponent());
+				if (rc.getTeam() == Team.B) {
+					avoidBullet(rc.getLocation().directionTo(enemies[0].getLocation()));
+				}
+				if (rc.getTeam() == Team.A)
+				{
+					Direction toEnemy = rc.getLocation().directionTo(enemies[0].getLocation());
+					rc.fireSingleShot(toEnemy);
+					System.out.println("SHOT");
+				}
+				Clock.yield();
+			} catch (Exception e) {
+				System.out.println("Soldier Exception");
+				e.printStackTrace();
+			}
+		}
+	}
 
 	static void runLumberjack() throws GameActionException {
 		boolean aboutToDie = false;
@@ -1184,11 +1177,12 @@ public strictfp class RobotPlayer {
 				incomingBullets.add(checkBullet);
 			}
 		}
+		System.out.println(Clock.getBytecodeNum());
 		
 		//EVERYTHING BELOW THIS HAS TO BE FIXED
 		
 		System.out.println("Number Of bullets that will potentially hit me is " + incomingBullets.size());
-		/*if (incomingBullets.size() > 0) {
+		if (incomingBullets.size() > 0) {
 			// This for loop computes the optimal direction that the robot can travel in to avoid all bullets
 			// The following two statements will dictate where the robot will move if there is not spot that has 0 collisions
 			
@@ -1197,14 +1191,24 @@ public strictfp class RobotPlayer {
 			int numberOfTimesHit = 0;
 
 			for (int angle = 0; angle < 360; angle = angle + 45) {
-				// This is so that it will search through the left and right side
 				Direction newDirection = optimalDirection.rotateLeftDegrees(angle);
 				// Generate new location using the old location then adding the stride radius and new direction
 				MapLocation newLocation = rc.getLocation().add(newDirection, rc.getType().strideRadius);
 				// Searches through the list of potential collisions and see which ones still collide
 				for (BulletInfo checkBullet: incomingBullets) {
-					if (willCollideWithMe(checkBullet, newLocation, 0)) {
+					MapLocation bulletLocation = checkBullet.getLocation();
+					float distanceToBullet = newLocation.distanceTo(bulletLocation) - rc.getType().bodyRadius;
+					float bulletSpeed = checkBullet.getSpeed();
+					if ((distanceToBullet / bulletSpeed) <= 1) {
 						numberOfTimesHit++;
+					}
+				}
+				System.out.println("I will be hit by: " + numberOfTimesHit + "bullets next round");
+				if (numberOfTimesHit == 0) {
+					if (rc.canMove(newDirection)) {
+						rc.move(newDirection);
+						System.out.println("I am not going to be hit next turn!!!!!!!!!");
+						return;
 					}
 				}
 				if (numberOfTimesHit < lowestNumberOfTimesHit) {
@@ -1217,7 +1221,8 @@ public strictfp class RobotPlayer {
 				rc.move(bestDirection);
 				System.out.println(lowestNumberOfTimesHit);
 			}
-		}*/
+			Clock.yield();
+		}
 	}
 
 	// -------------------------------------------------------------------------------------------------------
