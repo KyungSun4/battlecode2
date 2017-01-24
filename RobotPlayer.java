@@ -834,46 +834,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void avoidBullet(BulletInfo bullet) {
-		// These statements simply get info about the orientation and angles
-		// between the robot and bullet
-		Direction propagationDirection = bullet.dir;
-		MapLocation bulletLocation = bullet.location;
-		MapLocation myLocation = rc.getLocation();
-		Direction directionToRobot = bulletLocation.directionTo(myLocation);
-		try {
-			Direction moveToAvoid;
-			// Sets the direction it wants to move based on what portion of the
-			// robot the bullet will hit
-			if ((directionToRobot.getAngleDegrees() - propagationDirection.getAngleDegrees()) >= 0) {
-				// Sets moveToAvoid a direction perpendicular to the direction
-				// of the bullet
-				moveToAvoid = propagationDirection.rotateLeftRads((float) Math.PI / 2);
-			} else {
-				moveToAvoid = propagationDirection.rotateRightRads((float) Math.PI / 2);
-			}
-			// Checks if the direction it wants to move is clear before moving.
-			if (rc.canMove(moveToAvoid)) {
-				rc.move(moveToAvoid);
-			}
-			// If the space it wants to move to is occupied it will use the
-			// nextUnoccupiedDirection method to move
-			else {
-				// This if statement is to check the direction the bullet is
-				// coming. You dont want to move into the path of the bullet
-				if (directionToRobot.getAngleDegrees() > 180) {
-					rc.move(nextUnoccupiedDirection(rc.getType(), 180));
-				} else {
-					rc.move(nextUnoccupiedDirection(rc.getType(), 0));
-				}
-			}
-			System.out.println("Avoided successfully?");
-		} catch (Exception e) {
-			System.out.println("FAILED TO AVOID BULLET!");
-			e.printStackTrace();
-		}
-	}
-
+	
 	static Direction directionToClosestEnemy() {
 		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots();
 		MapLocation myLocation = rc.getLocation();
@@ -1696,7 +1657,7 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	static void avoidBullet2() throws GameActionException {
+	static void avoidBullet() throws GameActionException {
 		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
 		// System.out.println("Number of bullets detected "+
 		// allNearbyBullets.length);
