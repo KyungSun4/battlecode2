@@ -228,6 +228,7 @@ public strictfp class RobotPlayer {
 		}
 
 	}
+
 	static void runSoldier() throws GameActionException {
 		System.out.println("I'm an soldier!");
 		while (true) {
@@ -236,8 +237,7 @@ public strictfp class RobotPlayer {
 				if (rc.getTeam() == Team.B) {
 					avoidBullet(rc.getLocation().directionTo(enemies[0].getLocation()));
 				}
-				if (rc.getTeam() == Team.A)
-				{
+				if (rc.getTeam() == Team.A) {
 					Direction toEnemy = rc.getLocation().directionTo(enemies[0].getLocation());
 					rc.fireSingleShot(toEnemy);
 					System.out.println("SHOT");
@@ -1119,7 +1119,7 @@ public strictfp class RobotPlayer {
 		}
 		// find group edges
 		ArrayList<MapLocation> edges = new ArrayList<MapLocation>();
-
+		// for each group
 		for (int x = 0; x < listOfConnectedTreeGroups.size(); x++) {
 			MapLocation leftEdge;
 			float leftDegrees = 0;
@@ -1127,18 +1127,201 @@ public strictfp class RobotPlayer {
 			MapLocation rightEdge;
 			boolean firstFound = false;
 			// for each pair
+			boolean done = false;
 			for (int r = 0; r < listOfConnectedRobotGroups.get(x).size(); r++) {
-				for (int r2 = 0; r < listOfConnectedRobotGroups.get(x).size(); r2++) {
-					//check for objects inside and outside, if all on same side, then these are the droids we are looking for
-					
+				RobotInfo robot = listOfConnectedRobotGroups.get(x).get(r);
+				for (int r2 = r + 1; r < listOfConnectedRobotGroups.get(x).size(); r2++) {
+					RobotInfo robot2 = listOfConnectedRobotGroups.get(x).get(r2);
+					// check for objects inside and outside, if all on same
+					// side, then these are the droids we are looking for
+					// convert to polar but backwards cuz thats how it worked
+					// out :P
+					double robotAngle = Math.atan2(robot.getLocation().y - rc.getLocation().y,
+							robot.getLocation().x - rc.getLocation().x) + Math.PI;
+					double robot2Angle = Math.atan2(robot2.getLocation().y - rc.getLocation().y,
+							robot2.getLocation().x - rc.getLocation().x) + Math.PI;
+					double angleOffset;
+					double secondAngle;
+					// use which ever one is smaller as starting location
+					if (robotAngle <= robot2Angle) {
+						secondAngle = robot2Angle - robotAngle;
+						angleOffset = robotAngle;
+					} else {
+						secondAngle = robotAngle - robot2Angle;
+						angleOffset = robot2Angle;
+					}
+					// check if there are between and or outside
+					boolean between = false;
+					boolean outside = false;
+					// if touching, between is true
+					if (robot.getLocation().distanceTo(robot2.getLocation()) < robot.getType().bodyRadius
+							+ robot2.getType().bodyRadius + rc.getType().bodyRadius) {
+						between = true;
+					}
+					// check robots
+					for (int r3 = 0; r3 < listOfConnectedRobotGroups.get(x).size(); r3++) {
+						RobotInfo robot3 = listOfConnectedRobotGroups.get(x).get(r3);
+						// make sure
+						// get angle relative to starting angle
+						double robot3Angle = Math.atan2(robot3.getLocation().y - rc.getLocation().y,
+								robot3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+						if (robot3Angle < secondAngle) {
+							between = true;
+						} else {
+							outside = true;
+						}
+					}
+					// check trees
+					for (int t3 = 0; t3 < listOfConnectedTreeGroups.get(x).size(); t3++) {
+						TreeInfo tree3 = listOfConnectedTreeGroups.get(x).get(t3);
+						// make sure
+						// get angle relative to starting angle
+						double tree3Angle = Math.atan2(tree3.getLocation().y - rc.getLocation().y,
+								tree3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+						if (tree3Angle < secondAngle) {
+							between = true;
+						} else {
+							outside = true;
+						}
+					}
+					// if both between and outside, these are not the droids we
+					// are looking for if
+					if ((!between && outside) || (!outside && between)) {
+						edges.add(robot.getLocation());
+						edges.add(robot2.getLocation());
+						// need something to stop looking for pairs if this part
+						// runs
+					}
 				}
 				for (int t = 0; t < listOfConnectedTreeGroups.get(x).size(); t++) {
-
+					TreeInfo tree2 = listOfConnectedTreeGroups.get(x).get(t);
+					// check for objects inside and outside, if all on same
+					// side, then these are the droids we are looking for
+					// convert to polar but backwards cuz thats how it worked
+					// out :P
+					double robotAngle = Math.atan2(robot.getLocation().y - rc.getLocation().y,
+							robot.getLocation().x - rc.getLocation().x) + Math.PI;
+					double tree2Angle = Math.atan2(tree2.getLocation().y - rc.getLocation().y,
+							tree2.getLocation().x - rc.getLocation().x) + Math.PI;
+					double angleOffset;
+					double secondAngle;
+					// use which ever one is smaller as starting location
+					if (robotAngle <= tree2Angle) {
+						secondAngle = tree2Angle - robotAngle;
+						angleOffset = robotAngle;
+					} else {
+						secondAngle = robotAngle - tree2Angle;
+						angleOffset = tree2Angle;
+					}
+					// check if there are between and or outside
+					boolean between = false;
+					boolean outside = false;
+					// if touching, between is true
+					if (robot.getLocation().distanceTo(tree2.getLocation()) < robot.getType().bodyRadius + tree2.radius
+							+ rc.getType().bodyRadius) {
+						between = true;
+					}
+					// check robots
+					for (int r3 = 0; r3 < listOfConnectedRobotGroups.get(x).size(); r3++) {
+						RobotInfo robot3 = listOfConnectedRobotGroups.get(x).get(r3);
+						// make sure
+						// get angle relative to starting angle
+						double robot3Angle = Math.atan2(robot3.getLocation().y - rc.getLocation().y,
+								robot3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+						if (robot3Angle < secondAngle) {
+							between = true;
+						} else {
+							outside = true;
+						}
+					}
+					// check trees
+					for (int t3 = 0; t3 < listOfConnectedTreeGroups.get(x).size(); t3++) {
+						TreeInfo tree3 = listOfConnectedTreeGroups.get(x).get(t3);
+						// make sure
+						// get angle relative to starting angle
+						double tree3Angle = Math.atan2(tree3.getLocation().y - rc.getLocation().y,
+								tree3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+						if (tree3Angle < secondAngle) {
+							between = true;
+						} else {
+							outside = true;
+						}
+					}
+					// if both between and outside, these are not the droids we
+					// are looking for if
+					if ((!between && outside) || (!outside && between)) {
+						edges.add(robot.getLocation());
+						edges.add(tree2.getLocation());
+						// need something to stop looking for pairs if this part
+						// runs
+					}
 				}
 			}
-			for (int t = 0; t < listOfConnectedTreeGroups.get(x).size(); t++) {
-				for (int t2 = 0; t < listOfConnectedTreeGroups.get(x).size(); t2++) {
 
+			for (int t = 0; t < listOfConnectedTreeGroups.get(x).size(); t++) {
+				TreeInfo tree = listOfConnectedTreeGroups.get(x).get(t);
+				for (int t2 = 0; t < listOfConnectedTreeGroups.get(x).size(); t2++) {
+					TreeInfo tree2 = listOfConnectedTreeGroups.get(x).get(t2);
+					// check for objects inside and outside, if all on same
+					// side, then these are the droids we are looking for
+					// convert to polar but backwards cuz thats how it worked
+					// out :P
+					double treeAngle = Math.atan2(tree.getLocation().y - rc.getLocation().y,
+							tree.getLocation().x - rc.getLocation().x) + Math.PI;
+					double tree2Angle = Math.atan2(tree2.getLocation().y - rc.getLocation().y,
+							tree2.getLocation().x - rc.getLocation().x) + Math.PI;
+					double angleOffset;
+					double secondAngle;
+					// use which ever one is smaller as starting location
+					if (treeAngle <= tree2Angle) {
+						secondAngle = tree2Angle - treeAngle;
+						angleOffset = treeAngle;
+					} else {
+						secondAngle = treeAngle - tree2Angle;
+						angleOffset = tree2Angle;
+					}
+					// check if there are between and or outside
+					boolean between = false;
+					boolean outside = false;
+					// if touching, between is true
+					if (tree.getLocation().distanceTo(tree2.getLocation()) < tree.radius + tree2.radius
+							+ rc.getType().bodyRadius) {
+						between = true;
+					}
+					// check robots
+					for (int r3 = 0; r3 < listOfConnectedRobotGroups.get(x).size(); r3++) {
+						RobotInfo robot3 = listOfConnectedRobotGroups.get(x).get(r3);
+						// make sure
+						// get angle relative to starting angle
+						double robot3Angle = Math.atan2(robot3.getLocation().y - rc.getLocation().y,
+								robot3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+						if (robot3Angle < secondAngle) {
+							between = true;
+						} else {
+							outside = true;
+						}
+					}
+					// check trees
+					for (int t3 = 0; t3 < listOfConnectedTreeGroups.get(x).size(); t3++) {
+						TreeInfo tree3 = listOfConnectedTreeGroups.get(x).get(t3);
+						// make sure
+						// get angle relative to starting angle
+						double tree3Angle = Math.atan2(tree3.getLocation().y - rc.getLocation().y,
+								tree3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+						if (tree3Angle < secondAngle) {
+							between = true;
+						} else {
+							outside = true;
+						}
+					}
+					// if both between and outside, these are not the droids we
+					// are looking for if
+					if ((!between && outside) || (!outside && between)) {
+						edges.add(tree.getLocation());
+						edges.add(tree2.getLocation());
+						// need something to stop looking for pairs if this part
+						// runs
+					}
 				}
 			}
 		}
@@ -1150,7 +1333,7 @@ public strictfp class RobotPlayer {
 	static void smartMoveToLocation() {
 
 	}
-	
+
 	static boolean willCollideWithMe(BulletInfo bullet, MapLocation robotLocation, float extraRadius) {
 		// Get relevant bullet information
 		Direction propagationDirection = bullet.dir;
@@ -1167,35 +1350,39 @@ public strictfp class RobotPlayer {
 		return (perpendicularDist <= (rc.getType().bodyRadius + extraRadius));
 	}
 
-	
 	static void avoidBullet(Direction optimalDirection) throws GameActionException {
 		BulletInfo[] allNearbyBullets = rc.senseNearbyBullets();
-		System.out.println("Number of bullets detected "+ allNearbyBullets.length);
+		System.out.println("Number of bullets detected " + allNearbyBullets.length);
 		ArrayList<BulletInfo> incomingBullets = new ArrayList<BulletInfo>();
-		for (BulletInfo checkBullet: allNearbyBullets) {
+		for (BulletInfo checkBullet : allNearbyBullets) {
 			if (willCollideWithMe(checkBullet, rc.getLocation(), rc.getType().strideRadius)) {
 				incomingBullets.add(checkBullet);
 			}
 		}
+
 		System.out.println(Clock.getBytecodeNum());
-		
-		//EVERYTHING BELOW THIS HAS TO BE FIXED
-		
+
+		// EVERYTHING BELOW THIS HAS TO BE FIXED
+
 		System.out.println("Number Of bullets that will potentially hit me is " + incomingBullets.size());
 		if (incomingBullets.size() > 0) {
-			// This for loop computes the optimal direction that the robot can travel in to avoid all bullets
-			// The following two statements will dictate where the robot will move if there is not spot that has 0 collisions
-			
+			// This for loop computes the optimal direction that the robot can
+			// travel in to avoid all bullets
+			// The following two statements will dictate where the robot will
+			// move if there is not spot that has 0 collisions
+
 			Direction bestDirection = optimalDirection;
 			int lowestNumberOfTimesHit = incomingBullets.size();
 			int numberOfTimesHit = 0;
 
 			for (int angle = 0; angle < 360; angle = angle + 45) {
 				Direction newDirection = optimalDirection.rotateLeftDegrees(angle);
-				// Generate new location using the old location then adding the stride radius and new direction
+				// Generate new location using the old location then adding the
+				// stride radius and new direction
 				MapLocation newLocation = rc.getLocation().add(newDirection, rc.getType().strideRadius);
-				// Searches through the list of potential collisions and see which ones still collide
-				for (BulletInfo checkBullet: incomingBullets) {
+				// Searches through the list of potential collisions and see
+				// which ones still collide
+				for (BulletInfo checkBullet : incomingBullets) {
 					MapLocation bulletLocation = checkBullet.getLocation();
 					float distanceToBullet = newLocation.distanceTo(bulletLocation) - rc.getType().bodyRadius;
 					float bulletSpeed = checkBullet.getSpeed();
@@ -1223,6 +1410,7 @@ public strictfp class RobotPlayer {
 			}
 			Clock.yield();
 		}
+
 	}
 
 	// -------------------------------------------------------------------------------------------------------
