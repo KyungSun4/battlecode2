@@ -1524,6 +1524,7 @@ public strictfp class RobotPlayer {
 		MapLocation location = null;
 		ArrayList<TreeInfo> treeGroup = new ArrayList<TreeInfo>();
 		ArrayList<RobotInfo> robotGroup = new ArrayList<RobotInfo>();
+		ArrayList<MapLocation> edges = new ArrayList<MapLocation>();
 		float degreesBetweenClosest;
 		TreeInfo treeInWay;
 		// find /robot/ or tree directly in way
@@ -1585,7 +1586,7 @@ public strictfp class RobotPlayer {
 						}
 						// check trees
 						for (int t3 = 0; t3 < treeGroup.size(); t3++) {
-							TreeInfo tree3 = treeGroupget(t3);
+							TreeInfo tree3 = treeGroup.get(t3);
 							// make sure
 							// get angle relative to starting angle
 							double tree3Angle = Math.atan2(tree3.getLocation().y - rc.getLocation().y,
@@ -1599,13 +1600,16 @@ public strictfp class RobotPlayer {
 						// if both between and outside, these are not the droids
 						// we
 						// are looking for if
-						if ((!between && outside) || (!outside && between)) {
-							edges.add(tree.getLocation());
-							edges.add(tree2.getLocation());
+						if (!between && outside) {
+							//edges.add(tree.getLocation());
+							//edges.add(tree2.getLocation());
 							// need something to stop looking for pairs if this
 							// part
 							// runs
+						} else if(!outside && between ) {
+							
 						}
+						
 					}
 				}
 			}
