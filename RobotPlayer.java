@@ -276,8 +276,6 @@ public strictfp class RobotPlayer {
 		Team enemy = rc.getTeam().opponent();
 
 		MapLocation tree = null;
-		MapLocation nextPathLocation = null;
-		MapLocation destination;
 		while (true) {
 			try {
 				System.out.println(tree);
@@ -301,6 +299,7 @@ public strictfp class RobotPlayer {
 
 				} else {
 					tree = getLumberJackRequest();
+					chopNearestTrees(nearByTrees);
 				}
 				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
@@ -935,9 +934,9 @@ public strictfp class RobotPlayer {
 		if (found) {
 			System.out.println(id);
 			if (rc.canChop(id)) {
-				rc.canChop(id);
+				rc.chop(id);
 				return 0;
-			} else if (!tryMoveToLocation(tree, 1, 80)) {
+			} else if (!tryMoveToLocation(tree, 1, 30)) {
 				return 2;
 			}
 			return 0;
@@ -945,7 +944,7 @@ public strictfp class RobotPlayer {
 			if (tree.distanceTo(rc.getLocation()) < rc.getType().sensorRadius) {
 				return 1;
 			}
-			if (!tryMoveToLocation(tree, 1, 80)) {
+			if (!tryMoveToLocation(tree, 1, 30)) {
 				return 2;
 			}
 			return 0;
@@ -954,7 +953,7 @@ public strictfp class RobotPlayer {
 
 	static boolean chopNearestTrees(TreeInfo[] trees) throws GameActionException {
 		TreeInfo closest = null;
-		float dist = (float) 1000000000000000000000000000.0;
+		float dist = (float) 0;
 		// if there are no trees detected return false
 		if (trees.length == 0) {
 			return false;
@@ -985,7 +984,7 @@ public strictfp class RobotPlayer {
 		if (rc.canChop(closest.getLocation())) {
 			rc.chop(closest.getLocation());
 		} else {
-			return tryMoveToLocation(closest.getLocation(), 2, 30);
+			return tryMoveToLocation(closest.getLocation(), 1, 30);
 		}
 
 		return false;
