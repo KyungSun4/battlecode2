@@ -1466,6 +1466,100 @@ public strictfp class RobotPlayer {
 		return location;
 	}
 
+	static MapLocation simplerGetNextPathLocation(TreeInfo[] treeList, RobotInfo[] robotList, MapLocation destination) {
+		MapLocation location = null;
+		ArrayList<TreeInfo> treeGroup = new ArrayList<TreeInfo>();
+		ArrayList<RobotInfo> robotGroup = new ArrayList<RobotInfo>();
+		float degreesBetweenClosest;
+		TreeInfo treeInWay;
+		// find /robot/ or tree directly in way
+		if (treeList.length != 0) {
+			treeInWay = treeList[0];
+			degreesBetweenClosest = rc.getLocation().directionTo(destination)
+					.degreesBetween(rc.getLocation().directionTo(treeList[0].getLocation()));
+			for (int t = 0; t < treeList.length; t++) {
+				TreeInfo tree = treeList[t];
+				float degreesBetweenThisTree = rc.getLocation().directionTo(destination)
+						.degreesBetween(rc.getLocation().directionTo(tree.getLocation()));
+				if (degreesBetweenThisTree < degreesBetweenClosest) {
+					treeInWay = tree;
+					degreesBetweenClosest = degreesBetweenThisTree;
+				}
+			}
+			// find all trees "connected" to the one in the way, add to
+			if (treeList.length != 0) {
+				for (int t = 0; t < treeList.length; t++) {
+					TreeInfo tree = treeList[t];
+					if (tree.getLocation().distanceTo(treeInWay.getLocation()) < tree.radius + treeInWay.radius
+							+ rc.getType().bodyRadius) {
+						treeGroup.add(tree);
+					}
+				}
+			}
+			// find edges
+			for (int t = 0; t < treeGroup.size(); t++) {
+				TreeInfo tree = treeGroup.get(t);
+				for (int t2 = 0; t2 < treeGroup.size(); t2++) {
+					TreeInfo tree2 = treeGroup.get(t2);
+					if (tree != tree2) {
+						// check for objects inside and outside, if all on same
+						// side, then these are the droids we are looking for
+						// convert to polar but backwards cuz thats how it
+						// worked
+						// out :P
+						double treeAngle = Math.atan2(tree.getLocation().y - rc.getLocation().y,
+								tree.getLocation().x - rc.getLocation().x) + Math.PI;
+						double tree2Angle = Math.atan2(tree2.getLocation().y - rc.getLocation().y,
+								tree2.getLocation().x - rc.getLocation().x) + Math.PI;
+						double angleOffset;
+						double secondAngle;
+						// use which ever one is smaller as starting location
+						if (treeAngle <= tree2Angle) {
+							secondAngle = tree2Angle - treeAngle;
+							angleOffset = treeAngle;
+						} else {
+							secondAngle = treeAngle - tree2Angle;
+							angleOffset = tree2Angle;
+						}
+						// check if there are between and or outside
+						boolean between = false;
+						boolean outside = false;
+						// if touching, between is true
+						if (tree.getLocation().distanceTo(tree2.getLocation()) < tree.radius + tree2.radius
+								+ rc.getType().bodyRadius) {
+							between = true;
+						}
+						// check trees
+						for (int t3 = 0; t3 < treeGroup.size(); t3++) {
+							TreeInfo tree3 = treeGroupget(t3);
+							// make sure
+							// get angle relative to starting angle
+							double tree3Angle = Math.atan2(tree3.getLocation().y - rc.getLocation().y,
+									tree3.getLocation().x - rc.getLocation().x) + Math.PI - angleOffset;
+							if (tree3Angle < secondAngle) {
+								between = true;
+							} else {
+								outside = true;
+							}
+						}
+						// if both between and outside, these are not the droids
+						// we
+						// are looking for if
+						if ((!between && outside) || (!outside && between)) {
+							edges.add(tree.getLocation());
+							edges.add(tree2.getLocation());
+							// need something to stop looking for pairs if this
+							// part
+							// runs
+						}
+					}
+				}
+			}
+
+		}
+		return location;
+	}
+
 	static MapLocation smartMoveToLocation(MapLocation nextPathLocation, MapLocation destination, TreeInfo[] trees,
 			RobotInfo[] robots) throws GameActionException {
 		if (nextPathLocation == null) {
