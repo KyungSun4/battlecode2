@@ -185,9 +185,7 @@ public strictfp class RobotPlayer {
 			break;
 		default:
 			System.out.println("DEFAULT");
-			// radianMove = (float) Math.random() * 2 * (float) Math.PI;
-			radianMove = (float) Math.PI * 5 / 4;
-			System.out.println("fuck the police");
+			radianMove = (float) Math.random() * 2 * (float) Math.PI;
 			break;
 		}
 		moveDirection = new Direction(radianMove);
@@ -227,6 +225,7 @@ public strictfp class RobotPlayer {
 					}
 				} else {
 					// we are combatMode
+					
 				}
 				rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
@@ -678,6 +677,61 @@ public strictfp class RobotPlayer {
 		}
 		boolean result = tryMove(dirTo, degreeOffset, checksPerSide);
 		return result;
+	}
+	
+	static boolean tryShoot() throws GameActionException {
+		//shoots with correct number of bullets in correct distance. Use as a conditional to check if there is an enemy in range and call this function
+		
+		//0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot single
+		RobotInfo[] enemies;
+		int shotType;
+		boolean didShoot = true;
+		Direction dir;
+		
+		//decide which shot to shoot
+		if(rc.senseNearbyRobots((float) 2)[0] != null) {
+			shotType = 5;
+			enemies = rc.senseNearbyRobots((float) 2);
+		}
+		else if (rc.senseNearbyRobots((float) 5)[0] != null){
+			shotType = 3;
+			enemies = rc.senseNearbyRobots((float) 5);
+		}
+		else if (rc.senseNearbyRobots((float) -1)[0] != null){
+			shotType = 1;
+			enemies = rc.senseNearbyRobots((float) -1);
+		}
+		else {
+			shotType = -1;
+			enemies = new RobotInfo[0];
+		}
+		
+		//determine direction of shooting
+		dir = shotType == 1 ? rc.getLocation().directionTo(enemies[0].getLocation()) : null;
+		
+		
+		switch (shotType) {
+			case 5:
+				if(rc.canFirePentadShot()) {
+					rc.firePentadShot(dir);
+				}
+				break;
+			case 3:
+				if(rc.canFireTriadShot()) {
+					rc.fireTriadShot(dir);
+				}
+				break;
+			case 1:
+				if(rc.canFireSingleShot()) {
+					rc.fireSingleShot(dir);
+				}
+				break;
+			default:
+				didShoot = false;
+				System.out.println("Did not shoot :(");
+				break;
+		}
+		return didShoot;
 	}
 
 	// returns true if move was performed, false if not performed
