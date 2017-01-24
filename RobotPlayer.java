@@ -45,7 +45,7 @@ public strictfp class RobotPlayer {
 			runGardener();
 			break;
 		case SOLDIER:
-			// runSoldier();
+			runSoldier();
 			break;
 		case LUMBERJACK:
 			runLumberjack();
@@ -152,10 +152,10 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runScout() throws GameActionException {
+
 		System.out.println("I'm a scout!");
 		Direction tempMoveDirection;
 		Direction moveDirection;
-
 		// where did we start from? -> where we should initially move
 		float radianMove;
 		switch (getMapStats()) {
@@ -187,6 +187,7 @@ public strictfp class RobotPlayer {
 			System.out.println("DEFAULT");
 			// radianMove = (float) Math.random() * 2 * (float) Math.PI;
 			radianMove = (float) Math.PI * 5 / 4;
+			System.out.println("fuck the police");
 			break;
 		}
 		moveDirection = new Direction(radianMove);
@@ -208,7 +209,9 @@ public strictfp class RobotPlayer {
 					} else {
 						tempMoveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
-							tryMove(tempMoveDirection, 10, 20);
+							if (!rc.hasMoved()) {
+								tryMove(tempMoveDirection, 10, 20);
+							}
 							// Work on this not being in a random direction
 						}
 					}
@@ -287,9 +290,9 @@ public strictfp class RobotPlayer {
 				// change this later with updated bullet avoidance method
 				BulletInfo[] nearbyBullets = rc.senseNearbyBullets(7);
 				// change the above later with updated bullet avoidance method
-
-				if (enemies[0] != null) {
-
+				// this i throwing an exception
+				// if (enemies[0] != null) {
+				if (enemies.length > 0) {
 					Direction toEnemy = rc.getLocation().directionTo(enemies[0].getLocation());
 					rc.fireSingleShot(toEnemy);
 					System.out.println("SHOT");
@@ -1461,7 +1464,6 @@ public strictfp class RobotPlayer {
 		location = closestEdge;
 		System.out.println("used " + (Clock.getBytecodeNum() - bytesBefore) + "Byte Codes");
 		return location;
-
 	}
 
 	static MapLocation smartMoveToLocation(MapLocation nextPathLocation, MapLocation destination, TreeInfo[] trees,
