@@ -221,19 +221,28 @@ public strictfp class RobotPlayer {
 				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
 		nearbySpots[3] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing) + spacing,
 				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
-		boolean[] needTree = new boolean[4];
+		boolean[] doesNotNeedTree = new boolean[4];
+		
 		// if find spot without tree plant if doesen't need to move plant tree, else
 		// move to that spot, check 4 surounding spots
 		for (int i = 0; i<nearbySpots.length;i++) {
-			loc = nearbySpots[i];
+			MapLocation loc = nearbySpots[i];
 			rc.setIndicatorDot(loc, 1, 1, 1);
 			for(TreeInfo tree: trees) {
 				if((int)(tree.getLocation().x*1000)==(int)(loc.x*1000)&&(int)(tree.getLocation().x*1000)==(int)(loc.x*1000)) {
-					
+					doesNotNeedTree[i] = true;
+					break;
 				}
-				
 			}
 		}
+		for(int i = 0; i <nearbySpots.length;i++) {
+			if(!doesNotNeedTree[i]) {
+				if(rc.getLocation().distanceTo(nearbySpots[i]) == 2.1) {
+					
+				}
+			}
+		}
+		
 		// if didn't move to align move in grid, go forward or turn right
 
 		// water weakest tree that can water
@@ -243,9 +252,7 @@ public strictfp class RobotPlayer {
 	static void runScout() throws GameActionException {
 
 		System.out.println("I'm a scout!");
-		
-		
-		Direction moveDirection = randomDirection()
+		Direction moveDirection = randomDirection();
 		boolean combatMode = false;
 		while (true) {
 			try {
@@ -377,7 +384,6 @@ public strictfp class RobotPlayer {
 
 		while (true) {
 			try {
-				
 				if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 					rc.move(moveDirection);
 				} 
@@ -389,7 +395,6 @@ public strictfp class RobotPlayer {
 						}
 					}
 				}
-				
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
