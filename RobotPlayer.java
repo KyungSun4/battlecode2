@@ -238,10 +238,9 @@ public strictfp class RobotPlayer {
 			MapLocation loc = nearbySpots[i];
 			rc.setIndicatorDot(loc, 1, i * 100, i * 200);
 			for (TreeInfo tree : trees) {
-				if ((int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)
-						&& (int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)) {
+				if ((int) (tree.getLocation().x * 100) == (int) (loc.x * 100)
+						&& (int) (tree.getLocation().x * 100) == (int) (loc.x * 100)) {
 					doesNotNeedTree[i] = true;
-					break;
 				}
 			}
 		}
@@ -249,6 +248,8 @@ public strictfp class RobotPlayer {
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
 				MapLocation emptySpot = nearbySpots[i];
+				System.out.println(rc.getLocation().distanceTo(emptySpot));
+				System.out.println(emptySpot);
 				if (Math.round(rc.getLocation().distanceTo(emptySpot) * 10) / 10 == 2.1) {
 					rc.plantTree(rc.getLocation().directionTo(emptySpot));
 				} else {
@@ -431,11 +432,11 @@ public strictfp class RobotPlayer {
 			try {
 				avoidBullet();
 				tryShoot();
-				
+
 				Direction move = randomDirection();
 				if (rc.canMove(move) && !rc.hasMoved())
 					rc.move(move);
-				
+
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
@@ -443,22 +444,8 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-// -------------------------------------------------------------------------------------------------------------
-// LUMBERJACK PLAYER & METHODS
-	
-	static void runLumberjack() throws GameActionException {
-		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) + 1);
-		System.out.println("I'm a lumberjack!");
-		while (true) {
-			try {
-				avoidBullet();
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Lumberjack Exception");
-				e.printStackTrace();
-			}
-		}
-	}
+	// -------------------------------------------------------------------------------------------------------------
+	// LUMBERJACK PLAYER & METHODS
 
 	static void runLumberjack() throws GameActionException {
 		boolean aboutToDie = false;
@@ -827,16 +814,17 @@ public strictfp class RobotPlayer {
 		boolean result = tryMove(dirTo, degreeOffset, checksPerSide);
 		return result;
 	}
-	
+
 	static boolean willHitFriendly(Direction dir) {
 		RobotInfo[] friendlyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam());
-		for (RobotInfo robot: friendlyRobots) {
-			//Looks through an array of all the friendly robots near you
+		for (RobotInfo robot : friendlyRobots) {
+			// Looks through an array of all the friendly robots near you
 			Direction directionToRobot = rc.getLocation().directionTo(robot.getLocation());
 			float distanceToRobot = rc.getLocation().distanceTo(robot.getLocation());
 			float theta = Math.abs(directionToRobot.radiansBetween(dir));
-			float perpendicularDistance = (float) (Math.sin((double)theta) * distanceToRobot);
-			//If the perpendicular distance is less than or equal to the robots radius, the bullet will hit it
+			float perpendicularDistance = (float) (Math.sin((double) theta) * distanceToRobot);
+			// If the perpendicular distance is less than or equal to the robots
+			// radius, the bullet will hit it
 			if (perpendicularDistance <= robot.getRadius()) {
 				// Immediately break return true if it will hit a friendly
 				return true;
@@ -855,7 +843,8 @@ public strictfp class RobotPlayer {
 		RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
 		if (enemyRobots.length > 0) {
 			MapLocation myLocation = rc.getLocation();
-			// Loops through all the enemies nearby starting with the closest one
+			// Loops through all the enemies nearby starting with the closest
+			// one
 			for (int counter = 0; counter < enemyRobots.length; counter++) {
 				Direction directionToEnemy = myLocation.directionTo(enemyRobots[counter].getLocation());
 				// Checks if it will hit a friendly or not
@@ -864,24 +853,20 @@ public strictfp class RobotPlayer {
 					if (distanceToEnemy < 4 && rc.canFirePentadShot()) {
 						rc.firePentadShot(directionToEnemy);
 						return;
-					}
-					else if (distanceToEnemy < 6 && rc.canFireTriadShot()) {
+					} else if (distanceToEnemy < 6 && rc.canFireTriadShot()) {
 						rc.fireTriadShot(directionToEnemy);
 						return;
-					}
-					else {
+					} else {
 						if (rc.canFireSingleShot()) {
 							rc.fireSingleShot(directionToEnemy);
-						}
-						else {
+						} else {
 							System.out.println("Error in shootin opponenet!");
 						}
 
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			System.out.println("No enemies detected!");
 		}
 	}
