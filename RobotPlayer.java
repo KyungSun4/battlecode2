@@ -11,7 +11,7 @@ public strictfp class RobotPlayer {
 	static int ARCHON_COUNT_ARR = 237; // the position in the broadcast array
 										// where the count of archon is stored
 
-	static int GARDNER_COUNT_ARR = 0; // the position in the broadcast array
+	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
 										// where the count of gardener is stored
 	static int SOLDIER_COUNT_ARR = 2; // the position in the broadcast array
 										// where the count of gardener is stored
@@ -239,8 +239,11 @@ public strictfp class RobotPlayer {
 		}
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
-				if (rc.getLocation().distanceTo(nearbySpots[i]) == 2.1) {
-
+				if (Math.round(rc.getLocation().distanceTo(nearbySpots[i])*10)/10 == 2.1) {
+					rc.plantTree(rc.getLocation().directionTo(nearbySpots[i]));
+				} else {
+					//try to move to location 2.1 away
+					
 				}
 			}
 		}
