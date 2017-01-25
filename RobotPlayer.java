@@ -444,8 +444,11 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-	// -------------------------------------------------------------------------------------------------------------
-	// LUMBERJACK PLAYER & METHODS
+
+// -------------------------------------------------------------------------------------------------------------
+// LUMBERJACK PLAYER & METHODS
+	
+
 
 	static void runLumberjack() throws GameActionException {
 		boolean aboutToDie = false;
