@@ -364,6 +364,7 @@ public strictfp class RobotPlayer {
 							// Work on this not being in a random direction
 						}
 					}
+					
 					// Check every turn if there is an enemy nearby
 					/*
 					 * RobotInfo[] enemyLocation =
@@ -385,7 +386,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void scoutMove() {
-
+	
 	}
 
 	static void shakeTree(TreeInfo[] treeList) throws GameActionException {
@@ -409,9 +410,7 @@ public strictfp class RobotPlayer {
 	static void runTank() throws GameActionException {
 		boolean aboutToDie = false;
 		System.out.println("I'm an Tank!");
-		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);
-		Team enemy = rc.getTeam().opponent();
-		
+		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);		
 		Direction tempMoveDirection;
 		Direction moveDirection;
 		// where did we start from? -> where we should initially move
@@ -452,14 +451,14 @@ public strictfp class RobotPlayer {
 			try {
 				
 				//check if there is a tree in front of tank or we can just move
-				if(!rc.hasMoved() && (rc.senseNearbyTrees(radianMove).length > 0 || rc.canMove(moveDirection)) {
+				if(!rc.hasMoved() && (rc.senseNearbyTrees(radianMove).length > 0 || rc.canMove(moveDirection))) {
 					rc.move(moveDirection);
 				}
 				else {
 					tempMoveDirection = randomDirection();
 					if (!rc.canMove(moveDirection)) {
 						if (!rc.hasMoved()) {
-							tryMove(tempMoveDirection, 10, 20);
+							tryMove(tempMoveDirection, 10, 9);
 						}
 					}
 				}
