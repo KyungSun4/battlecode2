@@ -11,7 +11,7 @@ public strictfp class RobotPlayer {
 	static int ARCHON_COUNT_ARR = 237; // the position in the broadcast array
 										// where the count of archon is stored
 
-	static int GARDNER_COUNT_ARR = 0; // the position in the broadcast array
+	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
 										// where the count of gardener is stored
 	static int SOLDIER_COUNT_ARR = 2; // the position in the broadcast array
 										// where the count of gardener is stored
@@ -239,8 +239,11 @@ public strictfp class RobotPlayer {
 		}
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
-				if (rc.getLocation().distanceTo(nearbySpots[i]) == 2.1) {
-
+				if (Math.round(rc.getLocation().distanceTo(nearbySpots[i])*10)/10 == 2.1) {
+					rc.plantTree(rc.getLocation().directionTo(nearbySpots[i]));
+				} else {
+					//try to move to location 2.1 away
+					
 				}
 			}
 		}
@@ -252,6 +255,7 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runScout() throws GameActionException {
+
 		System.out.println("I'm a scout!");
 		Direction moveDirection = randomDirection();
 		boolean combatMode = false;
@@ -260,7 +264,7 @@ public strictfp class RobotPlayer {
 				// If a scout does not see an enemy, it will run this code
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree: treeLocation) {
+					for (TreeInfo tree : treeLocation) {
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
@@ -270,23 +274,27 @@ public strictfp class RobotPlayer {
 					} else {
 						Direction tempMoveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
-							tryMove(moveDirection, 10, 20);
-							//Work on this not being in a random direction
+							if (!rc.hasMoved()) {
+								tryMove(tempMoveDirection, 10, 20);
+							}
+							// Work on this not being in a random direction
 						}
 					}
-					// Check every turn if there is an enemy nearby
-					/*RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
-					for (RobotInfo enemy: enemyLocation) {
+
+					// check for enemy robots
+					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
+							rc.getTeam().opponent());
+					for (RobotInfo enemy : enemyLocation) {
 						if (enemy.getType() != RobotType.SCOUT) {
 							combatMode = true;
 							break;
 						}
-					}*/
+					}
+				} else {
+					// we are combatMode
+
 				}
-				else if (combatMode)
-				{
-					
-				}
+				rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
