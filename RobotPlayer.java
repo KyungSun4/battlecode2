@@ -207,11 +207,11 @@ public strictfp class RobotPlayer {
 		// direction is stored in gardener, grid should have edge constraints in
 		// message array
 
-		// get 4 surounding spots
+		// get 4 surrounding spots
 		float spacing = (float) 4.2;
 		MapLocation myLocation = rc.getLocation();
 		MapLocation baseLocation = new MapLocation(rc.readBroadcast(BASE_TREE_X / 10000000),
-				rc.readBroadcast(BASE_TREE_Y / 10000000));
+			rc.readBroadcast(BASE_TREE_Y / 10000000));
 		MapLocation[] nearbySpots = new MapLocation[4];
 		nearbySpots[0] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing),
 				myLocation.y + ((baseLocation.y - myLocation.y) % spacing));
@@ -267,8 +267,9 @@ public strictfp class RobotPlayer {
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					} else {
-						Direction tempMoveDirection = randomDirection();
+					}
+					else {
+						moveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							tryMove(moveDirection, 10, 20);
 							//Work on this not being in a random direction
