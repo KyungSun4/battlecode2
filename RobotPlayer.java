@@ -239,16 +239,17 @@ public strictfp class RobotPlayer {
 			rc.setIndicatorDot(loc, 1, i * 100, i * 200);
 			for (TreeInfo tree : trees) {
 				if ((int) (tree.getLocation().x * 100) == (int) (loc.x * 100)
-						&& (int) (tree.getLocation().x * 100) == (int) (loc.x * 100)) {
+						&& (int) (tree.getLocation().y * 100) == (int) (loc.y * 100)) {
 					doesNotNeedTree[i] = true;
 				}
 			}
 		}
 		boolean tryingToPlant = false;
+		MapLocation closest = null;
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
 				MapLocation emptySpot = nearbySpots[i];
-				System.out.println(rc.getLocation().distanceTo(emptySpot));
+				System.out.println("dist to" + rc.getLocation().distanceTo(emptySpot));
 				System.out.println(emptySpot);
 				if (Math.round(rc.getLocation().distanceTo(emptySpot) * 10) / 10 == 2.1) {
 					rc.plantTree(rc.getLocation().directionTo(emptySpot));
@@ -257,11 +258,11 @@ public strictfp class RobotPlayer {
 					// try to move to location 2.1 away
 					// find which of 4 positions is closest
 					MapLocation[] pointsAround = new MapLocation[4];
-					pointsAround[0] = new MapLocation(emptySpot.x + spacing, emptySpot.y);
-					pointsAround[1] = new MapLocation(emptySpot.x - spacing, emptySpot.y);
-					pointsAround[2] = new MapLocation(emptySpot.x, emptySpot.y + spacing);
-					pointsAround[3] = new MapLocation(emptySpot.x, emptySpot.y - spacing);
-					MapLocation closest = null;
+					pointsAround[0] = new MapLocation(emptySpot.x + spacing / 2, emptySpot.y);
+					pointsAround[1] = new MapLocation(emptySpot.x - spacing / 2, emptySpot.y);
+					pointsAround[2] = new MapLocation(emptySpot.x, emptySpot.y + spacing / 2);
+					pointsAround[3] = new MapLocation(emptySpot.x, emptySpot.y - spacing / 2);
+
 					for (int p = 0; p < pointsAround.length; p++) {
 						if (rc.canSenseLocation(pointsAround[p]) && !rc.isLocationOccupied(pointsAround[p])) {
 							if (closest == null) {
@@ -271,23 +272,27 @@ public strictfp class RobotPlayer {
 							}
 						}
 					}
-					if (closest != null) {
-						if (myLocation.distanceTo(closest) - 2.1 > rc.getType().strideRadius) {
-							tryMoveToLocation(closest, 1, 60);
-						} else {
-							if (rc.canMove(myLocation.directionTo(closest),
-									(float) (myLocation.distanceTo(closest) - 2.1))) {
-								rc.move(myLocation.directionTo(closest),
-										(float) (myLocation.distanceTo(closest) - 2.1));
-							}
-						}
-
-					} else {
-						System.out.print("idt i can get there" + emptySpot);
-					}
 				}
-				break;
+
 			}
+		}
+		System.out.println(closest);
+		if (closest != null) {
+			rc.setIndicatorLine(rc.getLocation(), closest, 1, 0, 0);
+			if (myLocation.distanceTo(closest) > rc.getType().strideRadius) {
+				if (rc.canMove(myLocation.directionTo(closest))) {
+					rc.move(myLocation.directionTo(closest));
+					System.out.println("moving to" + closest);
+				}
+			} else {
+				if (rc.canMove(myLocation.directionTo(closest), (float) (myLocation.distanceTo(closest)))) {
+					rc.move(myLocation.directionTo(closest), (float) (myLocation.distanceTo(closest)));
+					System.out.println("moving to" + closest);
+				}
+			}
+
+		} else {
+			System.out.print("idt i can get there");
 		}
 		// if didn't move to align move in grid try moving to tree that needs
 		// water
@@ -445,10 +450,8 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-// -------------------------------------------------------------------------------------------------------------
-// LUMBERJACK PLAYER & METHODS
-	
-
+	// -------------------------------------------------------------------------------------------------------------
+	// LUMBERJACK PLAYER & METHODS
 
 	static void runLumberjack() throws GameActionException {
 		boolean aboutToDie = false;
