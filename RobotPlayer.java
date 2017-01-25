@@ -770,59 +770,63 @@ public strictfp class RobotPlayer {
 		boolean result = tryMove(dirTo, degreeOffset, checksPerSide);
 		return result;
 	}
+	
+	static boolean willHitFriendly(Direction dir) {
+		RobotInfo[] friendlyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam());
+		for (RobotInfo robot: friendlyRobots) {
+			//Looks through an array of all the friendly robots near you
+			Direction directionToRobot = rc.getLocation().directionTo(robot.getLocation());
+			float distanceToRobot = rc.getLocation().distanceTo(robot.getLocation());
+			float theta = Math.abs(directionToRobot.radiansBetween(dir));
+			float perpendicularDistance = (float) (Math.sin((double)theta) * distanceToRobot);
+			//If the perpendicular distance is less than or equal to the robots radius, the bullet will hit it
+			if (perpendicularDistance <= robot.getRadius()) {
+				// Immediately break return true if it will hit a friendly
+				return true;
+			}
+		}
+		return false;
+	}
 
-	static boolean tryShoot() throws GameActionException {
+	static void tryShoot() throws GameActionException {
 		// shoots with correct number of bullets in correct distance. Use as a
 		// conditional to check if there is an enemy in range and call this
 		// function
 
 		// 0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot
 		// single
-		RobotInfo[] enemies;
-		int shotType;
-		boolean didShoot = true;
-		Direction dir;
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
+		if (enemyRobots.length > 0) {
+			MapLocation myLocation = rc.getLocation();
+			// Loops through all the enemies nearby starting with the closest one
+			for (int counter = 0; counter < enemyRobots.length; counter++) {
+				Direction directionToEnemy = myLocation.directionTo(enemyRobots[counter].getLocation());
+				// Checks if it will hit a friendly or not
+				if (!willHitFriendly(directionToEnemy)) {
+					float distanceToEnemy = myLocation.distanceTo(enemyRobots[counter].getLocation());
+					if (distanceToEnemy < 4 && rc.canFirePentadShot()) {
+						rc.firePentadShot(directionToEnemy);
+						return;
+					}
+					else if (distanceToEnemy < 6 && rc.canFireTriadShot()) {
+						rc.fireTriadShot(directionToEnemy);
+						return;
+					}
+					else {
+						if (rc.canFireSingleShot()) {
+							rc.fireSingleShot(directionToEnemy);
+						}
+						else {
+							System.out.println("Error in shootin opponenet!");
+						}
 
-		// decide which shot to shoot
-		if (rc.senseNearbyRobots((float) 2)[0] != null) {
-			shotType = 5;
-			enemies = rc.senseNearbyRobots((float) 2);
-		} else if (rc.senseNearbyRobots((float) 5)[0] != null) {
-			shotType = 3;
-			enemies = rc.senseNearbyRobots((float) 5);
-		} else if (rc.senseNearbyRobots((float) -1)[0] != null) {
-			shotType = 1;
-			enemies = rc.senseNearbyRobots((float) -1);
-		} else {
-			shotType = -1;
-			enemies = new RobotInfo[0];
+					}
+				}
+			}
 		}
-
-		// determine direction of shooting
-		dir = shotType == 1 ? rc.getLocation().directionTo(enemies[0].getLocation()) : null;
-
-		switch (shotType) {
-		case 5:
-			if (rc.canFirePentadShot()) {
-				rc.firePentadShot(dir);
-			}
-			break;
-		case 3:
-			if (rc.canFireTriadShot()) {
-				rc.fireTriadShot(dir);
-			}
-			break;
-		case 1:
-			if (rc.canFireSingleShot()) {
-				rc.fireSingleShot(dir);
-			}
-			break;
-		default:
-			didShoot = false;
-			System.out.println("Did not shoot :(");
-			break;
+		else {
+			System.out.println("No enemies detected!");
 		}
-		return didShoot;
 	}
 
 	// returns true if move was performed, false if not performed
