@@ -165,10 +165,18 @@ public strictfp class RobotPlayer {
 				if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SOLDIER);
 				}
-				maintainTreeGrid(rc.senseNearbyTrees());
-				MapLocation myLocation = rc.getLocation();
-				while (!tryMove(move, (float) 10, 5)) {
-					move = randomDirection();
+				if (state == 1) {
+					maintainTreeGrid(rc.senseNearbyTrees());
+				}
+				if (count > 20) {
+					state = 1;
+				}
+				if (state == 0) {
+					MapLocation myLocation = rc.getLocation();
+					while (!tryMove(move, (float) 10, 5)) {
+						move = randomDirection();
+					}
+					count++;
 				}
 				/*
 				 * if (state == 0) { if (tryMove(randomDirection(), (float) 20,
@@ -228,7 +236,7 @@ public strictfp class RobotPlayer {
 		// move to that spot, check 4 surounding spots
 		for (int i = 0; i < nearbySpots.length; i++) {
 			MapLocation loc = nearbySpots[i];
-			rc.setIndicatorDot(loc, 1, 1, 1);
+			rc.setIndicatorDot(loc, 1, i * 100, i * 200);
 			for (TreeInfo tree : trees) {
 				if ((int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)
 						&& (int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)) {
@@ -237,27 +245,98 @@ public strictfp class RobotPlayer {
 				}
 			}
 		}
+		boolean tryingToPlant = false;
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
-				if (Math.round(rc.getLocation().distanceTo(nearbySpots[i]) * 10) / 10 == 2.1) {
-					rc.plantTree(rc.getLocation().directionTo(nearbySpots[i]));
+				MapLocation emptySpot = nearbySpots[i];
+				if (Math.round(rc.getLocation().distanceTo(emptySpot) * 10) / 10 == 2.1) {
+					rc.plantTree(rc.getLocation().directionTo(emptySpot));
 				} else {
+					tryingToPlant = true;
 					// try to move to location 2.1 away
+					// find which of 4 positions is closest
+					MapLocation[] pointsAround = new MapLocation[4];
+					pointsAround[0] = new MapLocation(emptySpot.x + spacing, emptySpot.y);
+					pointsAround[1] = new MapLocation(emptySpot.x - spacing, emptySpot.y);
+					pointsAround[2] = new MapLocation(emptySpot.x, emptySpot.y + spacing);
+					pointsAround[3] = new MapLocation(emptySpot.x, emptySpot.y - spacing);
+					MapLocation closest = null;
+					for (int p = 0; p < pointsAround.length; p++) {
+						if (rc.canSenseLocation(pointsAround[p]) && !rc.isLocationOccupied(pointsAround[p])) {
+							if (closest == null) {
+								closest = pointsAround[p];
+							} else if (myLocation.distanceTo(pointsAround[p]) < myLocation.distanceTo(closest)) {
+								closest = pointsAround[p];
+							}
+						}
+					}
+					if (closest != null) {
+						if (myLocation.distanceTo(closest) - 2.1 > rc.getType().strideRadius) {
+							tryMoveToLocation(closest, 1, 60);
+						} else {
+							if (rc.canMove(myLocation.directionTo(closest),
+									(float) (myLocation.distanceTo(closest) - 2.1))) {
+								rc.move(myLocation.directionTo(closest),
+										(float) (myLocation.distanceTo(closest) - 2.1));
+							}
+						}
 
+					} else {
+						System.out.print("idt i can get there" + emptySpot);
+					}
 				}
+				break;
+			}
+		}
+		// if didn't move to align move in grid try moving to tree that needs
+		// water
+
+		if (!tryingToPlant) {
+			TreeInfo weakest = null;
+			for (TreeInfo tree : trees) {
+				if (tree.team == rc.getTeam()) {
+					if (weakest == null) {
+						weakest = tree;
+					} else if (tree.getHealth() < weakest.getHealth()) {
+						weakest = tree;
+					}
+				}
+			}
+			if (weakest != null) {
+				tryMoveToLocation(weakest.getLocation(), 1, 60);
 			}
 		}
 
-		// if didn't move to align move in grid, go forward or turn right
-
 		// water weakest tree that can water
-
+		if (!rc.canWater()) {
+			TreeInfo weakest = null;
+			for (TreeInfo tree : trees) {
+				if (tree.team == rc.getTeam()
+						&& myLocation.distanceTo(tree.getLocation()) < 2 + rc.getType().bodyRadius) {
+					if (weakest == null) {
+						weakest = tree;
+					} else if (tree.getHealth() < weakest.getHealth()) {
+						weakest = tree;
+					}
+				}
+			}
+			if (rc.canWater(weakest.ID)) {
+				rc.water(weakest.ID);
+			} else {
+				for (TreeInfo tree : trees) {
+					if (rc.canWater(tree.ID)) {
+						rc.water(tree.ID);
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
 		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
-		
+
 		Direction moveDirection = randomDirection();
 		boolean combatMode = false;
 		while (true) {
