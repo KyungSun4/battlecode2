@@ -211,7 +211,7 @@ public strictfp class RobotPlayer {
 		float spacing = (float) 4.2;
 		MapLocation myLocation = rc.getLocation();
 		MapLocation baseLocation = new MapLocation(rc.readBroadcast(BASE_TREE_X / 10000000),
-			rc.readBroadcast(BASE_TREE_Y / 10000000));
+				rc.readBroadcast(BASE_TREE_Y / 10000000));
 		MapLocation[] nearbySpots = new MapLocation[4];
 		nearbySpots[0] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing),
 				myLocation.y + ((baseLocation.y - myLocation.y) % spacing));
@@ -239,11 +239,11 @@ public strictfp class RobotPlayer {
 		}
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
-				if (Math.round(rc.getLocation().distanceTo(nearbySpots[i])*10)/10 == 2.1) {
+				if (Math.round(rc.getLocation().distanceTo(nearbySpots[i]) * 10) / 10 == 2.1) {
 					rc.plantTree(rc.getLocation().directionTo(nearbySpots[i]));
 				} else {
-					//try to move to location 2.1 away
-					
+					// try to move to location 2.1 away
+
 				}
 			}
 		}
@@ -265,33 +265,30 @@ public strictfp class RobotPlayer {
 				// If a scout does not see an enemy, it will run this code
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree: treeLocation) {
+					for (TreeInfo tree : treeLocation) {
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					}
-					else {
+					} else {
 						moveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							tryMove(moveDirection, 10, 20);
-							//Work on this not being in a random direction
+							// Work on this not being in a random direction
 						}
 					}
 					// Check every turn if there is an enemy nearby
-					/*RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
-					for (RobotInfo enemy: enemyLocation) {
-						if (enemy.getType() != RobotType.SCOUT) {
-							combatMode = true;
-							break;
-						}
-					}*/
-				}
-				else if (combatMode)
-				{
-					
+					/*
+					 * RobotInfo[] enemyLocation =
+					 * rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
+					 * rc.getTeam().opponent()); for (RobotInfo enemy:
+					 * enemyLocation) { if (enemy.getType() != RobotType.SCOUT)
+					 * { combatMode = true; break; } }
+					 */
+				} else if (combatMode) {
+
 				}
 				// rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
@@ -1735,7 +1732,7 @@ public strictfp class RobotPlayer {
 		}
 		float[] size = guessMapSize();
 		// if greater than a certain area
-		if (size[0] * size[1] > 1000) {
+		if (Math.sqrt(size[0] * size[0] + size[1] * size[1]) > 30) {
 			small = false;
 		}
 		if (small && enclosed) {
