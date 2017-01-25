@@ -424,59 +424,37 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runSoldier() throws GameActionException {
-		System.out.println("I'm a soldier!");
-
-		Direction tempMoveDirection;
-		Direction moveDirection;
-		// where did we start from? -> where we should initially move
-		float radianMove;
-		switch (getMapStats()) {
-		case "bottom":
-			radianMove = (float) Math.PI / 2;
-			break;
-		case "top":
-			radianMove = (float) Math.PI * 3 / 2;
-			break;
-		case "left":
-			radianMove = (float) 0;
-			break;
-		case "right":
-			radianMove = (float) Math.PI;
-			break;
-		case "bottomRight":
-			radianMove = (float) Math.PI * 3 / 4;
-			break;
-		case "bottomLeft":
-			radianMove = (float) Math.PI * 1 / 4;
-			break;
-		case "topLeft":
-			radianMove = (float) Math.PI * 7 / 4;
-			break;
-		case "topRight":
-			radianMove = (float) Math.PI * 5 / 4;
-			break;
-		default:
-			System.out.println("DEFAULT");
-			radianMove = (float) Math.random() * 2 * (float) Math.PI;
-			break;
-		}
-		moveDirection = new Direction(radianMove);
-
+		System.out.println("I'm an soldier!");
+		rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) + 1);
+		int mapData = rc.readBroadcast(0);
 		while (true) {
 			try {
-				if (rc.canMove(moveDirection) && !rc.hasMoved()) {
-					rc.move(moveDirection);
-				} else {
-					tempMoveDirection = randomDirection();
-					if (!rc.canMove(moveDirection)) {
-						if (!rc.hasMoved()) {
-							tryMove(tempMoveDirection, 10, 20);
-						}
-					}
-				}
+				avoidBullet();
+				tryShoot();
+				
+				Direction move = randomDirection();
+				if (rc.canMove(move) && !rc.hasMoved())
+					rc.move(move);
+				
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
+				e.printStackTrace();
+			}
+		}
+	}
+// -------------------------------------------------------------------------------------------------------------
+// LUMBERJACK PLAYER & METHODS
+	
+	static void runLumberjack() throws GameActionException {
+		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) + 1);
+		System.out.println("I'm a lumberjack!");
+		while (true) {
+			try {
+				avoidBullet();
+				Clock.yield();
+			} catch (Exception e) {
+				System.out.println("Lumberjack Exception");
 				e.printStackTrace();
 			}
 		}
