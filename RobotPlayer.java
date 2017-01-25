@@ -59,6 +59,7 @@ public strictfp class RobotPlayer {
 					}
 
 				}
+				convertVictoryPoints(500);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -147,9 +148,16 @@ public strictfp class RobotPlayer {
 	// GARDENER PLAYER & METHODS
 
 	static void runGardener() throws GameActionException {
+		MapLocation start = rc.getInitialArchonLocations(rc.getTeam())[0];
+		int count = 20;
+		boolean dontTree = false;
+		if(rc.getRoundNum()<3) {
+			dontTree = true;
+		}
 		System.out.println("I'm a gardener!");
 		rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) + 1);
 		int mapData = rc.readBroadcast(0);
+		Direction awayDir = rc.getLocation().directionTo(start).opposite();
 		if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
 			tryBuildRobot(randomDirection(), 5, 10, RobotType.SCOUT);
 			rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
@@ -158,27 +166,58 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				avoidBullet();
-				if (mapData == 1) {
-					// Make lumberjacks then have a balance between attacking
-					// and farming
-					mapTypeOneGardener();
-				} else if (mapData == 2) {
-					// Make soldiers then send them to attack
-					tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-				} else if (mapData == 3) {
-					// Make lumberjacks then do tree stuff
-					mapTypeOneGardener();
-					maintainTreeRing();
-				} else if (mapData == 4) {
-					// Do tree stuff and make gardeners, maybe periodically make
-					// a soldier
+				if (count > 0) {
+					count--;
+
+					if (!tryMove(awayDir, 1, 90)) {
+						awayDir = rc.getLocation().directionTo(start).opposite();
+
+					}
+					if (mapData == 1) {
+						// Make lumberjacks then have a balance between
+						// attacking
+						// and farming
+						mapTypeOneGardener();
+					} else if (mapData == 2) {
+						// Make soldiers then send them to attack
+						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
+					} else if (mapData == 3) {
+						// Make lumberjacks then do tree stuff
+						mapTypeOneGardener();
+						// maintainTreeRing();
+					} else if (mapData == 4) {
+						// Do tree stuff and make gardeners, maybe periodically
+						// make
+						// a soldier
+						if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 3) {
+							tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
+						} else {
+							// Tree stuff
+							// maintainTreeRing();
+						}
+					}
+				} else {
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
+						tryBuildRobot(randomDirection(), 10, 9, RobotType.LUMBERJACK);
+					}
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 3) {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-					} else {
-						// Tree stuff
-						maintainTreeRing();
 					}
+					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
+						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
+					}
+					if(!dontTree) {
+						maintainTreeRing();
+					} else {
+						if (!tryMove(awayDir, 1, 20)) {
+							awayDir = rc.getLocation().directionTo(start).opposite();
+
+						}
+					}
+					
+
 				}
+				convertVictoryPoints(500);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
@@ -259,6 +298,7 @@ public strictfp class RobotPlayer {
 						rc.move(randomDirection());
 					}
 				}
+				convertVictoryPoints(500);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
@@ -376,7 +416,7 @@ public strictfp class RobotPlayer {
 					aboutToDie = true;
 					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
 				}
-
+				convertVictoryPoints(500);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Lumberjack Exception");
@@ -538,7 +578,9 @@ public strictfp class RobotPlayer {
 				} else if (combatMode) {
 
 				}
+				convertVictoryPoints(500);
 				Clock.yield();
+				
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
 				e.printStackTrace();
@@ -584,6 +626,7 @@ public strictfp class RobotPlayer {
 			try {
 				avoidBullet();
 				tryShoot();
+				convertVictoryPoints(500);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Tank Exception");
