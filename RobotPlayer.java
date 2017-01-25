@@ -156,7 +156,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) < 3) {
-					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.LUMBERJACK);
 				}
 				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
