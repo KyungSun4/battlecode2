@@ -11,7 +11,7 @@ public strictfp class RobotPlayer {
 	static int ARCHON_COUNT_ARR = 237; // the position in the broadcast array
 										// where the count of archon is stored
 
-	static int GARDNER_COUNT_ARR = 1; // the position in the broadcast array
+	static int GARDNER_COUNT_ARR = 0; // the position in the broadcast array
 										// where the count of gardener is stored
 	static int SOLDIER_COUNT_ARR = 2; // the position in the broadcast array
 										// where the count of gardener is stored
@@ -194,82 +194,42 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runScout() throws GameActionException {
-
 		System.out.println("I'm a scout!");
-		Direction tempMoveDirection;
-		Direction moveDirection;
-		// where did we start from? -> where we should initially move
-		float radianMove;
-		switch (getMapStats()) {
-		case "bottom":
-			radianMove = (float) Math.PI / 2;
-			break;
-		case "top":
-			radianMove = (float) Math.PI * 3 / 2;
-			break;
-		case "left":
-			radianMove = (float) 0;
-			break;
-		case "right":
-			radianMove = (float) Math.PI;
-			break;
-		case "bottomRight":
-			radianMove = (float) Math.PI * 3 / 4;
-			break;
-		case "bottomLeft":
-			radianMove = (float) Math.PI * 1 / 4;
-			break;
-		case "topLeft":
-			radianMove = (float) Math.PI * 7 / 4;
-			break;
-		case "topRight":
-			radianMove = (float) Math.PI * 5 / 4;
-			break;
-		default:
-			System.out.println("DEFAULT");
-			radianMove = (float) Math.random() * 2 * (float) Math.PI;
-			break;
-		}
-		moveDirection = new Direction(radianMove);
-
-		// if()
+		Direction moveDirection = randomDirection();
 		boolean combatMode = false;
 		while (true) {
 			try {
 				// If a scout does not see an enemy, it will run this code
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree : treeLocation) {
+					for (TreeInfo tree: treeLocation) {
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					} else {
-						tempMoveDirection = randomDirection();
+					}
+					else {
+						moveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
-							if (!rc.hasMoved()) {
-								tryMove(tempMoveDirection, 10, 20);
-							}
-							// Work on this not being in a random direction
+							tryMove(moveDirection, 10, 20);
+							//Work on this not being in a random direction
 						}
 					}
-
-					// check for enemy robots
-					RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
-							rc.getTeam().opponent());
-					for (RobotInfo enemy : enemyLocation) {
+					// Check every turn if there is an enemy nearby
+					/*RobotInfo[] enemyLocation = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+					for (RobotInfo enemy: enemyLocation) {
 						if (enemy.getType() != RobotType.SCOUT) {
 							combatMode = true;
 							break;
 						}
-					}
-				} else {
-					// we are combatMode
-
+					}*/
 				}
-				rc.fireSingleShot(Direction.SOUTH);
+				else if (combatMode)
+				{
+					
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
