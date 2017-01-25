@@ -32,6 +32,12 @@ public strictfp class RobotPlayer {
 	static int LUMBERJACK_REQUESTS_END = 41;// uses 42 and 43 also i think
 	static int TREE_REMOVED_START = 50;
 	static int TREE_REMOVED_END = 71;
+	static int TOP_OF_GRID_ARR = 80;
+	static int BOTTOM_OF_GRID_ARR = 81;
+	static int LEFT_OF_GRID_ARR = 82;
+	static int RIGHT_OF_GRID_ARR = 83;
+	static int BASE_TREE_X = 84;
+	static int BASE_TREE_Y = 85;
 
 	@SuppressWarnings("unused")
 
@@ -159,27 +165,26 @@ public strictfp class RobotPlayer {
 				if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SOLDIER);
 				}
+				maintainTreeGrid(rc.senseNearbyTrees());
 				MapLocation myLocation = rc.getLocation();
-				if (state == 0) {
-					if (tryMove(randomDirection(), (float) 20, 5)) {
-						count++;
-					}
+				while (!tryMove(move, (float) 10, 5)) {
+					move = randomDirection();
 				}
-				if (count == 10) {
-					state = 1;
-				}
-				if (state == 1) {
-					// gets all neutralTrees that could be in the way
-					TreeInfo[] neutralTrees = rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3, Team.NEUTRAL);
-					// request lumberJacks for each
+				/*
+				 * if (state == 0) { if (tryMove(randomDirection(), (float) 20,
+				 * 5)) { count++; } } if (count == 10) { state = 1; } if (state
+				 * == 1) { // gets all neutralTrees that could be in the way
+				 * TreeInfo[] neutralTrees =
+				 * rc.senseNearbyTrees(RobotType.GARDENER.bodyRadius + 3,
+				 * Team.NEUTRAL); // request lumberJacks for each
+				 * 
+				 * for (TreeInfo tree : neutralTrees) {
+				 * System.out.println("requesting tree id:" + tree.ID); //
+				 * request number of lumberjacks based on tree health
+				 * requestLumberJack(tree, 1 + (int) (tree.health / 41)); }
+				 * maintainTreeRing(); }
+				 */
 
-					for (TreeInfo tree : neutralTrees) {
-						System.out.println("requesting tree id:" + tree.ID);
-						// request number of lumberjacks based on tree health
-						requestLumberJack(tree, 1 + (int) (tree.health / 41));
-					}
-					maintainTreeRing();
-				}
 				// update robot count
 				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
@@ -191,6 +196,59 @@ public strictfp class RobotPlayer {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * moves and maintains a tree grid
+	 * 
+	 * @throws GameActionException
+	 */
+	static void maintainTreeGrid(TreeInfo[] trees) throws GameActionException {
+		// direction is stored in gardener, grid should have edge constraints in
+		// message array
+
+		// get 4 surounding spots
+		float spacing = (float) 4.2;
+		MapLocation myLocation = rc.getLocation();
+		MapLocation baseLocation = new MapLocation(rc.readBroadcast(BASE_TREE_X / 10000000),
+				rc.readBroadcast(BASE_TREE_Y / 10000000));
+		MapLocation[] nearbySpots = new MapLocation[4];
+		nearbySpots[0] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing),
+				myLocation.y + ((baseLocation.y - myLocation.y) % spacing));
+		nearbySpots[1] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing) + spacing,
+				myLocation.y + ((baseLocation.y - myLocation.y) % spacing));
+		nearbySpots[2] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing),
+				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
+		nearbySpots[3] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing) + spacing,
+				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
+		boolean[] doesNotNeedTree = new boolean[4];
+
+		// if find spot without tree plant if doesen't need to move plant tree,
+		// else
+		// move to that spot, check 4 surounding spots
+		for (int i = 0; i < nearbySpots.length; i++) {
+			MapLocation loc = nearbySpots[i];
+			rc.setIndicatorDot(loc, 1, 1, 1);
+			for (TreeInfo tree : trees) {
+				if ((int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)
+						&& (int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)) {
+					doesNotNeedTree[i] = true;
+					break;
+				}
+			}
+		}
+		for (int i = 0; i < nearbySpots.length; i++) {
+			if (!doesNotNeedTree[i]) {
+				if (rc.getLocation().distanceTo(nearbySpots[i]) == 2.1) {
+
+				}
+			}
+		}
+
+		// if didn't move to align move in grid, go forward or turn right
+
+		// water weakest tree that can water
+
 	}
 
 	static void runScout() throws GameActionException {
@@ -209,9 +267,8 @@ public strictfp class RobotPlayer {
 					}
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
-					}
-					else {
-						moveDirection = randomDirection();
+					} else {
+						Direction tempMoveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							tryMove(moveDirection, 10, 20);
 							//Work on this not being in a random direction
@@ -272,8 +329,7 @@ public strictfp class RobotPlayer {
 					aboutToDie = true;
 					rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
 				}
-				
-				
+
 				Clock.yield();
 
 			} catch (Exception e) {
@@ -286,7 +342,7 @@ public strictfp class RobotPlayer {
 
 	static void runSoldier() throws GameActionException {
 		System.out.println("I'm a soldier!");
-		
+
 		Direction tempMoveDirection;
 		Direction moveDirection;
 		// where did we start from? -> where we should initially move
@@ -322,9 +378,19 @@ public strictfp class RobotPlayer {
 			break;
 		}
 		moveDirection = new Direction(radianMove);
-		
+
 		while (true) {
 			try {
+				if (rc.canMove(moveDirection) && !rc.hasMoved()) {
+					rc.move(moveDirection);
+				} else {
+					tempMoveDirection = randomDirection();
+					if (!rc.canMove(moveDirection)) {
+						if (!rc.hasMoved()) {
+							tryMove(tempMoveDirection, 10, 20);
+						}
+					}
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
