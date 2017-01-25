@@ -446,19 +446,6 @@ public strictfp class RobotPlayer {
 // -------------------------------------------------------------------------------------------------------------
 // LUMBERJACK PLAYER & METHODS
 	
-	static void runLumberjack() throws GameActionException {
-		rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) + 1);
-		System.out.println("I'm a lumberjack!");
-		while (true) {
-			try {
-				avoidBullet();
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Lumberjack Exception");
-				e.printStackTrace();
-			}
-		}
-	}
 
 	static void runLumberjack() throws GameActionException {
 		boolean aboutToDie = false;
