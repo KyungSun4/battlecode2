@@ -411,8 +411,59 @@ public strictfp class RobotPlayer {
 		System.out.println("I'm an Tank!");
 		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);
 		Team enemy = rc.getTeam().opponent();
+		
+		Direction tempMoveDirection;
+		Direction moveDirection;
+		// where did we start from? -> where we should initially move
+		float radianMove;
+		switch (getMapStats()) {
+		case "bottom":
+			radianMove = (float) Math.PI / 2;
+			break;
+		case "top":
+			radianMove = (float) Math.PI * 3 / 2;
+			break;
+		case "left":
+			radianMove = (float) 0;
+			break;
+		case "right":
+			radianMove = (float) Math.PI;
+			break;
+		case "bottomRight":
+			radianMove = (float) Math.PI * 3 / 4;
+			break;
+		case "bottomLeft":
+			radianMove = (float) Math.PI * 1 / 4;
+			break;
+		case "topLeft":
+			radianMove = (float) Math.PI * 7 / 4;
+			break;
+		case "topRight":
+			radianMove = (float) Math.PI * 5 / 4;
+			break;
+		default:
+			System.out.println("DEFAULT");
+			radianMove = (float) Math.random() * 2 * (float) Math.PI;
+			break;
+		}
+		moveDirection = new Direction(radianMove);
+		
 		while (true) {
 			try {
+				
+				//check if there is a tree in front of tank or we can just move
+				if(!rc.hasMoved() && (rc.senseNearbyTrees(radianMove).length > 0 || rc.canMove(moveDirection)) {
+					rc.move(moveDirection);
+				}
+				else {
+					tempMoveDirection = randomDirection();
+					if (!rc.canMove(moveDirection)) {
+						if (!rc.hasMoved()) {
+							tryMove(tempMoveDirection, 10, 20);
+						}
+					}
+				}
+				
 				MapLocation myLocation = rc.getLocation();
 				if (rc.getHealth() <= 5 && aboutToDie) {
 					aboutToDie = true;
