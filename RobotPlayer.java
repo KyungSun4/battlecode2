@@ -291,6 +291,7 @@ public strictfp class RobotPlayer {
 				{
 					
 				}
+				// rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
