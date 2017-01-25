@@ -59,7 +59,7 @@ public strictfp class RobotPlayer {
 					}
 
 				}
-				convertVictoryPoints(500);
+				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -149,7 +149,7 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		MapLocation start = rc.getInitialArchonLocations(rc.getTeam())[0];
-		int count = 20;
+		int count = 40;
 		boolean dontTree = false;
 		if(rc.getRoundNum()<3) {
 			dontTree = true;
@@ -217,7 +217,7 @@ public strictfp class RobotPlayer {
 					
 
 				}
-				convertVictoryPoints(500);
+				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
@@ -298,7 +298,7 @@ public strictfp class RobotPlayer {
 						rc.move(randomDirection());
 					}
 				}
-				convertVictoryPoints(500);
+				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Soldier Exception");
@@ -416,7 +416,7 @@ public strictfp class RobotPlayer {
 					aboutToDie = true;
 					rc.broadcast(LUMBERJACK_COUNT_ARR, rc.readBroadcast(LUMBERJACK_COUNT_ARR) - 1);
 				}
-				convertVictoryPoints(500);
+				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Lumberjack Exception");
@@ -578,7 +578,7 @@ public strictfp class RobotPlayer {
 				} else if (combatMode) {
 
 				}
-				convertVictoryPoints(500);
+				convertVictoryPoints(1000);
 				Clock.yield();
 				
 			} catch (Exception e) {
@@ -626,7 +626,7 @@ public strictfp class RobotPlayer {
 			try {
 				avoidBullet();
 				tryShoot();
-				convertVictoryPoints(500);
+				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Tank Exception");
