@@ -1,4 +1,4 @@
-package examplefuncsplayer;
+package battlecode2;
 
 import java.util.ArrayList;
 
