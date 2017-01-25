@@ -238,17 +238,20 @@ public strictfp class RobotPlayer {
 			MapLocation loc = nearbySpots[i];
 			rc.setIndicatorDot(loc, 1, i * 100, i * 200);
 			for (TreeInfo tree : trees) {
-				if ((int) (tree.getLocation().x * 100) == (int) (loc.x * 100)
-						&& (int) (tree.getLocation().y * 100) == (int) (loc.y * 100)) {
+				if ((int) (tree.getLocation().x) == (int) (loc.x) && (int) (tree.getLocation().y) == (int) (loc.y)) {
 					doesNotNeedTree[i] = true;
+					rc.setIndicatorDot(loc, 0, 200, 0);
+					System.out.println("Found tree in spot" + loc);
 				}
 			}
 		}
 		boolean tryingToPlant = false;
 		MapLocation closest = null;
+		MapLocation emptySpot = null;
+		MapLocation closestEmptySpot = null;
 		for (int i = 0; i < nearbySpots.length; i++) {
 			if (!doesNotNeedTree[i]) {
-				MapLocation emptySpot = nearbySpots[i];
+				emptySpot = nearbySpots[i];
 				System.out.println("dist to" + rc.getLocation().distanceTo(emptySpot));
 				System.out.println(emptySpot);
 				if (Math.round(rc.getLocation().distanceTo(emptySpot) * 10) / 10 == 2.1) {
@@ -264,10 +267,12 @@ public strictfp class RobotPlayer {
 					pointsAround[3] = new MapLocation(emptySpot.x, emptySpot.y - spacing / 2);
 
 					for (int p = 0; p < pointsAround.length; p++) {
-						if (rc.canSenseLocation(pointsAround[p]) && !rc.isLocationOccupied(pointsAround[p])) {
+						if (rc.canSenseLocation(pointsAround[p])) {
 							if (closest == null) {
+								closestEmptySpot = emptySpot;
 								closest = pointsAround[p];
 							} else if (myLocation.distanceTo(pointsAround[p]) < myLocation.distanceTo(closest)) {
+								closestEmptySpot = emptySpot;
 								closest = pointsAround[p];
 							}
 						}
@@ -277,18 +282,20 @@ public strictfp class RobotPlayer {
 			}
 		}
 		System.out.println(closest);
-		if (closest != null) {
+		if (closest != null && closestEmptySpot != null) {
 			rc.setIndicatorLine(rc.getLocation(), closest, 1, 0, 0);
 			if (myLocation.distanceTo(closest) > rc.getType().strideRadius) {
-				if (rc.canMove(myLocation.directionTo(closest))) {
-					rc.move(myLocation.directionTo(closest));
-					System.out.println("moving to" + closest);
+
+				tryMoveToLocation(closest, 1, 60);
+				System.out.println("moving to" + closest);
+
+			} else if (myLocation.distanceTo(closest) < .0001) {
+				if (rc.canPlantTree(myLocation.directionTo(closestEmptySpot))) {
+					rc.plantTree(myLocation.directionTo(closestEmptySpot));
 				}
-			} else {
-				if (rc.canMove(myLocation.directionTo(closest), (float) (myLocation.distanceTo(closest)))) {
-					rc.move(myLocation.directionTo(closest), (float) (myLocation.distanceTo(closest)));
-					System.out.println("moving to" + closest);
-				}
+			} else if (rc.canMove(myLocation.directionTo(closest), myLocation.distanceTo(closest))) {
+				rc.move(myLocation.directionTo(closest), myLocation.distanceTo(closest));
+				System.out.println("moving to" + closest);
 			}
 
 		} else {
@@ -298,6 +305,7 @@ public strictfp class RobotPlayer {
 		// water
 
 		if (!tryingToPlant) {
+			System.out.println("goign to water wekeast");
 			TreeInfo weakest = null;
 			for (TreeInfo tree : trees) {
 				if (tree.team == rc.getTeam()) {
@@ -309,16 +317,17 @@ public strictfp class RobotPlayer {
 				}
 			}
 			if (weakest != null) {
-				tryMoveToLocation(weakest.getLocation(), 1, 60);
+				if (myLocation.distanceTo(weakest.location) > 3) {
+					tryMoveToLocation(weakest.getLocation(), 1, 60);
+				}
 			}
 		}
 
 		// water weakest tree that can water
-		if (!rc.canWater()) {
+		if (rc.canWater()) {
 			TreeInfo weakest = null;
 			for (TreeInfo tree : trees) {
-				if (tree.team == rc.getTeam()
-						&& myLocation.distanceTo(tree.getLocation()) < 2 + rc.getType().bodyRadius) {
+				if (tree.team == rc.getTeam() && myLocation.distanceTo(tree.getLocation()) <= 3) {
 					if (weakest == null) {
 						weakest = tree;
 					} else if (tree.getHealth() < weakest.getHealth()) {
@@ -326,13 +335,12 @@ public strictfp class RobotPlayer {
 					}
 				}
 			}
-			if (rc.canWater(weakest.ID)) {
+			if (weakest != null && rc.canWater(weakest.ID)) {
 				rc.water(weakest.ID);
 			} else {
 				for (TreeInfo tree : trees) {
 					if (rc.canWater(tree.ID)) {
 						rc.water(tree.ID);
-						break;
 					}
 				}
 			}
