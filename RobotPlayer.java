@@ -292,7 +292,7 @@ public strictfp class RobotPlayer {
 					// we are combatMode
 
 				}
-				rc.fireSingleShot(Direction.SOUTH);
+				//rc.fireSingleShot(Direction.SOUTH);
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
