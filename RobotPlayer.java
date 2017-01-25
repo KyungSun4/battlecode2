@@ -269,7 +269,7 @@ public strictfp class RobotPlayer {
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
 					} else {
-						tempMoveDirection = randomDirection();
+						Direction tempMoveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
 							if (!rc.hasMoved()) {
 								tryMove(tempMoveDirection, 10, 20);
