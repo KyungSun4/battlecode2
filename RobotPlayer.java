@@ -32,6 +32,12 @@ public strictfp class RobotPlayer {
 	static int LUMBERJACK_REQUESTS_END = 41;// uses 42 and 43 also i think
 	static int TREE_REMOVED_START = 50;
 	static int TREE_REMOVED_END = 71;
+	static int TOP_OF_GRID_ARR = 80;
+	static int BOTTOM_OF_GRID_ARR = 81;
+	static int LEFT_OF_GRID_ARR = 82;
+	static int RIGHT_OF_GRID_ARR = 83;
+	static int BASE_TREE_X = 84;
+	static int BASE_TREE_Y = 85;
 
 	@SuppressWarnings("unused")
 
@@ -199,12 +205,33 @@ public strictfp class RobotPlayer {
 	 * 
 	 * @throws GameActionException
 	 */
-	static void maintainTreeGrid() {
-		//direction is stored in gardener, grid should have edge constraints in message array
-		//if find spot without tree, if doesent need to move plant tree, else move to that spot
-		//if didnt move to align move in grid, go forward or turn right
-		//water weakest tree that can water
-				
+	static void maintainTreeGrid(TreeInfo[] trees) throws GameActionException {
+		// direction is stored in gardener, grid should have edge constraints in
+		// message array
+		// if find spot without tree, if doesen't need to move plant tree, else
+		// move to that spot
+		// get spots
+		// check 4 surounding spots
+		float spacing = (float) 4.2;
+		MapLocation myLocation = rc.getLocation();
+		MapLocation baseLocation = new MapLocation(rc.readBroadcast(BASE_TREE_X / 10000000),
+				rc.readBroadcast(BASE_TREE_Y / 10000000));
+		MapLocation[] nearbySpots = new MapLocation[4];
+		nearbySpots[0] = new MapLocation(myLocation.x + (myLocation.x - baseLocation.x) % spacing,
+				myLocation.y + (myLocation.y - baseLocation.y) % spacing);
+		nearbySpots[1] = new MapLocation(-(spacing) + myLocation.x + (myLocation.x - baseLocation.x) % spacing,
+				myLocation.y + (myLocation.y - baseLocation.y) % spacing);
+		nearbySpots[2] = new MapLocation(myLocation.x + (myLocation.x - baseLocation.x) % spacing,
+				-(spacing) + myLocation.y + (myLocation.y - baseLocation.y) % spacing);
+		nearbySpots[3] = new MapLocation(-(spacing) + myLocation.x + (myLocation.x - baseLocation.x) % spacing,
+				-(spacing) + myLocation.y + (myLocation.y - baseLocation.y) % spacing);
+		for (MapLocation loc : nearbySpots) {
+			rc.setIndicatorDot(loc, 1, 1, 1);
+		}
+		// if didn't move to align move in grid, go forward or turn right
+
+		// water weakest tree that can water
+
 	}
 
 	static void runScout() throws GameActionException {
