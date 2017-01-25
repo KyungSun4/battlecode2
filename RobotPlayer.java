@@ -206,7 +206,7 @@ public strictfp class RobotPlayer {
 	static void maintainTreeGrid(TreeInfo[] trees) throws GameActionException {
 		// direction is stored in gardener, grid should have edge constraints in
 		// message array
-		
+
 		// get 4 surounding spots
 		float spacing = (float) 4.2;
 		MapLocation myLocation = rc.getLocation();
@@ -222,27 +222,29 @@ public strictfp class RobotPlayer {
 		nearbySpots[3] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing) + spacing,
 				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
 		boolean[] doesNotNeedTree = new boolean[4];
-		
-		// if find spot without tree plant if doesen't need to move plant tree, else
+
+		// if find spot without tree plant if doesen't need to move plant tree,
+		// else
 		// move to that spot, check 4 surounding spots
-		for (int i = 0; i<nearbySpots.length;i++) {
+		for (int i = 0; i < nearbySpots.length; i++) {
 			MapLocation loc = nearbySpots[i];
 			rc.setIndicatorDot(loc, 1, 1, 1);
-			for(TreeInfo tree: trees) {
-				if((int)(tree.getLocation().x*1000)==(int)(loc.x*1000)&&(int)(tree.getLocation().x*1000)==(int)(loc.x*1000)) {
+			for (TreeInfo tree : trees) {
+				if ((int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)
+						&& (int) (tree.getLocation().x * 1000) == (int) (loc.x * 1000)) {
 					doesNotNeedTree[i] = true;
 					break;
 				}
 			}
 		}
-		for(int i = 0; i <nearbySpots.length;i++) {
-			if(!doesNotNeedTree[i]) {
-				if(rc.getLocation().distanceTo(nearbySpots[i]) == 2.1) {
-					
+		for (int i = 0; i < nearbySpots.length; i++) {
+			if (!doesNotNeedTree[i]) {
+				if (rc.getLocation().distanceTo(nearbySpots[i]) == 2.1) {
+
 				}
 			}
 		}
-		
+
 		// if didn't move to align move in grid, go forward or turn right
 
 		// water weakest tree that can water
@@ -386,8 +388,7 @@ public strictfp class RobotPlayer {
 			try {
 				if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 					rc.move(moveDirection);
-				} 
-				else {
+				} else {
 					tempMoveDirection = randomDirection();
 					if (!rc.canMove(moveDirection)) {
 						if (!rc.hasMoved()) {
