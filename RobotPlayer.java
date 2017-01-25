@@ -256,6 +256,8 @@ public strictfp class RobotPlayer {
 
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
+		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
+		
 		Direction moveDirection = randomDirection();
 		boolean combatMode = false;
 		while (true) {
