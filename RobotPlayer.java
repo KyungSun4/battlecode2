@@ -156,7 +156,7 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) < 3) {
-					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.LUMBERJACK);
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SCOUT);
 				}
 				System.out.print(rc.readBroadcast(SCOUT_COUNT_ARR));
 				if (rc.readBroadcast(SCOUT_COUNT_ARR) < 3) {
@@ -238,8 +238,8 @@ public strictfp class RobotPlayer {
 
 		System.out.println("I'm a scout!");
 		
+		Direction moveDirection = randomDirection();
 		
-		Direction moveDirection = randomDirection()
 		boolean combatMode = false;
 		while (true) {
 			try {
@@ -247,20 +247,17 @@ public strictfp class RobotPlayer {
 				if (!combatMode) {
 					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
 					for (TreeInfo tree : treeLocation) {
+						rc.move(moveDirection);
 						if (tree.getContainedBullets() > 0) {
 							shakeTree(treeLocation);
 						}
 					}
+					
 					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
 						rc.move(moveDirection);
 					} else {
-						tempMoveDirection = randomDirection();
-						if (!rc.canMove(moveDirection)) {
-							if (!rc.hasMoved()) {
-								tryMove(tempMoveDirection, 10, 20);
-							}
-							// Work on this not being in a random direction
-						}
+						moveDirection = randomDirection();
+						rc.move(moveDirection);
 					}
 
 					// check for enemy robots
