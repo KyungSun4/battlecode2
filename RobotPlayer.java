@@ -237,6 +237,9 @@ public strictfp class RobotPlayer {
 		for (int i = 0; i < nearbySpots.length; i++) {
 			MapLocation loc = nearbySpots[i];
 			rc.setIndicatorDot(loc, 1, i * 100, i * 200);
+			if(!rc.onTheMap(loc)) {
+				doesNotNeedTree[i] = true;
+			}
 			for (TreeInfo tree : trees) {
 				if ((int) (tree.getLocation().x) == (int) (loc.x) && (int) (tree.getLocation().y) == (int) (loc.y)) {
 					doesNotNeedTree[i] = true;
