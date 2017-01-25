@@ -144,6 +144,7 @@ public strictfp class RobotPlayer {
 	// GARDENER METHODS
 
 	static void runGardener() throws GameActionException {
+		
 		boolean aboutToDie = false;
 		System.out.println("I'm a Gardner!");
 
@@ -164,6 +165,9 @@ public strictfp class RobotPlayer {
 				}
 				if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 3) {
 					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.SOLDIER);
+				}
+				if (rc.readBroadcast(TANK_COUNT_ARR) < 3) {
+					tryBuildRobot(Direction.getNorth(), 10, 18, RobotType.TANK);
 				}
 				if (state == 1) {
 					maintainTreeGrid(rc.senseNearbyTrees());
@@ -419,6 +423,8 @@ public strictfp class RobotPlayer {
 	}
 
 	static void runTank() throws GameActionException {
+	
+		
 		boolean aboutToDie = false;
 		System.out.println("I'm an Tank!");
 		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);		
@@ -460,6 +466,8 @@ public strictfp class RobotPlayer {
 		
 		while (true) {
 			try {
+				
+				tryShoot();
 				
 				//check if there is a tree in front of tank or we can just move
 				if(!rc.hasMoved() && (rc.senseNearbyTrees(radianMove).length > 0 || rc.canMove(moveDirection))) {
@@ -905,7 +913,7 @@ public strictfp class RobotPlayer {
 		// conditional to check if there is an enemy in range and call this
 		// function
 
-		// 0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot
+		// 0-3 distance shoot pent, 4-5 distance shoot triad, >5 distance shoot
 		// single
 		RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
 		if (enemyRobots.length > 0) {
