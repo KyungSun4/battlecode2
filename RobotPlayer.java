@@ -89,7 +89,7 @@ public strictfp class RobotPlayer {
 
 	// This method will find the archon farthest away from the center. If this
 	// archon is not surrounded by trees, it will be set as the default archon
-	static void roundOneCommands() {
+	static void roundOneCommands() throws GameActionException {
 		if (rc.getRoundNum() == 1) {
 			MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
 			MapLocation mapCenter = getMapCenter();
@@ -101,8 +101,14 @@ public strictfp class RobotPlayer {
 					farthestArchonLocation = archonLocation;
 				}
 			}
+			// aligns tree grid with this archon, will help with spawning of
+			// garderns hopefully
+			rc.broadcast(BASE_TREE_X, (int) (farthestArchonLocation.x * 100000));
+			rc.broadcast(BASE_TREE_Y, (int) (farthestArchonLocation.y * 100000));
+			System.out.println("far Loc is " + farthestArchonLocation);
 			if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
 				try {
+
 					rc.broadcast(1, rc.getID());
 					if (rc.readBroadcast(0) == 0) {
 						int mapType = getMapType();
@@ -213,7 +219,7 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
 					}
 					if (!dontTree) {
-						maintainTreeRing();
+						maintainTreeGrid(rc.senseNearbyTrees());
 					} else {
 						if (!tryMove(awayDir, 1, 20)) {
 							awayDir = rc.getLocation().directionTo(start).opposite();
@@ -251,34 +257,70 @@ public strictfp class RobotPlayer {
 		// get 4 surrounding spots
 		float spacing = (float) 4.2;
 		MapLocation myLocation = rc.getLocation();
-		MapLocation baseLocation = new MapLocation(rc.readBroadcast(BASE_TREE_X / 10000000),
-				rc.readBroadcast(BASE_TREE_Y / 10000000));
-		MapLocation[] nearbySpots = new MapLocation[4];
-		nearbySpots[0] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing),
-				myLocation.y + ((baseLocation.y - myLocation.y) % spacing));
-		nearbySpots[1] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing) + spacing,
-				myLocation.y + ((baseLocation.y - myLocation.y) % spacing));
-		nearbySpots[2] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing),
-				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
-		nearbySpots[3] = new MapLocation(myLocation.x + ((baseLocation.x - myLocation.x) % spacing) + spacing,
-				myLocation.y + ((baseLocation.y - myLocation.y) % spacing) + spacing);
-		boolean[] doesNotNeedTree = new boolean[4];
+		MapLocation baseLocation = new MapLocation(spacing * 200 + rc.readBroadcast(BASE_TREE_X) / (float) 100000,
+				spacing * 200 + rc.readBroadcast(BASE_TREE_Y) / (float) 100000);
+		MapLocation offsetLocation = new MapLocation(spacing * 200 + baseLocation.x, spacing * 200 + baseLocation.y);
+		System.out.println("base is " + offsetLocation);
+		MapLocation[] nearbySpots = new MapLocation[16];
+		int x = -2;
+		int y = -2;
+		for (int i = 0; i < nearbySpots.length; i++) {
+			MapLocation loc = new MapLocation(
+					myLocation.x + ((offsetLocation.x - myLocation.x) % spacing) + spacing * x,
+					myLocation.y + ((offsetLocation.y - myLocation.y) % spacing) + spacing * y);
+			rc.setIndicatorDot(loc, 0, 0, 0);
+			if (rc.canSenseLocation(loc)) {
+				nearbySpots[i] = loc;
+			}
+			x++;
+			if (i == 3) {
+				x = -2;
+				y++;
+			}
+			if (i == 7) {
+				x = -2;
+				y++;
+			}
+			if (i == 11) {
+				x = -2;
+				y++;
+			}
+
+		}
+
+		boolean[] doesNotNeedTree = new boolean[16];
 
 		// if find spot without tree plant if doesen't need to move plant tree,
 		// else
 		// move to that spot, check 4 surounding spots
 		for (int i = 0; i < nearbySpots.length; i++) {
 			MapLocation loc = nearbySpots[i];
-			rc.setIndicatorDot(loc, 1, i * 100, i * 200);
-			if (!rc.onTheMap(loc)) {
-				doesNotNeedTree[i] = true;
-			}
-			for (TreeInfo tree : trees) {
-				if ((int) (tree.getLocation().x) == (int) (loc.x) && (int) (tree.getLocation().y) == (int) (loc.y)) {
+			if (loc != null) {
+				rc.setIndicatorDot(loc, 200, 200, 200);
+				if (rc.canSenseAllOfCircle(loc, 1)) {
+					if (!rc.onTheMap(loc, 1)) {
+						doesNotNeedTree[i] = true;
+						rc.setIndicatorDot(loc, 0, 200, 0);
+					}
+
+					if (rc.isCircleOccupiedExceptByThisRobot(loc, 1)) {
+						doesNotNeedTree[i] = true;
+						rc.setIndicatorDot(loc, 0, 200, 0);
+					}
+				} else {
 					doesNotNeedTree[i] = true;
-					rc.setIndicatorDot(loc, 0, 200, 0);
-					System.out.println("Found tree in spot" + loc);
 				}
+
+				for (TreeInfo tree : trees) {
+					if ((int) (tree.getLocation().x) == (int) (loc.x)
+							&& (int) (tree.getLocation().y) == (int) (loc.y)) {
+						doesNotNeedTree[i] = true;
+						rc.setIndicatorDot(loc, 0, 200, 0);
+						System.out.println("Found tree in spot" + loc);
+					}
+				}
+			} else {
+				doesNotNeedTree[i] = true;
 			}
 		}
 		boolean tryingToPlant = false;
@@ -286,35 +328,37 @@ public strictfp class RobotPlayer {
 		MapLocation emptySpot = null;
 		MapLocation closestEmptySpot = null;
 		for (int i = 0; i < nearbySpots.length; i++) {
-			if (!doesNotNeedTree[i]) {
-				emptySpot = nearbySpots[i];
-				System.out.println("dist to" + rc.getLocation().distanceTo(emptySpot));
-				System.out.println(emptySpot);
-				if (Math.round(rc.getLocation().distanceTo(emptySpot) * 10) / 10 == 2.1) {
-					rc.plantTree(rc.getLocation().directionTo(emptySpot));
-				} else {
-					tryingToPlant = true;
-					// try to move to location 2.1 away
-					// find which of 4 positions is closest
-					MapLocation[] pointsAround = new MapLocation[4];
-					pointsAround[0] = new MapLocation(emptySpot.x + spacing / 2, emptySpot.y);
-					pointsAround[1] = new MapLocation(emptySpot.x - spacing / 2, emptySpot.y);
-					pointsAround[2] = new MapLocation(emptySpot.x, emptySpot.y + spacing / 2);
-					pointsAround[3] = new MapLocation(emptySpot.x, emptySpot.y - spacing / 2);
+			if (nearbySpots[i] != null) {
+				if (!doesNotNeedTree[i]) {
+					emptySpot = nearbySpots[i];
+					System.out.println("dist to" + rc.getLocation().distanceTo(emptySpot));
+					System.out.println(emptySpot);
+					if (Math.round(rc.getLocation().distanceTo(emptySpot) * 10) / 10 == 2.1) {
+						rc.plantTree(rc.getLocation().directionTo(emptySpot));
+					} else {
+						tryingToPlant = true;
+						// try to move to location 2.1 away
+						// find which of 4 positions is closest
+						MapLocation[] pointsAround = new MapLocation[4];
+						pointsAround[0] = new MapLocation(emptySpot.x + spacing / 2, emptySpot.y);
+						pointsAround[1] = new MapLocation(emptySpot.x - spacing / 2, emptySpot.y);
+						pointsAround[2] = new MapLocation(emptySpot.x, emptySpot.y + spacing / 2);
+						pointsAround[3] = new MapLocation(emptySpot.x, emptySpot.y - spacing / 2);
 
-					for (int p = 0; p < pointsAround.length; p++) {
-						if (rc.canSenseLocation(pointsAround[p])) {
-							if (closest == null) {
-								closestEmptySpot = emptySpot;
-								closest = pointsAround[p];
-							} else if (myLocation.distanceTo(pointsAround[p]) < myLocation.distanceTo(closest)) {
-								closestEmptySpot = emptySpot;
-								closest = pointsAround[p];
+						for (int p = 0; p < pointsAround.length; p++) {
+							if (rc.canSenseLocation(pointsAround[p])) {
+								if (closest == null) {
+									closestEmptySpot = emptySpot;
+									closest = pointsAround[p];
+								} else if (myLocation.distanceTo(pointsAround[p]) < myLocation.distanceTo(closest)) {
+									closestEmptySpot = emptySpot;
+									closest = pointsAround[p];
+								}
 							}
 						}
 					}
-				}
 
+				}
 			}
 		}
 		System.out.println(closest);
@@ -322,7 +366,7 @@ public strictfp class RobotPlayer {
 			rc.setIndicatorLine(rc.getLocation(), closest, 1, 0, 0);
 			if (myLocation.distanceTo(closest) > rc.getType().strideRadius) {
 
-				tryMoveToLocation(closest, 1, 60);
+				tryMoveToLocation(closest, 1, 90);
 				System.out.println("moving to" + closest);
 
 			} else if (myLocation.distanceTo(closest) < .0001) {
@@ -354,7 +398,7 @@ public strictfp class RobotPlayer {
 			}
 			if (weakest != null) {
 				if (myLocation.distanceTo(weakest.location) > 3) {
-					tryMoveToLocation(weakest.getLocation(), 1, 60);
+					tryMoveToLocation(weakest.getLocation(), 1, 90);
 				}
 			}
 		}
