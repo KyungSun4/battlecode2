@@ -163,7 +163,7 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
 		MapLocation start = rc.getInitialArchonLocations(rc.getTeam())[0];
-		int count = 40;
+		int count = 10;
 		boolean set = false;
 		boolean dontTree = false;
 		if (rc.getRoundNum() < 3) {
@@ -222,15 +222,9 @@ public strictfp class RobotPlayer {
 					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
 					}
-					if (!dontTree) {
-						set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots());
-						// maintainTreeGrid(rc.senseNearbyTrees());
-					} else {
-						if (!tryMove(awayDir, 1, 20)) {
-							awayDir = rc.getLocation().directionTo(start).opposite();
 
-						}
-					}
+					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots());
+					// maintainTreeGrid(rc.senseNearbyTrees());
 
 				}
 				convertVictoryPoints(1000);
@@ -342,11 +336,11 @@ public strictfp class RobotPlayer {
 									System.out.println("Found robot in spot" + loc);
 								}
 							}
-							if(!notPosible) {
+							if (!notPosible) {
 								closest = loc;
 							}
 						}
-					}					
+					}
 				}
 				System.out.println(closest);
 				if (closest != null) {
