@@ -159,7 +159,7 @@ public strictfp class RobotPlayer {
 		if (enemyRobots.length > 0) {
 			Direction awayFromEnemy = enemyRobots[0].getLocation().directionTo(rc.getLocation());
 			if (!rc.hasMoved()) {
-				tryMove(awayFromEnemy, 10, 9);
+				tryMove(awayFromEnemy);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ public strictfp class RobotPlayer {
 				if (count > 0) {
 					count--;
 
-					if (!tryMove(awayDir, 1, 90)) {
+					if (!tryMove(awayDir)) {
 						awayDir = rc.getLocation().directionTo(start).opposite();
 
 					}
@@ -394,7 +394,7 @@ public strictfp class RobotPlayer {
 
 				} else {
 					System.out.print("i dont see spots");
-					if (!tryMove(randomDir, 1, 90)) {
+					if (!tryMove(randomDir)) {
 						randomDir = randomDirection();
 					}
 				}
@@ -644,9 +644,8 @@ public strictfp class RobotPlayer {
 				avoidBullet();
 				if(!moveToNearestEnemy()) {
 					if (!tryMove(myLocation.directionTo(
-							new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)), 1,
-							90)) {
-						if (!tryMove(randomDir, 1, 90)) {
+							new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)))) {
+						if (!tryMove(randomDir)) {
 							randomDir = randomDirection();
 						}
 					}
@@ -717,7 +716,7 @@ public strictfp class RobotPlayer {
 						if (!chopNearestTrees(nearByTrees)) {
 							if (!rc.hasMoved()) {
 								int x = 0;
-								if (tryMove(randDir, 10, 9)) {
+								if (tryMove(randDir)) {
 
 								} else {
 									while (!rc.canMove(randDir) && x < 20) {
@@ -878,7 +877,7 @@ public strictfp class RobotPlayer {
 					} else {
 						moveDirection = randomDirection();
 						if (!rc.canMove(moveDirection)) {
-							tryMove(moveDirection, 10, 9);
+							tryMove(moveDirection);
 							// Work on this not being in a random direction
 						}
 					}
@@ -922,7 +921,7 @@ public strictfp class RobotPlayer {
 				} else if (rc.canMove(moveDirection)) {
 					rc.move(moveDirection);
 				} else {
-					tryMove(moveDirection, 10, 9);
+					tryMove(moveDirection);
 				}
 			}
 		}
@@ -943,9 +942,8 @@ public strictfp class RobotPlayer {
 				avoidBullet();
 				tryShoot();
 				if (!tryMove(myLocation.directionTo(
-						new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)), 1,
-						90)) {
-					if (!tryMove(randomDir, 1, 90)) {
+						new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)))) {
+					if (!tryMove(randomDir)) {
 						randomDir = randomDirection();
 					}
 				}
@@ -961,32 +959,26 @@ public strictfp class RobotPlayer {
 	// --------------------------------------------------------------------------------------------------------------
 	// MOVING / DIRECTION METHODS
 
-	static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
+	static boolean tryMove(Direction dir) throws GameActionException {
 		if (rc.canMove(dir)) {
 			rc.move(dir);
 			return true;
 		}
 
-		// Now try a bunch of similar angles
-		boolean moved = false;
-		int currentCheck = 1;
-
-		while (currentCheck <= checksPerSide) {
+		for (int angle = 0; angle <= 180; angle = angle + 5) {
 			// Try the offset of the left side
-			if (rc.canMove(dir.rotateLeftDegrees(degreeOffset * currentCheck))) {
-				rc.move(dir.rotateLeftDegrees(degreeOffset * currentCheck));
+			if (rc.canMove(dir.rotateLeftDegrees(angle))) {
+				rc.move(dir.rotateLeftDegrees(angle));
 				return true;
 			}
 			// Try the offset on the right side
-			if (rc.canMove(dir.rotateRightDegrees(degreeOffset * currentCheck))) {
-				rc.move(dir.rotateRightDegrees(degreeOffset * currentCheck));
+			if (rc.canMove(dir.rotateRightDegrees(angle))) {
+				rc.move(dir.rotateRightDegrees(angle));
 				return true;
 			}
-			// No move performed, try slightly further
-			currentCheck++;
 		}
-
 		// A move never happened, so return false.
+		System.out.println("Robot: " + rc.getID() + " Could not move!");
 		return false;
 	}
 
@@ -997,7 +989,7 @@ public strictfp class RobotPlayer {
 	static boolean tryMoveToLocation(MapLocation loc, float degreeOffset, int checksPerSide)
 			throws GameActionException {
 		Direction dirTo = rc.getLocation().directionTo(loc);
-		return tryMove(dirTo, degreeOffset, checksPerSide);
+		return tryMove(dirTo);
 	}
 
 	// Starts at east then rotates counter clockwise to find the next available
@@ -1050,7 +1042,7 @@ public strictfp class RobotPlayer {
 			if (enemyRobots.length > 0) {
 				MapLocation enemyLocation = enemyRobots[0].getLocation();
 				Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
-				tryMove(toEnemy, 5, 10);
+				tryMove(toEnemy);
 				return true;
 			} else {
 				return false;
@@ -1088,7 +1080,7 @@ public strictfp class RobotPlayer {
 					// System.out.println("Moved Right!");
 					rc.move(propagationDirection.rotateRightRads((float) Math.PI / 2));
 				} else {
-					tryMove((propagationDirection.rotateRightRads((float) Math.PI / 2)), 10, 3);
+					tryMove((propagationDirection.rotateRightRads((float) Math.PI / 2)));
 				}
 			} else {
 				if (rc.canMove(propagationDirection.rotateLeftRads((float) Math.PI / 2))) {
@@ -1097,7 +1089,7 @@ public strictfp class RobotPlayer {
 					// System.out.println("Moved Left!");
 					rc.move(propagationDirection.rotateLeftRads((float) Math.PI / 2));
 				} else {
-					tryMove((propagationDirection.rotateLeftRads((float) Math.PI / 2)), 10, 3);
+					tryMove((propagationDirection.rotateLeftRads((float) Math.PI / 2)));
 				}
 			}
 			return true;
