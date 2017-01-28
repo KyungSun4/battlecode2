@@ -640,8 +640,17 @@ public strictfp class RobotPlayer {
 		int mapData = rc.readBroadcast(0);
 		while (true) {
 			try {
+				MapLocation myLocation = rc.getLocation();
 				avoidBullet();
-				moveToNearestEnemy();
+				if(!moveToNearestEnemy()) {
+					if (!tryMove(myLocation.directionTo(
+							new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)), 1,
+							90)) {
+						if (!tryMove(randomDir, 1, 90)) {
+							randomDir = randomDirection();
+						}
+					}
+				}
 				tryShoot();
 				if (mapData == 1) {
 					// Somewat aggro
@@ -986,7 +995,9 @@ public strictfp class RobotPlayer {
 				MapLocation myLocation = rc.getLocation();
 				avoidBullet();
 				tryShoot();
-				if(!tryMove(myLocation.directionTo( new MapLocation(rc.readBroadcast(ENEMY_X)/100000,rc.readBroadcast(ENEMY_Y)/100000)),1,90)) {
+				if (!tryMove(myLocation.directionTo(
+						new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)), 1,
+						90)) {
 					if (!tryMove(randomDir, 1, 90)) {
 						randomDir = randomDirection();
 					}
@@ -1086,15 +1097,19 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	static void moveToNearestEnemy() throws GameActionException {
+	static boolean moveToNearestEnemy() throws GameActionException {
 		if (!rc.hasMoved()) {
 			RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
 			if (enemyRobots.length > 0) {
 				MapLocation enemyLocation = enemyRobots[0].getLocation();
 				Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
 				tryMove(toEnemy, 5, 10);
+				return true;
+			} else {
+				return false;
 			}
 		}
+		return true;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
