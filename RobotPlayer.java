@@ -62,9 +62,9 @@ public strictfp class RobotPlayer {
 				roundTwoCommands();
 				avoidBullet();
 				runAway();
-				System.out.println("Map type: " + rc.readBroadcast(0));
+				//System.out.println("Map type: " + rc.readBroadcast(0));
 				if (rc.readBroadcast(1) == rc.getID() || rc.getRoundNum() > 400) {
-					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= 20) {
+					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= 3) {
 						tryBuildRobot(randomDirection(), 5, 10, RobotType.GARDENER);
 					}
 
@@ -652,20 +652,6 @@ public strictfp class RobotPlayer {
 					}
 				}
 				tryShoot();
-				if (mapData == 1) {
-					// Somewat aggro
-					aggroAttack();
-				} else if (mapData == 2) {
-					// Aggro
-					aggroAttack();
-				} else if (mapData == 3) {
-					// Likely no soldiers will be made
-				} else if (mapData == 4) {
-					// Defense
-					if (!rc.hasMoved()) {
-						rc.move(randomDirection());
-					}
-				}
 				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
@@ -679,43 +665,7 @@ public strictfp class RobotPlayer {
 
 	}
 
-	static void aggroAttack() throws GameActionException {
-		float radianMove;
-		switch (getMapStats()) {
-		case "bottom":
-			radianMove = (float) Math.PI / 2;
-			break;
-		case "top":
-			radianMove = (float) Math.PI * 3 / 2;
-			break;
-		case "left":
-			radianMove = (float) 0;
-			break;
-		case "right":
-			radianMove = (float) Math.PI;
-			break;
-		case "bottomRight":
-			radianMove = (float) Math.PI * 3 / 4;
-			break;
-		case "bottomLeft":
-			radianMove = (float) Math.PI * 1 / 4;
-			break;
-		case "topLeft":
-			radianMove = (float) Math.PI * 7 / 4;
-			break;
-		case "topRight":
-			radianMove = (float) Math.PI * 5 / 4;
-			break;
-		default:
-			System.out.println("DEFAULT");
-			radianMove = (float) Math.random() * 2 * (float) Math.PI;
-			break;
-		}
-		Direction moveDirection = new Direction(radianMove);
-		if (!rc.hasMoved()) {
-			tryMove(moveDirection, 10, 9);
-		}
-	}
+
 	// -------------------------------------------------------------------------------------------------------------
 	// LUMBERJACK PLAYER & METHODS
 
@@ -793,19 +743,16 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static boolean tryUseStrike() throws GameActionException {
-		for (TreeInfo tree : rc.senseNearbyTrees(3, rc.getTeam())) {
-			return false;
+	static void tryUseStrike() throws GameActionException {
+		if (rc.canStrike()) {
+			TreeInfo[] friendlyTrees = rc.senseNearbyTrees(3, rc.getTeam());
+			RobotInfo[] friendlyRobots = rc.senseNearbyRobots(3, rc.getTeam());
+			if (friendlyTrees.length > 0 || friendlyRobots.length > 0) {
+				System.out.println("Lumberjack: " + rc.getID() + " could not use strike()!");
+				return;
+			}
+			rc.strike();
 		}
-		for (TreeInfo tree : rc.senseNearbyTrees(3, Team.NEUTRAL)) {
-			if (tree.getHealth() < 6)
-				return false;
-		}
-		for (RobotInfo robot : rc.senseNearbyRobots(3, rc.getTeam())) {
-			return false;
-		}
-		rc.strike();
-		return true;
 	}
 
 	static boolean tryShake(TreeInfo[] trees) throws GameActionException {
