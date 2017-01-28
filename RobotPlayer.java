@@ -225,7 +225,9 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
 					}
 					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
+						// no tanks rn they suck rn
+						// tryBuildRobot(randomDirection(), 10, 9,
+						// RobotType.TANK);
 					}
 
 					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
