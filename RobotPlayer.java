@@ -261,8 +261,10 @@ public strictfp class RobotPlayer {
 	static void alwaysWater(TreeInfo[] sensedTrees) throws GameActionException {
 		TreeInfo weakest = null;
 		for (int i = 0; i < sensedTrees.length; i++) {
-			if (weakest == null || sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
-				weakest = sensedTrees[i];
+			if (sensedTrees[i].getTeam() == rc.getTeam()) {
+				if (weakest == null || sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
+					weakest = sensedTrees[i];
+				}
 			}
 		}
 		if (weakest != null) {
