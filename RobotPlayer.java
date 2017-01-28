@@ -162,6 +162,7 @@ public strictfp class RobotPlayer {
 	static void runGardener() throws GameActionException {
 		MapLocation start = rc.getInitialArchonLocations(rc.getTeam())[0];
 		int count = 40;
+		boolean set = false;
 		boolean dontTree = false;
 		if (rc.getRoundNum() < 3) {
 			dontTree = true;
@@ -246,6 +247,78 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
+	 * maintains a grid of tree flowers, some flowers are larger to prduce
+	 * tanks, and spacing around those vary to allow that movement, these ones
+	 * should not be prduced unitl latter
+	 * 
+	 * @param trees
+	 * @throws GameActionException
+	 */
+	static void maintainTreeGridOfFlowers(TreeInfo trees, boolean set) throws GameActionException {
+		// will provide space for a radius one robot to fit through
+		// Maybe later make a hexagonal if that can allow denser arangment
+
+		MapLocation myLocation = rc.getLocation();
+
+		// set means that it is already maintaining a flower, so, it doesnt need
+		// to align to grid
+		// if false it needs to find and get to a grid location
+		if (set == false) {
+			// if no other garders in existence, can find whatever open spot and
+			// make that the baseLocation
+			if (rc.readBroadcast(GARDENER_COUNT_ARR) == 0) {
+
+			} else {
+				// otherwise find unocupied spot on grid
+				// once this is working, make more complex grid arangement
+				float spacing = (float) 8.3;
+				MapLocation baseLocation = new MapLocation(
+						spacing * 200 + rc.readBroadcast(BASE_TREE_X) / (float) 100000,
+						spacing * 200 + rc.readBroadcast(BASE_TREE_Y) / (float) 100000);
+				MapLocation offsetLocation = new MapLocation(spacing * 200 + baseLocation.x,
+						spacing * 200 + baseLocation.y);
+				System.out.println("base is " + offsetLocation);
+				MapLocation[] nearbySpots = new MapLocation[16];
+				int x = -2;
+				int y = -2;
+				for (int i = 0; i < nearbySpots.length; i++) {
+					MapLocation loc = new MapLocation(
+							myLocation.x + ((offsetLocation.x - myLocation.x) % spacing) + spacing * x,
+							myLocation.y + ((offsetLocation.y - myLocation.y) % spacing) + spacing * y);
+					rc.setIndicatorDot(loc, 0, 0, 0);
+					if (rc.canSenseLocation(loc)) {
+						nearbySpots[i] = loc;
+					}
+					x++;
+					if (i == 3) {
+						x = -2;
+						y++;
+					}
+					if (i == 7) {
+						x = -2;
+						y++;
+					}
+					if (i == 11) {
+						x = -2;
+						y++;
+					}
+
+				}
+
+				boolean[] doesNotNeedTree = new boolean[16];
+			}
+
+		} else {
+			// rn will just do regular small flowers
+
+		}
+
+		// maintain flower (ring)
+
+		maintainTreeRing();
+	}
+
+	/**
 	 * moves and maintains a tree grid
 	 * 
 	 * @throws GameActionException
@@ -254,7 +327,7 @@ public strictfp class RobotPlayer {
 		// direction is stored in gardener, grid should have edge constraints in
 		// message array
 
-		// get 4 surrounding spots
+		// get 16 surrounding spots
 		float spacing = (float) 4.2;
 		MapLocation myLocation = rc.getLocation();
 		MapLocation baseLocation = new MapLocation(spacing * 200 + rc.readBroadcast(BASE_TREE_X) / (float) 100000,
