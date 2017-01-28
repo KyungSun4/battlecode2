@@ -21,6 +21,8 @@ public strictfp class RobotPlayer {
 	static int BASE_TREE_X = 84;
 	static int BASE_TREE_Y = 85;
 
+	static Direction randomDir = randomDirection();
+
 	@SuppressWarnings("unused")
 	public static void run(RobotController rc) throws GameActionException {
 		RobotPlayer.rc = rc;
@@ -171,6 +173,7 @@ public strictfp class RobotPlayer {
 		rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) + 1);
 		int mapData = rc.readBroadcast(0);
 		Direction awayDir = rc.getLocation().directionTo(start).opposite();
+		Direction randomDir = randomDirection();
 		if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
 			tryBuildRobot(randomDirection(), 5, 10, RobotType.SCOUT);
 			rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
@@ -220,7 +223,8 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
 					}
 					if (!dontTree) {
-						maintainTreeGrid(rc.senseNearbyTrees());
+						set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots());
+						// maintainTreeGrid(rc.senseNearbyTrees());
 					} else {
 						if (!tryMove(awayDir, 1, 20)) {
 							awayDir = rc.getLocation().directionTo(start).opposite();
@@ -254,7 +258,7 @@ public strictfp class RobotPlayer {
 	 * @param trees
 	 * @throws GameActionException
 	 */
-	static void maintainTreeGridOfFlowers(TreeInfo trees, boolean set) throws GameActionException {
+	static boolean maintainTreeGridOfFlowers(boolean set, RobotInfo[] robots) throws GameActionException {
 		// will provide space for a radius one robot to fit through
 		// Maybe later make a hexagonal if that can allow denser arangment
 
@@ -266,7 +270,7 @@ public strictfp class RobotPlayer {
 		if (set == false) {
 			// if no other garders in existence, can find whatever open spot and
 			// make that the baseLocation
-			if (rc.readBroadcast(GARDENER_COUNT_ARR) == 0) {
+			if (rc.readBroadcast(GARDENER_COUNT_ARR) == 1) {
 
 			} else {
 				// otherwise find unocupied spot on grid
@@ -277,7 +281,7 @@ public strictfp class RobotPlayer {
 						spacing * 200 + rc.readBroadcast(BASE_TREE_Y) / (float) 100000);
 				MapLocation offsetLocation = new MapLocation(spacing * 200 + baseLocation.x,
 						spacing * 200 + baseLocation.y);
-				System.out.println("base is " + offsetLocation);
+				System.out.println("base is " + baseLocation);
 				MapLocation[] nearbySpots = new MapLocation[16];
 				int x = -2;
 				int y = -2;
@@ -304,18 +308,74 @@ public strictfp class RobotPlayer {
 					}
 
 				}
+				MapLocation closest = null;
+				// boolean[] hasGardener = new boolean[16];
+				// go to nearest spot
+				for (int i = 0; i < nearbySpots.length; i++) {
+					MapLocation loc = nearbySpots[i];
+					boolean notPosible = false;
+					if (loc != null) {
+						// only check if its closer than the already found one
+						if (closest == null
+								|| loc.distanceTo(rc.getLocation()) < closest.distanceTo(rc.getLocation())) {
+							rc.setIndicatorDot(loc, 200, 200, 200);
+							if (rc.canSenseAllOfCircle(loc, 1)) {
+								if (!rc.onTheMap(loc, 1)) {
+									notPosible = true;
+									rc.setIndicatorDot(loc, 0, 200, 0);
+								}
+								if (rc.isCircleOccupiedExceptByThisRobot(loc, 1)) {
+									// should request lumberjack to clear spot
+									notPosible = true;
+									rc.setIndicatorDot(loc, 0, 200, 0);
+								}
+							} else {
+								notPosible = true;
+							}
+							for (RobotInfo robot : robots) {
+								// check if there already is a gardener there
+								if ((int) (robot.getLocation().x) == (int) (loc.x)
+										&& (int) (robot.getLocation().y) == (int) (loc.y)
+										&& robot.getType() == RobotType.GARDENER && robot.getTeam() == rc.getTeam()) {
+									notPosible = true;
+									rc.setIndicatorDot(loc, 0, 200, 0);
+									System.out.println("Found robot in spot" + loc);
+								}
+							}
+							if(!notPosible) {
+								closest = loc;
+							}
+						}
+					}					
+				}
+				System.out.println(closest);
+				if (closest != null) {
+					rc.setIndicatorLine(rc.getLocation(), closest, 1, 0, 0);
+					if (myLocation.distanceTo(closest) > rc.getType().strideRadius) {
+						tryMoveToLocation(closest, 1, 90);
+						System.out.println("moving to" + closest);
 
-				boolean[] doesNotNeedTree = new boolean[16];
+					} else if (myLocation.distanceTo(closest) < .001) {
+						set = true;
+					} else if (rc.canMove(myLocation.directionTo(closest), myLocation.distanceTo(closest))) {
+						rc.move(myLocation.directionTo(closest), myLocation.distanceTo(closest));
+						System.out.println("moving to" + closest);
+					}
+
+				} else {
+					System.out.print("i dont see spots");
+					if (!tryMove(randomDir, 1, 90)) {
+						randomDir = randomDirection();
+					}
+				}
 			}
 
 		} else {
 			// rn will just do regular small flowers
-
+			// maintain flower (ring)
+			maintainTreeRing();
 		}
-
-		// maintain flower (ring)
-
-		maintainTreeRing();
+		return set;
 	}
 
 	/**
@@ -442,7 +502,7 @@ public strictfp class RobotPlayer {
 				tryMoveToLocation(closest, 1, 90);
 				System.out.println("moving to" + closest);
 
-			} else if (myLocation.distanceTo(closest) < .0001) {
+			} else if (myLocation.distanceTo(closest) < .001) {
 				if (rc.canPlantTree(myLocation.directionTo(closestEmptySpot))) {
 					rc.plantTree(myLocation.directionTo(closestEmptySpot));
 				}
