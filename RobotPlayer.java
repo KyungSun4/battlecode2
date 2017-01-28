@@ -20,6 +20,8 @@ public strictfp class RobotPlayer {
 	static int RIGHT_OF_GRID_ARR = 83;
 	static int BASE_TREE_X = 84;
 	static int BASE_TREE_Y = 85;
+	static int ENEMY_X = 86;
+	static int ENEMY_Y = 87;
 
 	static Direction randomDir = randomDirection();
 
@@ -123,6 +125,10 @@ public strictfp class RobotPlayer {
 					e.printStackTrace();
 				}
 			}
+			// set Enemy location general vicinty where should go to attack
+			MapLocation[] enemyArchons = rc.getInitialArchonLocations(rc.getTeam().opponent());
+			rc.broadcast(ENEMY_X, (int) (enemyArchons[0].x * 100000));
+			rc.broadcast(ENEMY_Y, (int) (enemyArchons[0].y * 100000));
 		}
 	}
 
@@ -225,9 +231,8 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
 					}
 					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
-						// no tanks rn they suck rn
-						// tryBuildRobot(randomDirection(), 10, 9,
-						// RobotType.TANK);
+
+						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
 					}
 
 					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
@@ -978,8 +983,14 @@ public strictfp class RobotPlayer {
 		int mapData = rc.readBroadcast(0);
 		while (true) {
 			try {
+				MapLocation myLocation = rc.getLocation();
 				avoidBullet();
 				tryShoot();
+				if(!tryMove(myLocation.directionTo( new MapLocation(rc.readBroadcast(ENEMY_X)/100000,rc.readBroadcast(ENEMY_Y)/100000)),1,90)) {
+					if (!tryMove(randomDir, 1, 90)) {
+						randomDir = randomDirection();
+					}
+				}
 				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
@@ -1157,7 +1168,7 @@ public strictfp class RobotPlayer {
 
 		// 0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot
 		// single
-		RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
 		if (enemyRobots.length > 0) {
 			MapLocation myLocation = rc.getLocation();
 			// Loops through all the enemies nearby starting with the closest
@@ -1174,6 +1185,8 @@ public strictfp class RobotPlayer {
 						rc.fireTriadShot(directionToEnemy);
 						return;
 					}
+				} else {
+					System.out.println("Will hit Friend");
 				}
 			}
 		} else {
