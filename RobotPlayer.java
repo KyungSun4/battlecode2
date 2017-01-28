@@ -169,6 +169,9 @@ public strictfp class RobotPlayer {
 		if (rc.getRoundNum() < 3) {
 			dontTree = true;
 		}
+		// ~50% of gardersn will leave a space to produce robots
+		boolean leaveSpace = (Math.random() > .5);
+		System.out.println("leave Space" + leaveSpace);
 		System.out.println("I'm a gardener!");
 		rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) + 1);
 		int mapData = rc.readBroadcast(0);
@@ -181,7 +184,9 @@ public strictfp class RobotPlayer {
 
 		while (true) {
 			try {
-				avoidBullet();
+				if (!set) {
+					avoidBullet();
+				}
 				if (count > 0) {
 					count--;
 
@@ -223,10 +228,12 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
 					}
 
-					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots());
+					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
 					// maintainTreeGrid(rc.senseNearbyTrees());
 
 				}
+				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
+				alwaysWater(sensedTrees);
 				convertVictoryPoints(1000);
 				Clock.yield();
 			} catch (Exception e) {
@@ -245,6 +252,25 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
+	 * never waste a round not watering, its free, do it
+	 * 
+	 * @throws GameActionException
+	 */
+	static void alwaysWater(TreeInfo[] sensedTrees) throws GameActionException {
+		TreeInfo weakest = null;
+		for (int i = 0; i < sensedTrees.length; i++) {
+			if (weakest == null || sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
+				weakest = sensedTrees[i];
+			}
+		}
+		if (weakest != null) {
+			if (rc.canWater(weakest.ID)) {
+				rc.water(weakest.ID);
+			}
+		}
+	}
+
+	/**
 	 * maintains a grid of tree flowers, some flowers are larger to prduce
 	 * tanks, and spacing around those vary to allow that movement, these ones
 	 * should not be prduced unitl latter
@@ -252,7 +278,8 @@ public strictfp class RobotPlayer {
 	 * @param trees
 	 * @throws GameActionException
 	 */
-	static boolean maintainTreeGridOfFlowers(boolean set, RobotInfo[] robots) throws GameActionException {
+	static boolean maintainTreeGridOfFlowers(boolean set, RobotInfo[] robots, boolean leaveSpace)
+			throws GameActionException {
 		// will provide space for a radius one robot to fit through
 		// Maybe later make a hexagonal if that can allow denser arangment
 
@@ -367,7 +394,7 @@ public strictfp class RobotPlayer {
 		} else {
 			// rn will just do regular small flowers
 			// maintain flower (ring)
-			maintainTreeRing();
+			maintainTreeRing(leaveSpace);
 		}
 		return set;
 	}
@@ -554,7 +581,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void maintainTreeRing() throws GameActionException {
+	static void maintainTreeRing(boolean leaveSpace) throws GameActionException {
 		TreeInfo[] sensedTrees = rc.senseNearbyTrees(3, rc.getTeam());
 		// all trees it can water are within 3 away
 		/*
@@ -580,12 +607,15 @@ public strictfp class RobotPlayer {
 			}
 		}
 		// plants 6 trees around to start. 30 degree offsets
-
+		int numTrees = 6;
+		if (leaveSpace) {
+			numTrees = 5;
+		}
 		Direction dir = new Direction(Direction.getNorth().radians);
-		for (int x = 0; x < 7; x++) {
+		for (int x = 1; x <= numTrees; x++) {
 			if (rc.canPlantTree(dir)) {
 				rc.plantTree(dir);
-				x = 7;
+				x = numTrees + 1;
 			}
 			dir = dir.rotateRightRads((float) (Math.PI / 3));
 			// System.out.println(dir);
