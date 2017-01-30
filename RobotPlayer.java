@@ -8,6 +8,15 @@ public strictfp class RobotPlayer {
 	static RobotController rc;
 
 	// The indexes of the player array where the data is stored
+	static int MAP_TYPE = 0;
+	static int MAIN_ARCHON_ID = 1;
+	static int MAIN_ARCHON_LOCATION_X = 2;
+	static int MAIN_ARCHON_LOCATION_Y = 3;
+	static int INITIAL_ENEMY_LOCATION_X = 4;
+	static int INITIAL_ENEMY_LOCATION_Y = 5;
+	static int REINFORCEMENT_NEEDED_X = 6;
+	static int REINFORCEMENT_NEEDED_Y = 7;
+	
 	static int ARCHON_COUNT_ARR = 10;
 	static int GARDENER_COUNT_ARR = 11;
 	static int SOLDIER_COUNT_ARR = 12;
@@ -52,117 +61,112 @@ public strictfp class RobotPlayer {
 
 	// -------------------------------------------------------------------------------------------------------------------------
 	// ARCHON PLAYER & METHODS
-
-	static void runArchon() throws GameActionException {
-		System.out.println("I'm an archon!");
-		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
-		while (true) {
-			try {
-				roundOneCommands();
-				roundTwoCommands();
-				avoidBullet();
-				runAway();
-				//System.out.println("Map type: " + rc.readBroadcast(0));
-				if (rc.readBroadcast(1) == rc.getID() || rc.getRoundNum() > 400) {
-					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 5, 10, RobotType.GARDENER);
+		
+		static void runArchon() throws GameActionException {
+			System.out.println("I'm an archon!");
+			rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
+			while (true) {
+				try {
+					roundOneCommands();
+					roundTwoCommands();
+					// The methods that follow will be always in play
+					//runAway();
+					// This will constantly make gardeners. Need to change
+					if (rc.readBroadcast(MAIN_ARCHON_ID) == rc.getID() || rc.getRoundNum() > 400) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= 3 && rc.readBroadcast(SOLDIER_COUNT_ARR) >= 2) {
+							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+						}
 					}
-
+					Clock.yield();
+				} catch (Exception e) {
+					System.out.println("Archon Exception");
+					e.printStackTrace();
 				}
-				convertVictoryPoints(1000);
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Archon Exception");
-				e.printStackTrace();
 			}
 		}
-	}
-
-	// Methods specifically for the archon method. Returns true if the archon is
-	// not surrounded
-	static boolean isNotSurrounded() {
-		Direction test = Direction.getEast();
-		for (int angle = 0; angle <= 360; angle = angle + 45) {
-			test = test.rotateLeftDegrees(angle);
-			if (rc.canMove(test)) {
-				return true;
+		
+		// Methods specifically for the archon method. Returns true if the archon is not surrounded
+		static boolean isNotSurrounded()
+		{
+			Direction test = Direction.getEast();
+			for (int angle = 0; angle <= 360; angle = angle + 45) {
+				test = test.rotateLeftDegrees(angle);
+				if (rc.canBuildRobot(RobotType.GARDENER, test)) {
+					return true;
+				}
+			}
+			return false;			
+		}
+		
+		// This method will find the archon farthest away from the center. If this archon is not surrounded by trees, it will be set as the default archon
+		static void roundOneCommands() throws GameActionException {
+			if (rc.getRoundNum() == 1) {
+				// These following statements are to find the location of the farthest archon from the center
+				MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
+				MapLocation mapCenter = getMapCenter();
+				MapLocation farthestArchonLocation = mapCenter;
+				float largestDistance = 0;
+				for (MapLocation archonLocation: archonLocationF) {
+					if (archonLocation.distanceTo(mapCenter) > largestDistance) {
+						largestDistance = archonLocation.distanceTo(mapCenter);
+						farthestArchonLocation = archonLocation;
+					}
+				}
+				// If this archon is the farthest and is not surrounded, it will save its ID into the array and make a gardener. It will also save what type of map it is
+				if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
+					saveInitialData();
+				}
+				tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 10, 18, RobotType.GARDENER);
 			}
 		}
-		return false;
-	}
-
-	// This method will find the archon farthest away from the center. If this
-	// archon is not surrounded by trees, it will be set as the default archon
-	static void roundOneCommands() throws GameActionException {
-		if (rc.getRoundNum() == 1) {
-			MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
+		
+		// If no default archon has been set in round one, set a different archon as the default then build a gardener
+		static void roundTwoCommands() throws GameActionException {
+			if (rc.getRoundNum() == 2) {
+				// If there is no ID saved to the 2nd position of the array, it will set a different archon
+				if (rc.readBroadcast(1) == 0 && isNotSurrounded()) {
+					saveInitialData();
+				}
+				tryBuildRobot(randomDirection(), 10, 18, RobotType.GARDENER);
+			}
+		}
+		
+		// Saves data into the array, made for the first two rounds
+		static void saveInitialData() throws GameActionException {
+			rc.broadcast(MAP_TYPE, getMapType());
+			rc.broadcast(MAIN_ARCHON_ID, rc.getID());
+			rc.broadcast(MAIN_ARCHON_LOCATION_X, (int) rc.getLocation().x);
+			rc.broadcast(MAIN_ARCHON_LOCATION_Y, (int) rc.getLocation().y);
+			enemyLocation();
+		}
+		
+		static void enemyLocation() throws GameActionException {
+			// Cheese statements get the necessary information to calculate the location of the enemy
+			// We cannot use the arhconLocaion method because 
 			MapLocation mapCenter = getMapCenter();
-			MapLocation farthestArchonLocation = mapCenter;
-			float largestDistance = 0;
-			for (MapLocation archonLocation : archonLocationF) {
-				if (archonLocation.distanceTo(mapCenter) > largestDistance) {
-					largestDistance = archonLocation.distanceTo(mapCenter);
-					farthestArchonLocation = archonLocation;
+			float mapCenterX = mapCenter.x;
+			float mapCenterY = mapCenter.y;
+			MapLocation mainArchonLocation = new MapLocation(rc.readBroadcast(MAIN_ARCHON_LOCATION_X), rc.readBroadcast(MAIN_ARCHON_LOCATION_Y));
+			float archonX = mainArchonLocation.x;
+			float archonY = mainArchonLocation.y;
+			
+			float differenceX = (mapCenterX - archonX) * 2;
+			float differenceY = (mapCenterY - archonY) * 2;
+			
+			rc.broadcast(INITIAL_ENEMY_LOCATION_X, (int) (archonX + differenceX));
+			rc.broadcast(INITIAL_ENEMY_LOCATION_Y, (int) (archonY + differenceY));
+		}
+		
+		/*static void runAway() throws GameActionException {
+			RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.ARCHON.sensorRadius, rc.getTeam().opponent());
+			if (enemyRobots.length > 0) {
+				Direction awayFromEnemy = enemyRobots[0].getLocation().directionTo(rc.getLocation());
+				if (!rc.hasMoved()) {
+					tryMove(awayFromEnemy, RobotType.ARCHON.strideRadius, 10, 9);
 				}
 			}
-			// aligns tree grid with this archon, will help with spawning of
-			// garderns hopefully
-			rc.broadcast(BASE_TREE_X, (int) (farthestArchonLocation.x * 100000));
-			rc.broadcast(BASE_TREE_Y, (int) (farthestArchonLocation.y * 100000));
-			System.out.println("far Loc is " + farthestArchonLocation);
-			if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
-				try {
+		}*/
 
-					rc.broadcast(1, rc.getID());
-					if (rc.readBroadcast(0) == 0) {
-						int mapType = getMapType();
-						System.out.println(mapType);
-						rc.broadcast(0, mapType);
-					}
-					tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 1, 180, RobotType.GARDENER);
-				} catch (GameActionException e) {
-					System.out.println("Round one archon exception!");
-					e.printStackTrace();
-				}
-			}
-			// set Enemy location general vicinty where should go to attack
-			MapLocation[] enemyArchons = rc.getInitialArchonLocations(rc.getTeam().opponent());
-			rc.broadcast(ENEMY_X, (int) (enemyArchons[0].x * 100000));
-			rc.broadcast(ENEMY_Y, (int) (enemyArchons[0].y * 100000));
-		}
-	}
-
-	// If no default archon has been set in round one, set a different archon as
-	// the default then build a gardener
-	static void roundTwoCommands() throws GameActionException {
-		if (rc.getRoundNum() == 2) {
-			if (rc.readBroadcast(1) == 0 && isNotSurrounded()) {
-				try {
-					rc.broadcast(1, rc.getID());
-					MapLocation myLocation = rc.getLocation();
-					if (rc.readBroadcast(0) == 0) {
-						int mapType = getMapType();
-						System.out.println(mapType);
-						rc.broadcast(0, mapType);
-					}
-					tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
-				} catch (GameActionException e) {
-					System.out.println("Roudn two archon exception!");
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	static void runAway() throws GameActionException {
-		RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.ARCHON.sensorRadius, rc.getTeam().opponent());
-		if (enemyRobots.length > 0) {
-			Direction awayFromEnemy = enemyRobots[0].getLocation().directionTo(rc.getLocation());
-			if (!rc.hasMoved()) {
-				tryMove(awayFromEnemy, 10, 9);
-			}
-		}
-	}
 
 	// --------------------------------------------------------------------------------------------------------
 	// GARDENER PLAYER & METHODS
@@ -634,37 +638,105 @@ public strictfp class RobotPlayer {
 	// -------------------------------------------------------------------------------------------------------------
 	// SOLDIER PLAYER & METHODS
 
-	static void runSoldier() throws GameActionException {
-		System.out.println("I'm an soldier!");
-		rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) + 1);
-		int mapData = rc.readBroadcast(0);
-		while (true) {
-			try {
-				MapLocation myLocation = rc.getLocation();
-				avoidBullet();
-				if(!moveToNearestEnemy()) {
-					if (!tryMove(myLocation.directionTo(
-							new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)), 1,
-							90)) {
-						if (!tryMove(randomDir, 1, 90)) {
-							randomDir = randomDirection();
+	// SOLDIER PLAYER & METHODS
+	
+		static void runSoldier() throws GameActionException {
+			System.out.println("I'm an soldier!");
+			rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) + 1);
+			int mapData = rc.readBroadcast(MAP_TYPE);
+			
+			Direction wanderDirection = Direction.NORTH;
+			float randomDistance = 0;
+			boolean aboutToDie = false;
+			boolean hasReinforced = true;
+			boolean hasCheckedInitial = false;
+			boolean setNewWanderLocation = true;
+			MapLocation moveReference = new MapLocation(rc.readBroadcast(INITIAL_ENEMY_LOCATION_X), rc.readBroadcast(INITIAL_ENEMY_LOCATION_Y));
+			MapLocation wanderReference = new MapLocation(rc.readBroadcast(INITIAL_ENEMY_LOCATION_X), rc.readBroadcast(INITIAL_ENEMY_LOCATION_Y));
+			MapLocation reinforcementLocation = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+			
+			while (true) {
+				try {
+					RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
+					
+					// Check if it can go into combat or if it has a combat request
+					if (enemyRobots.length > 0) {
+						rc.broadcast(REINFORCEMENT_NEEDED_X, (int) enemyRobots[0].location.x);
+						rc.broadcast(REINFORCEMENT_NEEDED_Y, (int) enemyRobots[0].location.y);
+						reinforcementLocation = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+						while (enemyRobots.length > 0) {
+							System.out.println("Initiating attack sequence!");
+							//avoidBullet();
+							// It will only move to the nearest enemy if it has not moved yet
+							moveToNearestEnemy(enemyRobots);
+							// Will shoot the nearest robot
+							tryShoot();
+							if (rc.getHealth() <= 10 && !aboutToDie) {
+								aboutToDie = true;
+								rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) - 1);
+							}
+							Clock.yield();
+							enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
 						}
 					}
+					// Check if the robots reinforcement position is different from the one in the array. If the robot is not currently going to reinforce, it will
+					// Set a new reinforcement position
+					else if ((reinforcementLocation.x != rc.readBroadcast(REINFORCEMENT_NEEDED_X) || reinforcementLocation.y != rc.readBroadcast(REINFORCEMENT_NEEDED_Y)) && hasReinforced) {
+						System.out.println("New reinforcement location detected!");
+						// If true, the robot will try to move to the location given
+						reinforcementLocation = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+						wanderReference = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+						hasReinforced = false;
+					}
+					
+					// It acts on the previous if statements. If there is a combat request, it will move towards it. If none, it will wander
+					if (!hasReinforced) {
+						System.out.println("Moving to reinforce!");
+						hasReinforced = smartMovement(reinforcementLocation);
+						// If statement for debugging purposes
+						if (hasReinforced) {
+							System.out.println("Moved to reinforcement location!");
+						}
+					}
+					// If it has no where to reinforce and there are no enemies in sight, go to the initial desired location
+					else if (!hasCheckedInitial) {
+						System.out.println("Moving to enemy archon location!");
+						hasCheckedInitial = smartMovement(moveReference);
+						// If statement for debugging purposes
+						if (hasCheckedInitial) {
+							System.out.println("Initial enemy archon location checked!");
+						}
+					}
+					// If there is nothing else to do, the soldier will wander
+					else {
+						// Will keep on setting new locations until one that is one the map is found
+						while (setNewWanderLocation) {
+							System.out.println("Picking new location!");
+							Direction directionToReference = rc.getLocation().directionTo(wanderReference);
+							// These generate a random direction in relation to the direction to the reference point
+							int randomDegree = (int) (Math.random() * 271);
+							wanderDirection = directionToReference.rotateLeftDegrees(135);
+							wanderDirection = wanderDirection.rotateRightDegrees(randomDegree);
+							
+							// Creates a random distance to travel in-between 5-15 units
+							randomDistance = (int) (Math.random() *11 + 5);
+							
+							if (rc.onTheMap(rc.getLocation().add(wanderDirection, 5))) {
+								System.out.println("Location is on the map!");
+								setNewWanderLocation = false;
+							}
+						}
+						MapLocation targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
+						smartMovement(targetLocation);
+					}
+					Clock.yield();
+				} catch (Exception e) {
+					System.out.println("Soldier Exception");
+					e.printStackTrace();
 				}
-				tryShoot();
-				convertVictoryPoints(1000);
-				Clock.yield();
-			} catch (Exception e) {
-				System.out.println("Soldier Exception");
-				e.printStackTrace();
 			}
 		}
-	}
-
-	static void mapTypeOneSoldier() {
-
-	}
-
+		
 
 	// -------------------------------------------------------------------------------------------------------------
 	// LUMBERJACK PLAYER & METHODS
@@ -860,75 +932,122 @@ public strictfp class RobotPlayer {
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
 		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
-		Direction moveDirection = randomDirection();
-		boolean combatMode = false;
+
+		Direction randomDirection = randomDirection();
+		boolean aboutToDie = false;
+		
 		while (true) {
 			try {
-				avoidBullet();
-				// If a scout does not see an enemy, it will run this code
-				if (!combatMode) {
-					TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-					for (TreeInfo tree : treeLocation) {
-						if (tree.getContainedBullets() > 0) {
-							shakeTree(treeLocation);
+				
+				TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
+				
+				if (hasBullets()) {
+					for (TreeInfo tree: treeLocation) {
+						while (tree.containedBullets > 0) {
+							if (rc.canShake(tree.location)) {
+								rc.shake(tree.location);
+								break;
+							}
+							else {
+								Direction moveDirection = rc.getLocation().directionTo(tree.location);
+								tryMove(moveDirection);
+								Clock.yield();
+							}
 						}
 					}
-					if (rc.canMove(moveDirection) && !rc.hasMoved()) {
-						rc.move(moveDirection);
-					} else {
-						moveDirection = randomDirection();
-						if (!rc.canMove(moveDirection)) {
-							tryMove(moveDirection, 10, 9);
-							// Work on this not being in a random direction
-						}
-					}
-					// Check every turn if there is an enemy nearby
-					/*
-					 * RobotInfo[] enemyLocation =
-					 * rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius,
-					 * rc.getTeam().opponent()); for (RobotInfo enemy:
-					 * enemyLocation) { if (enemy.getType() != RobotType.SCOUT)
-					 * { combatMode = true; break; } }
-					 */
-				} else if (combatMode) {
-
 				}
-				convertVictoryPoints(1000);
-				Clock.yield();
-
+				else if (seeGardener()) {
+					System.out.println("Finding gardener");
+					findGardener();
+					scoutAttack();
+					System.out.println("Moved!");
+				}
+				else {
+					if (rc.canMove(randomDirection) && !rc.hasMoved()) {
+						rc.move(randomDirection);
+					}
+					else {
+						while (!rc.canMove(randomDirection)) {
+							randomDirection = randomDirection();
+						}
+						rc.move(randomDirection);
+					}
+				}
+				
+				if (rc.getHealth() <= 10 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
+				}
+				
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
 				e.printStackTrace();
 			}
 		}
 	}
-
-	// This method shakes the nearby trees returned in the parameter. It will
-	// shake all trees before sensing trees again.
-	// This method will end once there are no more trees to shake.
-	static void shakeTree(TreeInfo[] treeList) throws GameActionException {
-		TreeInfo[] treeLocation = treeList;
-		for (TreeInfo tree : treeLocation) {
-			// This while loop will keep on trying to move the scout to the
-			// nearest tree
-			while (tree.getContainedBullets() > 0) {
-				MapLocation treeLoc = tree.getLocation();
-				Direction moveDirection = rc.getLocation().directionTo(treeLoc);
-				if (rc.canShake(treeLoc)) {
-					rc.shake(treeLoc);
-					// If the nearest tree has been shook, break out of the
-					// while loop and move on to the next tree in the for loop
-					break;
-				} else if (rc.canMove(moveDirection)) {
-					rc.move(moveDirection);
-				} else {
-					tryMove(moveDirection, 10, 9);
+	
+	// This method shakes the nearby trees returned in the parameter. It will shake all trees before sensing trees again. 
+	static void shakeTree(TreeInfo tree) throws GameActionException {
+		MapLocation treeLoc = tree.getLocation();
+		Direction moveDirection = rc.getLocation().directionTo(treeLoc);
+		while (tree.getContainedBullets() > 0) {
+			if (rc.canShake(treeLoc)) {
+				rc.shake(treeLoc);
+				return;
+			} 
+			else {
+				tryMove(moveDirection);
+			}
+			Clock.yield();
+		}
+	}
+	
+	static void findGardener() throws GameActionException { 
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+		for (RobotInfo robot: enemyRobots) {
+			if (robot.getType() == RobotType.GARDENER && rc.getLocation().distanceTo(robot.location) > 4.5) {
+				tryMove(rc.getLocation().directionTo(robot.location));
+				return;
+			}
+			else if (robot.getType() == RobotType.GARDENER) {
+				float distance = (float) ((rc.getLocation().distanceTo(robot.location)) - 2.01);
+				if (rc.canMove(rc.getLocation().directionTo(robot.location), distance)) {
+					rc.move(rc.getLocation().directionTo(robot.location), distance);
+					return;
 				}
 			}
 		}
 	}
+	
+	static void scoutAttack() throws GameActionException {
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+		for (RobotInfo robot: enemyRobots) {
+			if (robot.getType() == RobotType.GARDENER && !rc.hasAttacked() && rc.canFireSingleShot() && rc.getLocation().distanceTo(robot.getLocation()) < 2.5) {
+				rc.fireSingleShot(rc.getLocation().directionTo(robot.location));
+			}
+		}
+	}
 
-	// static void combatMode() {
+	static boolean hasBullets() {
+		TreeInfo[] treeLocation = rc.senseNearbyTrees(RobotType.SCOUT.sensorRadius, Team.NEUTRAL);
+		for (TreeInfo tree: treeLocation) {
+			if (tree.containedBullets > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	static boolean seeGardener() {
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
+		for (RobotInfo robot: enemyRobots) {
+			if (robot.getType() == RobotType.GARDENER) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 
 	// --------------------------------------------------------------------------------------------------------------
 	// TANK METHODS
@@ -936,20 +1055,92 @@ public strictfp class RobotPlayer {
 	static void runTank() throws GameActionException {
 		System.out.println("I'm a Tank!");
 		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);
-		int mapData = rc.readBroadcast(0);
+		int mapData = rc.readBroadcast(MAP_TYPE);
+		
+		Direction wanderDirection = Direction.NORTH;
+		float randomDistance = 0;
+		boolean aboutToDie = false;
+		boolean hasReinforced = true;
+		boolean hasCheckedInitial = false;
+		boolean setNewWanderLocation = true;
+		MapLocation moveReference = new MapLocation(rc.readBroadcast(INITIAL_ENEMY_LOCATION_X), rc.readBroadcast(INITIAL_ENEMY_LOCATION_Y));
+		MapLocation wanderReference = new MapLocation(rc.readBroadcast(INITIAL_ENEMY_LOCATION_X), rc.readBroadcast(INITIAL_ENEMY_LOCATION_Y));
+		MapLocation reinforcementLocation = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+		
 		while (true) {
 			try {
-				MapLocation myLocation = rc.getLocation();
-				avoidBullet();
-				tryShoot();
-				if (!tryMove(myLocation.directionTo(
-						new MapLocation(rc.readBroadcast(ENEMY_X) / 100000, rc.readBroadcast(ENEMY_Y) / 100000)), 1,
-						90)) {
-					if (!tryMove(randomDir, 1, 90)) {
-						randomDir = randomDirection();
+				RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
+				
+				// Check if it can go into combat or if it has a combat request
+				if (enemyRobots.length > 0) {
+					rc.broadcast(REINFORCEMENT_NEEDED_X, (int) enemyRobots[0].location.x);
+					rc.broadcast(REINFORCEMENT_NEEDED_Y, (int) enemyRobots[0].location.y);
+					reinforcementLocation = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+					while (enemyRobots.length > 0) {
+						System.out.println("Initiating attack sequence!");
+						//avoidBullet();
+						// It will only move to the nearest enemy if it has not moved yet
+						moveToNearestEnemy(enemyRobots);
+						// Will shoot the nearest robot
+						tryShoot();
+						if (rc.getHealth() <= 10 && !aboutToDie) {
+							aboutToDie = true;
+							rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) - 1);
+						}
+						Clock.yield();
+						enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
 					}
 				}
-				convertVictoryPoints(1000);
+				// Check if the robots reinforcement position is different from the one in the array. If the robot is not currently going to reinforce, it will
+				// Set a new reinforcement position
+				else if ((reinforcementLocation.x != rc.readBroadcast(REINFORCEMENT_NEEDED_X) || reinforcementLocation.y != rc.readBroadcast(REINFORCEMENT_NEEDED_Y)) && hasReinforced) {
+					System.out.println("New reinforcement location detected!");
+					// If true, the robot will try to move to the location given
+					reinforcementLocation = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+					wanderReference = new MapLocation(rc.readBroadcast(REINFORCEMENT_NEEDED_X), rc.readBroadcast(REINFORCEMENT_NEEDED_Y));
+					hasReinforced = false;
+				}
+				
+				// It acts on the previous if statements. If there is a combat request, it will move towards it. If none, it will wander
+				if (!hasReinforced) {
+					System.out.println("Moving to reinforce!");
+					hasReinforced = smartMovement(reinforcementLocation);
+					// If statement for debugging purposes
+					if (hasReinforced) {
+						System.out.println("Moved to reinforcement location!");
+					}
+				}
+				// If it has no where to reinforce and there are no enemies in sight, go to the initial desired location
+				else if (!hasCheckedInitial) {
+					System.out.println("Moving to enemy archon location!");
+					hasCheckedInitial = smartMovement(moveReference);
+					// If statement for debugging purposes
+					if (hasCheckedInitial) {
+						System.out.println("Initial enemy archon location checked!");
+					}
+				}
+				// If there is nothing else to do, the soldier will wander
+				else {
+					// Will keep on setting new locations until one that is one the map is found
+					while (setNewWanderLocation) {
+						System.out.println("Picking new location!");
+						Direction directionToReference = rc.getLocation().directionTo(wanderReference);
+						// These generate a random direction in relation to the direction to the reference point
+						int randomDegree = (int) (Math.random() * 271);
+						wanderDirection = directionToReference.rotateLeftDegrees(135);
+						wanderDirection = wanderDirection.rotateRightDegrees(randomDegree);
+						
+						// Creates a random distance to travel in-between 5-15 units
+						randomDistance = (int) (Math.random() *11 + 5);
+						
+						if (rc.onTheMap(rc.getLocation().add(wanderDirection, 5))) {
+							System.out.println("Location is on the map!");
+							setNewWanderLocation = false;
+						}
+					}
+					MapLocation targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
+					smartMovement(targetLocation);
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Tank Exception");
@@ -1010,14 +1201,6 @@ public strictfp class RobotPlayer {
 		return testDirection;
 	}
 
-	// Method is called if an enemy is sensed
-	static void attackEnemy(MapLocation enemyLocation) throws GameActionException {
-		System.out.println("Attacking!");
-		MapLocation myLocation = rc.getLocation();
-		Direction directionToEnemy = myLocation.directionTo(enemyLocation);
-		rc.fireSingleShot(directionToEnemy);
-	}
-
 	static boolean tryBuildRobot(Direction start, float degreeOffset, int checksPerSide, RobotType robotType)
 			throws GameActionException {
 		Direction ans = start;
@@ -1044,20 +1227,96 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	static boolean moveToNearestEnemy() throws GameActionException {
-		if (!rc.hasMoved()) {
-			RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
-			if (enemyRobots.length > 0) {
-				MapLocation enemyLocation = enemyRobots[0].getLocation();
-				Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
-				tryMove(toEnemy, 5, 10);
-				return true;
-			} else {
-				return false;
+	// Will try to move to the prioritized enemy. Needed to make this kind of long because of the different cases with robots
+		static void moveToNearestEnemy(RobotInfo[] enemyLocations) throws GameActionException {
+			if (!rc.hasMoved()) {
+				RobotInfo[] enemyRobots = enemyLocations;
+				
+				// If the robot type of the enemy is a soldier or tank, move towards it and return early
+				for (RobotInfo enemy: enemyRobots) {
+					if (enemy.getType() == RobotType.SOLDIER || enemy.getType() == RobotType.TANK) {
+						MapLocation enemyLocation = enemy.getLocation();
+						Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
+						tryMove(toEnemy);
+						System.out.println("Ran moveToNearestEnemy!");
+						return;
+					}
+					else if (enemy.getType() == RobotType.LUMBERJACK) {
+						MapLocation enemyLocation = enemy.getLocation();
+						Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
+						if (rc.getLocation().distanceTo(enemyLocation) > 4) {
+							tryMove(toEnemy);
+						}
+						else {
+							tryMove(toEnemy.opposite());
+						}
+						System.out.println("Ran moveToNearestEnemy!");
+						return;
+					}
+				}
+				
+				// If no tanks or soldiers are detected, look for a gardener or scout first before attacking the archon 
+				for (RobotInfo enemy: enemyRobots) {
+					if (enemy.getType() == RobotType.GARDENER) {
+						MapLocation enemyLocation = enemy.getLocation();
+						Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
+						tryMove(toEnemy);
+						System.out.println("Ran moveToNearestEnemy!");
+						return;
+					}
+					// If the robot is an archon, there must be no other enemies in range 
+					else if (enemy.getType() == RobotType.ARCHON && enemyRobots.length == 1) {
+						MapLocation enemyLocation = enemyRobots[0].getLocation();
+						Direction toEnemy = rc.getLocation().directionTo(enemyLocation);
+						tryMove(toEnemy);
+						System.out.println("Ran moveToNearestEnemy!");
+						return;
+					}
+				}
 			}
 		}
-		return true;
-	}
+		
+		// Smart path finding. Need a while statement, while no enemies are sensed, run this code. Will stop running this method if an enemy is detected
+		static boolean smartMovement(MapLocation destination) throws GameActionException {
+			Direction directionToDestination = rc.getLocation().directionTo(destination);
+			
+			TreeInfo[] trees = rc.senseNearbyTrees(4, Team.NEUTRAL);
+			// Returns true if the robot is within stride radius of its destination. If the robot can move in the direction to the destination, move
+			if (rc.canMove(directionToDestination) && trees.length == 0) {
+				System.out.println("Moved normally!");
+				rc.move(directionToDestination);
+			}
+			// If the robot cannot move in the direction to its destination, find the next possible position to move to
+			else {
+				System.out.println("Trying to find another direction!");
+				Direction smartMove = nextAvaliableDirection(directionToDestination);
+				if (rc.canMove(smartMove)) {
+					System.out.println("Using nextAvaliableDirection to move!");
+					rc.move(smartMove);
+				}
+			}
+			rc.setIndicatorDot(destination, 0, 0, 0);
+			rc.setIndicatorLine(rc.getLocation(), destination, 0, 0, 0);
+			
+			// If a move has gotten it close enough to its destination, it has moved to its destination and will return true
+			if (rc.getType().strideRadius + 2 >= rc.getLocation().distanceTo(destination)) {
+				System.out.println("Reached Destination!");
+				return true;
+			}
+		return false;
+		}
+			
+		// This is needed because the robot will always keep the wall to its left. Therefore, it can only rotate one direction
+		static Direction nextAvaliableDirection(Direction destination) {
+			for (int angle = 0; angle < 360; angle = angle + 1) {
+				if (rc.canMove(destination.rotateRightDegrees(angle))) {
+					System.out.println("Rotated right: " + angle + " degrees!");
+					return destination.rotateRightDegrees(angle);
+				}
+			}
+			System.out.println("ERROR in smart pathfinding!");
+			return null;
+		}
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// BULLET METHODS
@@ -1154,6 +1413,29 @@ public strictfp class RobotPlayer {
 		} else {
 			System.out.println("No enemies detected!");
 		}
+	}
+	
+	static boolean tryMove(Direction dir) throws GameActionException {
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+			return true;
+		}
+
+		for (int angle = 5; angle <= 180; angle = angle + 5) {
+			// Try the offset of the left side
+			if (rc.canMove(dir.rotateLeftDegrees(angle))) {
+				rc.move(dir.rotateLeftDegrees(angle));
+				return true;
+			}
+			// Try the offset on the right side
+			if (rc.canMove(dir.rotateRightDegrees(angle))) {
+				rc.move(dir.rotateRightDegrees(angle));
+				return true;
+			}
+		}
+		// A move never happened, so return false.
+		System.out.println("Robot: " + rc.getID() + " Could not move!");
+		return false;
 	}
 
 	// --------------------------------------------------------------------------------------------------------------
