@@ -201,94 +201,78 @@ public strictfp class RobotPlayer {
 		boolean leaveSpace = (Math.random() > .5);
 		boolean aboutToDie = false;
 
-<<<<<<< HEAD
 		while (true) {
 			try {
-				// If the map type is enclosed
+				// Small and enclosed
 				if (mapData == 1) {
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
 						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
-=======
-		if (rc.getRoundNum() < 3) {
-			dontTree = true;
-		}
-
-		if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
-			tryBuildRobot(randomDirection(), 5, 10, RobotType.SCOUT);
-			rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
-		}
-
-		while (true) {
-			try {
-				if (!set) {
-				}
-				if (count > 0) {
-					count--;
-
-					if (!tryMove(awayDir, 1, 90)) {
-						awayDir = rc.getLocation().directionTo(start).opposite();
-
-					}
-					if (mapData == 1) {
-						// Make lumberjacks then have a balance between
-						// attacking
-						// and farming
-						// mapTypeOneGardener();
-					} else if (mapData == 2) {
-						// Make soldiers then send them to attack
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-					} else if (mapData == 3) {
-						// Make lumberjacks then do tree stuff
-						// mapTypeOneGardener();
-						// maintainTreeRing();
-					} else if (mapData == 4) {
-						// Do tree stuff and make gardeners, maybe periodically
-						// make
-						// a soldier
-						if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 3) {
-							tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-						} else {
-							// Tree stuff
-							// maintainTreeRing();
-						}
-					}
-				} else {
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.LUMBERJACK);
->>>>>>> origin/master
 					}
 					
 					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
-<<<<<<< HEAD
 					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-=======
-					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
 
-						// tryBuildRobot(randomDirection(), 10, 9,
-						// RobotType.TANK);
->>>>>>> origin/master
 					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5)
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
+					}
 				}
+				// Small and open
 				else if (mapData == 2) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+					}
 					
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
+					}
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+
+					}
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
+					}
 				}
+				// Big and enclosed
 				else if (mapData == 3) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+					}
 					
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
+					}
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+
+					}
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
+					}
 				}
+				// Big and open
 				else if (mapData == 4) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+					}
 					
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
+					}
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+
+					}
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
+					}
 				}
-<<<<<<< HEAD
 				
 				set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
-=======
-
->>>>>>> origin/master
 				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
 				alwaysWater(sensedTrees);
 				convertVictoryPoints(1000);
