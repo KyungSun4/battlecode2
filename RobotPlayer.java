@@ -845,7 +845,15 @@ public strictfp class RobotPlayer {
 
 	static void tryUseStrike() throws GameActionException {
 		if (rc.canStrike()) {
-			TreeInfo[] friendlyTrees = rc.senseNearbyTrees(3, rc.getTeam());
+			TreeInfo[] friendlyTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS);
+			int count = 0;
+			Team myTeam = rc.getTeam();
+			for (TreeInfo tree : friendlyTrees) {
+				if (tree.getTeam() == myTeam || (tree.getHealth() < 5 && tree.containedRobot != null)) {
+					System.out.println("Lumberjack: " + rc.getID() + " could not use strike()!");
+					return;
+				}
+			}
 			RobotInfo[] friendlyRobots = rc.senseNearbyRobots(3, rc.getTeam());
 			if (friendlyTrees.length > 0 || friendlyRobots.length > 0) {
 				System.out.println("Lumberjack: " + rc.getID() + " could not use strike()!");
