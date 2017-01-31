@@ -90,13 +90,13 @@ public strictfp class RobotPlayer {
 						}
 					}
 					if (mapType == 3) {
-						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 75)
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 125)
 								&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 4) {
-						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 50)
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100)
 								&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
@@ -233,16 +233,20 @@ public strictfp class RobotPlayer {
 				System.out.println("Lumberjack: " + rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 				if (mapData == 1) {
 
+					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
+					}
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
-					}
+					}	
 
 					if ((rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5 || rc.readBroadcast(SET_COUNT) <= 1)
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40
+					}
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
@@ -268,6 +272,9 @@ public strictfp class RobotPlayer {
 				}
 				// Big and enclosed
 				else if (mapData == 3) {
+					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
+					}
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
