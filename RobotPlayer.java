@@ -650,9 +650,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	// -------------------------------------------------------------------------------------------------------------
-	// SOLDIER PLAYER & METHODS
-
+// -------------------------------------------------------------------------------------------------------------
 	// SOLDIER PLAYER & METHODS
 
 	static void runSoldier() throws GameActionException {
@@ -660,6 +658,7 @@ public strictfp class RobotPlayer {
 		rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) + 1);
 		int mapData = rc.readBroadcast(MAP_TYPE);
 
+		MapLocation targetLocation = rc.getLocation();
 		Direction wanderDirection = Direction.NORTH;
 		float randomDistance = 0;
 		boolean aboutToDie = false;
@@ -754,9 +753,9 @@ public strictfp class RobotPlayer {
 						if (rc.onTheMap(rc.getLocation().add(wanderDirection, 5))) {
 							System.out.println("Location is on the map!");
 							setNewWanderLocation = false;
+							targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
 						}
 					}
-					MapLocation targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
 					smartMovement(targetLocation);
 				}
 				Clock.yield();
@@ -767,7 +766,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	// -------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------
 	// LUMBERJACK PLAYER & METHODS
 
 	static void runLumberjack() throws GameActionException {
@@ -794,7 +793,7 @@ public strictfp class RobotPlayer {
 				 */
 				if (tree != null) {
 
-					int result = fufuilLumberJackRequest(tree, nearByTrees);
+					int result = fulfillLumberjackRequest(tree, nearByTrees);
 					if (result == 1) {
 						tree = null;
 					} else if (result == 2) {
@@ -922,7 +921,7 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	static int fufuilLumberJackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
+	static int fulfillLumberjackRequest(MapLocation tree, TreeInfo[] trees) throws GameActionException {
 		int id = 0;
 		boolean found = false;
 		for (TreeInfo t : trees) {
@@ -955,7 +954,7 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	// -------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------
 	// SCOUT PLAYER & METHODS
 
 	static void runScout() throws GameActionException {
@@ -1073,7 +1072,7 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	// --------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
 	// TANK METHODS
 
 	static void runTank() throws GameActionException {
@@ -1230,16 +1229,6 @@ public strictfp class RobotPlayer {
 		return tryMove(dirTo, degreeOffset, checksPerSide);
 	}
 
-	// Starts at east then rotates counter clockwise to find the next available
-	// space at increments of 30 degrees.
-	static Direction nextUnoccupiedDirection(RobotType robot, int degrees) {
-		Direction testDirection = Direction.getEast().rotateLeftDegrees(degrees);
-		while (rc.canMove(testDirection) == false) {
-			testDirection = testDirection.rotateLeftDegrees(90);
-		}
-		return testDirection;
-	}
-
 	static boolean tryBuildRobot(Direction start, float degreeOffset, int checksPerSide, RobotType robotType)
 			throws GameActionException {
 		Direction ans = start;
@@ -1325,7 +1314,7 @@ public strictfp class RobotPlayer {
 		TreeInfo[] trees = rc.senseNearbyTrees(4, Team.NEUTRAL);
 		// Returns true if the robot is within stride radius of its destination.
 		// If the robot can move in the direction to the destination, move
-		if (rc.canMove(directionToDestination) && trees.length == 0) {
+		if (rc.canMove(directionToDestination) && rc.isCircleOccupied(rc.getLocation().add(directionToDestination, 4), 1)) {
 			System.out.println("Moved normally!");
 			rc.move(directionToDestination);
 		}
