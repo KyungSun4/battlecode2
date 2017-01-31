@@ -179,21 +179,20 @@ public strictfp class RobotPlayer {
 	// GARDENER PLAYER & METHODS
 
 	static void runGardener() throws GameActionException {
+		System.out.println("I'm a gardener!");
+		rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) + 1);
+		
 		MapLocation start = rc.getInitialArchonLocations(rc.getTeam())[0];
+		Direction awayDir = rc.getLocation().directionTo(start).opposite();
 		int count = 10;
+		int mapData = rc.readBroadcast(MAP_TYPE);
 		boolean set = false;
 		boolean dontTree = false;
+		boolean leaveSpace = (Math.random() > .5);
 		if (rc.getRoundNum() < 3) {
 			dontTree = true;
 		}
-		// ~50% of gardersn will leave a space to produce robots
-		boolean leaveSpace = (Math.random() > .5);
-		//System.out.println("leave Space " + leaveSpace);
-		System.out.println("I'm a gardener!");
-		rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) + 1);
-		int mapData = rc.readBroadcast(0);
-		Direction awayDir = rc.getLocation().directionTo(start).opposite();
-		Direction randomDir = randomDirection();
+		
 		if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
 			tryBuildRobot(randomDirection(), 5, 10, RobotType.SCOUT);
 			rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
@@ -202,7 +201,6 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				if (!set) {
-					// avoidBullet();
 				}
 				if (count > 0) {
 					count--;
@@ -250,6 +248,7 @@ public strictfp class RobotPlayer {
 					// maintainTreeGrid(rc.senseNearbyTrees());
 
 				}
+				
 				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
 				alwaysWater(sensedTrees);
 				convertVictoryPoints(1000);
@@ -261,43 +260,6 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-	static void mapTypeOneGardener() throws GameActionException {
-		if (rc.readBroadcast(GARDENER_COUNT_ARR) < 20) {
-			tryBuildRobot(randomDirection(), 10, 9, RobotType.LUMBERJACK);
-		} else {
-			tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-		}
-	}
-
-	/**
-	 * never waste a round not watering, its free, do it
-	 * 
-	 * @throws GameActionException
-	 */
-	static void alwaysWater(TreeInfo[] sensedTrees) throws GameActionException {
-		TreeInfo weakest = null;
-		for (int i = 0; i < sensedTrees.length; i++) {
-			if (sensedTrees[i].getTeam() == rc.getTeam()) {
-				if (weakest == null || sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
-					weakest = sensedTrees[i];
-				}
-			}
-		}
-		if (weakest != null) {
-			if (rc.canWater(weakest.ID)) {
-				rc.water(weakest.ID);
-			}
-		}
-	}
-
-	/**
-	 * maintains a grid of tree flowers, some flowers are larger to prduce
-	 * tanks, and spacing around those vary to allow that movement, these ones
-	 * should not be prduced unitl latter
-	 * 
-	 * @param trees
-	 * @throws GameActionException
-	 */
 	static boolean maintainTreeGridOfFlowers(boolean set, RobotInfo[] robots, boolean leaveSpace)
 			throws GameActionException {
 		// will provide space for a radius one robot to fit through
@@ -415,8 +377,6 @@ public strictfp class RobotPlayer {
 				}
 
 			}
-			// }
-
 		} else
 
 		{
@@ -427,11 +387,6 @@ public strictfp class RobotPlayer {
 		return set;
 	}
 
-	/**
-	 * moves and maintains a tree grid
-	 * 
-	 * @throws GameActionException
-	 */
 	static void maintainTreeGrid(TreeInfo[] trees) throws GameActionException {
 		// direction is stored in gardener, grid should have edge constraints in
 		// message array
@@ -549,7 +504,7 @@ public strictfp class RobotPlayer {
 			if (myLocation.distanceTo(closest) > rc.getType().strideRadius) {
 
 				tryMoveToLocation(closest, 1, 90);
-				System.out.println("moving to" + closest);
+				System.out.println("moving to " + closest);
 
 			} else if (myLocation.distanceTo(closest) < .001) {
 				if (rc.canPlantTree(myLocation.directionTo(closestEmptySpot))) {
@@ -557,17 +512,17 @@ public strictfp class RobotPlayer {
 				}
 			} else if (rc.canMove(myLocation.directionTo(closest), myLocation.distanceTo(closest))) {
 				rc.move(myLocation.directionTo(closest), myLocation.distanceTo(closest));
-				System.out.println("moving to" + closest);
+				System.out.println("moving to " + closest);
 			}
 
 		} else {
-			System.out.print("idt i can get there");
+			System.out.print("Cant move there");
 		}
 		// if didn't move to align move in grid try moving to tree that needs
 		// water
 
 		if (!tryingToPlant) {
-			System.out.println("goign to water wekeast");
+			System.out.println("going to water wekeast");
 			TreeInfo weakest = null;
 			for (TreeInfo tree : trees) {
 				if (tree.team == rc.getTeam()) {
@@ -650,6 +605,22 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	// Does stuff
+	static void alwaysWater(TreeInfo[] sensedTrees) throws GameActionException {
+		TreeInfo weakest = null;
+		for (int i = 0; i < sensedTrees.length; i++) {
+			if (sensedTrees[i].getTeam() == rc.getTeam()) {
+				if (weakest == null || sensedTrees[i].health < weakest.health && rc.canWater(sensedTrees[i].ID)) {
+					weakest = sensedTrees[i];
+				}
+			}
+		}
+		if (weakest != null) {
+			if (rc.canWater(weakest.ID)) {
+				rc.water(weakest.ID);
+			}
+		}
+	}
 // -------------------------------------------------------------------------------------------------------------
 	// SOLDIER PLAYER & METHODS
 
