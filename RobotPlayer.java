@@ -1011,19 +1011,7 @@ public strictfp class RobotPlayer {
 			try {
 
 				TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-				if (!hasCheckedInitial) {
-					System.out.println("Moving to enemy archon location!");
-					hasCheckedInitial = smartMovement(moveReference);
-					// If statement for debugging purposes
-					if (hasCheckedInitial) {
-						System.out.println("Initial enemy archon location checked!");
-					}
-				} else if (seeGardener()) {
-					System.out.println("Finding gardener");
-					findGardener();
-					scoutAttack();
-					System.out.println("Moved!");
-				} else if (hasBullets()) {
+				if (hasBullets()) {
 					for (TreeInfo tree : treeLocation) {
 						while (tree.containedBullets > 0) {
 							if (rc.canShake(tree.location)) {
@@ -1035,6 +1023,18 @@ public strictfp class RobotPlayer {
 								Clock.yield();
 							}
 						}
+					}
+				} else if (seeGardener()) {
+					System.out.println("Finding gardener");
+					findGardener();
+					scoutAttack();
+					System.out.println("Moved!");
+				} else if (!hasCheckedInitial) {
+					System.out.println("Moving to enemy archon location!");
+					hasCheckedInitial = smartMovement(moveReference);
+					// If statement for debugging purposes
+					if (hasCheckedInitial) {
+						System.out.println("Initial enemy archon location checked!");
 					}
 				} else {
 					if (rc.canMove(randomDirection) && !rc.hasMoved()) {
