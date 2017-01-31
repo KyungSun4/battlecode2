@@ -69,9 +69,6 @@ public strictfp class RobotPlayer {
 			try {
 				roundOneCommands();
 				roundTwoCommands();
-				// The methods that follow will be always in play
-				// runAway();
-				// This will constantly make gardeners. Need to change
 				if (rc.readBroadcast(MAIN_ARCHON_ID) == rc.getID() || rc.getRoundNum() > 400) {
 					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= 3 && rc.readBroadcast(SOLDIER_COUNT_ARR) >= 2) {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
@@ -119,8 +116,9 @@ public strictfp class RobotPlayer {
 			// what type of map it is
 			if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
 				saveInitialData();
+				tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 10, 18, RobotType.GARDENER);
+				System.out.println("Im the farthest archon!");
 			}
-			tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 10, 18, RobotType.GARDENER);
 		}
 	}
 
@@ -130,10 +128,12 @@ public strictfp class RobotPlayer {
 		if (rc.getRoundNum() == 2) {
 			// If there is no ID saved to the 2nd position of the array, it will
 			// set a different archon
-			if (rc.readBroadcast(1) == 0 && isNotSurrounded()) {
+			if (rc.readBroadcast(MAIN_ARCHON_ID) == 0 && isNotSurrounded()) {
 				saveInitialData();
+				tryBuildRobot(randomDirection(), 10, 18, RobotType.GARDENER);
+				System.out.println("Eh!?");
 			}
-			tryBuildRobot(randomDirection(), 10, 18, RobotType.GARDENER);
+			
 		}
 	}
 
@@ -188,7 +188,7 @@ public strictfp class RobotPlayer {
 		}
 		// ~50% of gardersn will leave a space to produce robots
 		boolean leaveSpace = (Math.random() > .5);
-		System.out.println("leave Space" + leaveSpace);
+		//System.out.println("leave Space " + leaveSpace);
 		System.out.println("I'm a gardener!");
 		rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) + 1);
 		int mapData = rc.readBroadcast(0);
@@ -1569,8 +1569,8 @@ public strictfp class RobotPlayer {
 				maxCount = i;
 			}
 		}
-		// System.out.println(midPoints);
-		// System.out.println(midPoints.get(maxCount));
+		//System.out.println(midPoints);
+		System.out.println(midPoints.get(maxCount));
 		return midPoints.get(maxCount);
 	}
 
