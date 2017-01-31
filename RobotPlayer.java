@@ -1362,7 +1362,8 @@ public strictfp class RobotPlayer {
 		if (rc.canMove(directionToDestination)) {
 			System.out.println("Moved normally!");
 			rc.move(directionToDestination);
-			if (rc.getType()==RobotType.TANK && rc.isLocationOccupiedByTree(rc.getLocation().add(directionToDestination, 2))) {
+			if (rc.getType() == RobotType.TANK
+					&& rc.isLocationOccupiedByTree(rc.getLocation().add(directionToDestination, 2))) {
 				rc.firePentadShot(directionToDestination);
 			}
 		}
@@ -1371,7 +1372,7 @@ public strictfp class RobotPlayer {
 		else {
 			System.out.println("Trying to find another direction!");
 			Direction smartMove = nextAvaliableDirection(directionToDestination);
-			if (smartMove!=null&& rc.canMove(smartMove)) {
+			if (smartMove != null && rc.canMove(smartMove)) {
 				System.out.println("Using nextAvaliableDirection to move!");
 				rc.move(smartMove);
 			}
