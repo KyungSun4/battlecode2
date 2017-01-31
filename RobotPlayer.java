@@ -1040,7 +1040,7 @@ public strictfp class RobotPlayer {
 					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
-
+				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
 				e.printStackTrace();
