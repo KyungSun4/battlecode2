@@ -228,22 +228,18 @@ public strictfp class RobotPlayer {
 				System.out.println("Lumberjack: " + rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 				if (mapData == 1) {
 
-					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 100) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 					}
 
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5
-							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
-					}
 				}
 				// Small and open
 				else if (mapData == 2) {
@@ -251,37 +247,32 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
 
-					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 					}
-					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 10
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 20
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5
-							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
+					}
+					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
 				}
 				// Big and enclosed
 				else if (mapData == 3) {
-					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 100) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 					}
 
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 50
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5
-							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
 				// Big and open
@@ -290,17 +281,15 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
 
-					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 					}
-					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
+					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10) {
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
 
