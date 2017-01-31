@@ -233,14 +233,14 @@ public strictfp class RobotPlayer {
 				System.out.println("Lumberjack: " + rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 				if (mapData == 1) {
 
-					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
-					}
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 					}	
+					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
+					}
 
 					if ((rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5 || rc.readBroadcast(SET_COUNT) <= 1)
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
@@ -283,11 +283,16 @@ public strictfp class RobotPlayer {
 
 					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+					}
+					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 50
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
-				}
 				// Big and open
 				else if (mapData == 4) {
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 2) {
@@ -1023,13 +1028,15 @@ public strictfp class RobotPlayer {
 						while (tree.containedBullets > 0) {
 							if (rc.canShake(tree.location)) {
 								rc.shake(tree.location);
+								treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
 								break;
 							} else {
-								Direction moveDirection = rc.getLocation().directionTo(tree.location);
-								tryMove(moveDirection);
+								//Direction moveDirection = rc.getLocation().directionTo(tree.location);
+								smartMovement(tree.location);
 								Clock.yield();
 							}
 						}
+						treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
 					}
 				} else if (seeGardener()) {
 					System.out.println("Finding gardener");
