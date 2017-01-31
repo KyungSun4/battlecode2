@@ -240,7 +240,9 @@ public strictfp class RobotPlayer {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
+
 					}	
+
 
 					if ((rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5 || rc.readBroadcast(SET_COUNT) <= 1)
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
