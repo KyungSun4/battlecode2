@@ -70,7 +70,8 @@ public strictfp class RobotPlayer {
 				roundOneCommands();
 				roundTwoCommands();
 				if (rc.readBroadcast(MAIN_ARCHON_ID) == rc.getID() || rc.getRoundNum() > 400) {
-					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= 3 && rc.readBroadcast(SOLDIER_COUNT_ARR) >= 2) {
+					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int)(3.0*rc.getRoundNum()/300) ) {
+						// this donest work: && rc.readBroadcast(SOLDIER_COUNT_ARR) >= 2
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
 					}
 				}
@@ -188,7 +189,11 @@ public strictfp class RobotPlayer {
 		int mapData = rc.readBroadcast(MAP_TYPE);
 		boolean set = false;
 		boolean dontTree = false;
+
 		boolean leaveSpace = (Math.random() > .5);
+
+		boolean aboutToDie = false;
+
 		if (rc.getRoundNum() < 3) {
 			dontTree = true;
 		}
@@ -213,13 +218,13 @@ public strictfp class RobotPlayer {
 						// Make lumberjacks then have a balance between
 						// attacking
 						// and farming
-						mapTypeOneGardener();
+						//mapTypeOneGardener();
 					} else if (mapData == 2) {
 						// Make soldiers then send them to attack
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
 					} else if (mapData == 3) {
 						// Make lumberjacks then do tree stuff
-						mapTypeOneGardener();
+						//mapTypeOneGardener();
 						// maintainTreeRing();
 					} else if (mapData == 4) {
 						// Do tree stuff and make gardeners, maybe periodically
@@ -241,7 +246,7 @@ public strictfp class RobotPlayer {
 					}
 					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
 
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
+						//tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
 					}
 
 					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
@@ -252,6 +257,10 @@ public strictfp class RobotPlayer {
 				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
 				alwaysWater(sensedTrees);
 				convertVictoryPoints(1000);
+				if (rc.getHealth() <= 10 && !aboutToDie) {
+					aboutToDie = true;
+					rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) - 1);
+				}
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
