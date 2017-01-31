@@ -232,16 +232,14 @@ public strictfp class RobotPlayer {
 				System.out.println("Scout: " + rc.readBroadcast(SCOUT_COUNT_ARR));
 				System.out.println("Lumberjack: " + rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 				if (mapData == 1) {
-
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
-					}	
+					}
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
 					}
-
 					if ((rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5 || rc.readBroadcast(SET_COUNT) <= 1)
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
@@ -293,6 +291,7 @@ public strictfp class RobotPlayer {
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
+				}
 				// Big and open
 				else if (mapData == 4) {
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 2) {
@@ -323,7 +322,6 @@ public strictfp class RobotPlayer {
 					rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) - 1);
 					// rc.broadcast(SET_COUNT, rc.readBroadcast(SET_COUNT) - 1);
 				}
-
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
@@ -1031,7 +1029,8 @@ public strictfp class RobotPlayer {
 								treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
 								break;
 							} else {
-								//Direction moveDirection = rc.getLocation().directionTo(tree.location);
+								// Direction moveDirection =
+								// rc.getLocation().directionTo(tree.location);
 								smartMovement(tree.location);
 								Clock.yield();
 							}
