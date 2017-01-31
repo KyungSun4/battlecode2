@@ -32,6 +32,10 @@ public strictfp class RobotPlayer {
 	static int ENEMY_X = 86;
 	static int ENEMY_Y = 87;
 
+	// Some static variables
+	static int BULLET_OVERFLOW_LIMIT = 1000;
+	static int BULLETS_NEEDED_TO_MAKE_ROBOT = 50;
+	
 	static Direction randomDir = randomDirection();
 
 	@SuppressWarnings("unused")
@@ -65,16 +69,32 @@ public strictfp class RobotPlayer {
 	static void runArchon() throws GameActionException {
 		System.out.println("I'm an archon!");
 		rc.broadcast(ARCHON_COUNT_ARR, rc.readBroadcast(ARCHON_COUNT_ARR) + 1);
+		int mapType = rc.readBroadcast(MAP_TYPE);
 		while (true) {
 			try {
 				roundOneCommands();
 				roundTwoCommands();
+				mapType = rc.readBroadcast(MAP_TYPE);
 				if (rc.readBroadcast(MAIN_ARCHON_ID) == rc.getID() || rc.getRoundNum() > 400) {
-					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (3.0 * rc.getRoundNum() / 300)) {
-						// this donest work: &&
-						// rc.readBroadcast(SOLDIER_COUNT_ARR) >= 2
-
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+					if (mapType == 1) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+						}
+					}
+					if (mapType == 2) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+						}
+					}
+					if (mapType == 3) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 75) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+						}
+					}
+					if (mapType == 4) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 50) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+						}
 					}
 				}
 				runAway();
@@ -209,31 +229,34 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
 					}
 					
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 
 					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
 				// Small and open
 				else if (mapData == 2) {
-					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
-						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+					
+					if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 2) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
 					
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+					}
+					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-
 					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
@@ -246,26 +269,29 @@ public strictfp class RobotPlayer {
 					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10  && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 
 					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
 				// Big and open
 				else if (mapData == 4) {
+					if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 2) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+
+					}
+					
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
 						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
 					}
-					
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-
 					}
 					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
