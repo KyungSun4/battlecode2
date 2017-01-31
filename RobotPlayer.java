@@ -796,6 +796,9 @@ public strictfp class RobotPlayer {
 					if (!rc.onTheMap(rc.getLocation(), 4)) {
 						setNewWanderLocation = true;
 					}
+					if (rc.isLocationOccupiedByTree(targetLocation)) {
+						setNewWanderLocation = true;
+					}
 
 					if (smartMovement(targetLocation)) {
 						setNewWanderLocation = true;
