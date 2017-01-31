@@ -75,6 +75,7 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
 					}
 				}
+				runAway();
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Archon Exception");
@@ -166,15 +167,17 @@ public strictfp class RobotPlayer {
 		rc.broadcast(INITIAL_ENEMY_LOCATION_Y, (int) (archonY + differenceY));
 	}
 
-	/*
-	 * static void runAway() throws GameActionException { RobotInfo[]
-	 * enemyRobots = rc.senseNearbyRobots(RobotType.ARCHON.sensorRadius,
-	 * rc.getTeam().opponent()); if (enemyRobots.length > 0) { Direction
-	 * awayFromEnemy =
-	 * enemyRobots[0].getLocation().directionTo(rc.getLocation()); if
-	 * (!rc.hasMoved()) { tryMove(awayFromEnemy, RobotType.ARCHON.strideRadius,
-	 * 10, 9); } } }
-	 */
+	
+	static void runAway() throws GameActionException {
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.ARCHON.sensorRadius, rc.getTeam().opponent());
+		if (enemyRobots.length > 0) {
+			Direction awayFromEnemy = enemyRobots[0].getLocation().directionTo(rc.getLocation());
+			if (!rc.hasMoved()) {
+				tryMove(awayFromEnemy, 10, 9);
+			}
+		}
+	}
+	 
 
 	// --------------------------------------------------------------------------------------------------------
 	// GARDENER PLAYER & METHODS
@@ -188,79 +191,46 @@ public strictfp class RobotPlayer {
 		int count = 10;
 		int mapData = rc.readBroadcast(MAP_TYPE);
 		boolean set = false;
-		boolean dontTree = false;
-
 		boolean leaveSpace = (Math.random() > .5);
-
 		boolean aboutToDie = false;
-
-		if (rc.getRoundNum() < 3) {
-			dontTree = true;
-		}
-		
-		if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
-			tryBuildRobot(randomDirection(), 5, 10, RobotType.SCOUT);
-			rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
-		}
 
 		while (true) {
 			try {
-				if (!set) {
+				// If the map type is enclosed
+				if (mapData == 1) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+					}
+					
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
+					}
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 20) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+					}
+					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5)
+						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 				}
-				if (count > 0) {
-					count--;
-
-					if (!tryMove(awayDir, 1, 90)) {
-						awayDir = rc.getLocation().directionTo(start).opposite();
-
-					}
-					if (mapData == 1) {
-						// Make lumberjacks then have a balance between
-						// attacking
-						// and farming
-						//mapTypeOneGardener();
-					} else if (mapData == 2) {
-						// Make soldiers then send them to attack
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-					} else if (mapData == 3) {
-						// Make lumberjacks then do tree stuff
-						//mapTypeOneGardener();
-						// maintainTreeRing();
-					} else if (mapData == 4) {
-						// Do tree stuff and make gardeners, maybe periodically
-						// make
-						// a soldier
-						if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 3) {
-							tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-						} else {
-							// Tree stuff
-							// maintainTreeRing();
-						}
-					}
-				} else {
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.LUMBERJACK);
-					}
-					if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
-					}
-					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
-
-						//tryBuildRobot(randomDirection(), 10, 9, RobotType.TANK);
-					}
-
-					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
-					// maintainTreeGrid(rc.senseNearbyTrees());
-
+				else if (mapData == 2) {
+					
+				}
+				else if (mapData == 3) {
+					
+				}
+				else if (mapData == 4) {
+					
 				}
 				
+				set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
 				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
 				alwaysWater(sensedTrees);
 				convertVictoryPoints(1000);
+				
 				if (rc.getHealth() <= 10 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) - 1);
 				}
+				
 				Clock.yield();
 			} catch (Exception e) {
 				System.out.println("Gardener Exception");
@@ -322,7 +292,6 @@ public strictfp class RobotPlayer {
 					x = -2;
 					y++;
 				}
-
 			}
 			MapLocation closest = null;
 			// boolean[] hasGardener = new boolean[16];
@@ -427,11 +396,9 @@ public strictfp class RobotPlayer {
 				x = -2;
 				y++;
 			}
-
 		}
 
-		boolean[] doesNotNeedTree = new boolean[16];
-
+	boolean[] doesNotNeedTree = new boolean[16];
 		// if find spot without tree plant if doesen't need to move plant tree,
 		// else
 		// move to that spot, check 4 surounding spots
@@ -945,53 +912,65 @@ public strictfp class RobotPlayer {
 
 		Direction randomDirection = randomDirection();
 		boolean aboutToDie = false;
-
+		boolean hasCheckedInitial = false;
+		MapLocation moveReference = new MapLocation(rc.readBroadcast(INITIAL_ENEMY_LOCATION_X), rc.readBroadcast(INITIAL_ENEMY_LOCATION_Y));
+		
 		while (true) {
 			try {
-
+				
 				TreeInfo[] treeLocation = rc.senseNearbyTrees(rc.getType().sensorRadius, Team.NEUTRAL);
-
-				if (hasBullets()) {
-					for (TreeInfo tree : treeLocation) {
+				if (!hasCheckedInitial) {
+					System.out.println("Moving to enemy archon location!");
+					hasCheckedInitial = smartMovement(moveReference);
+					// If statement for debugging purposes
+					if (hasCheckedInitial) {
+						System.out.println("Initial enemy archon location checked!");
+					}
+				}
+				else if (seeGardener()) {
+					System.out.println("Finding gardener");
+					findGardener();
+					scoutAttack();
+					System.out.println("Moved!");
+				}
+				else if (hasBullets()) {
+					for (TreeInfo tree: treeLocation) {
 						while (tree.containedBullets > 0) {
 							if (rc.canShake(tree.location)) {
 								rc.shake(tree.location);
 								break;
-							} else {
+							}
+							else {
 								Direction moveDirection = rc.getLocation().directionTo(tree.location);
 								tryMove(moveDirection);
 								Clock.yield();
 							}
 						}
 					}
-				} else if (seeGardener()) {
-					System.out.println("Finding gardener");
-					findGardener();
-					scoutAttack();
-					System.out.println("Moved!");
-				} else {
+				}
+				else {
 					if (rc.canMove(randomDirection) && !rc.hasMoved()) {
 						rc.move(randomDirection);
-					} else {
+					}
+					else {
 						while (!rc.canMove(randomDirection)) {
 							randomDirection = randomDirection();
 						}
 						rc.move(randomDirection);
 					}
 				}
-
+				
 				if (rc.getHealth() <= 10 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
-
+				
 			} catch (Exception e) {
 				System.out.println("Scout Exception");
 				e.printStackTrace();
 			}
 		}
 	}
-
 	// This method shakes the nearby trees returned in the parameter. It will
 	// shake all trees before sensing trees again.
 	static void shakeTree(TreeInfo tree) throws GameActionException {
