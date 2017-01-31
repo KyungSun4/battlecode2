@@ -240,6 +240,7 @@ public strictfp class RobotPlayer {
 					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
+					}
 				}
 				// Small and open
 				else if (mapData == 2) {
@@ -288,11 +289,11 @@ public strictfp class RobotPlayer {
 					}
 					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40) {
+					} 
+					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
 				}
-
 				set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
 				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
 				alwaysWater(sensedTrees);
