@@ -78,22 +78,22 @@ public strictfp class RobotPlayer {
 				if (rc.readBroadcast(MAIN_ARCHON_ID) == rc.getID() || rc.getRoundNum() > 400) {
 					if (mapType == 1) {
 						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 2) {
 						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 3) {
 						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 75) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 4) {
 						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 50) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-							tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
+							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 				}
@@ -222,10 +222,16 @@ public strictfp class RobotPlayer {
 		while (true) {
 			try {
 				// Small and enclosed
+				System.out.println("Gardener: " + rc.readBroadcast(GARDENER_COUNT_ARR));
+				System.out.println("Soldier: " + rc.readBroadcast(SOLDIER_COUNT_ARR));
+				System.out.println("Scout: " + rc.readBroadcast(SCOUT_COUNT_ARR));
+				System.out.println("Lumberjack: " + rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 				if (mapData == 1) {
 
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 100) {
-						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
+							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
+						}
 					}
 					
 					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
@@ -245,7 +251,9 @@ public strictfp class RobotPlayer {
 					}
 					
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
-						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
+							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
+						}
 					}
 					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
@@ -260,7 +268,9 @@ public strictfp class RobotPlayer {
 				// Big and enclosed
 				else if (mapData == 3) {
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 100) {
-						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
+							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
+						}
 					}
 
 					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
@@ -280,7 +290,9 @@ public strictfp class RobotPlayer {
 					}
 					
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
-						tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT);
+						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
+							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
+						}
 					}
 					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
@@ -300,7 +312,7 @@ public strictfp class RobotPlayer {
 
 				if (rc.getHealth() <= 10 && !aboutToDie) {
 					aboutToDie = true;
-					rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) - 1);
+					rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) - 1);
 				}
 
 				Clock.yield();
@@ -703,6 +715,9 @@ public strictfp class RobotPlayer {
 						// It will only move to the nearest enemy if it has not
 						// moved yet
 						moveToNearestEnemy(enemyRobots);
+						if (!rc.hasMoved()) {
+							avoidBullet();
+						}
 						// Will shoot the nearest robot
 						tryShoot();
 						if (rc.getHealth() <= 10 && !aboutToDie) {
@@ -988,7 +1003,6 @@ public strictfp class RobotPlayer {
 
 	static void runScout() throws GameActionException {
 		System.out.println("I'm a scout!");
-		rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 
 		Direction randomDirection = randomDirection();
 		boolean aboutToDie = false;
@@ -1036,7 +1050,7 @@ public strictfp class RobotPlayer {
 					}
 				}
 
-				if (rc.getHealth() <= 10 && !aboutToDie) {
+				if (rc.getHealth() <= 5 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) - 1);
 				}
@@ -1114,10 +1128,11 @@ public strictfp class RobotPlayer {
 	// TANK METHODS
 
 	static void runTank() throws GameActionException {
-		System.out.println("I'm a Tank!");
+		System.out.println("I'm an soldier!");
 		rc.broadcast(TANK_COUNT_ARR, rc.readBroadcast(TANK_COUNT_ARR) + 1);
-		int mapData = rc.readBroadcast(MAP_TYPE);
+		// int mapData = rc.readBroadcast(MAP_TYPE);
 
+		MapLocation targetLocation = rc.getLocation();
 		Direction wanderDirection = Direction.NORTH;
 		float randomDistance = 0;
 		boolean aboutToDie = false;
@@ -1147,6 +1162,9 @@ public strictfp class RobotPlayer {
 						// It will only move to the nearest enemy if it has not
 						// moved yet
 						moveToNearestEnemy(enemyRobots);
+						if (!rc.hasMoved()) {
+							avoidBullet();
+						}
 						// Will shoot the nearest robot
 						tryShoot();
 						if (rc.getHealth() <= 10 && !aboutToDie) {
@@ -1209,13 +1227,19 @@ public strictfp class RobotPlayer {
 						// units
 						randomDistance = (int) (Math.random() * 11 + 5);
 
-						if (rc.onTheMap(rc.getLocation().add(wanderDirection, 5))) {
+						if (rc.onTheMap(rc.getLocation().add(wanderDirection, 7))) {
 							System.out.println("Location is on the map!");
 							setNewWanderLocation = false;
+							targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
 						}
 					}
-					MapLocation targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
-					smartMovement(targetLocation);
+					if (!rc.onTheMap(rc.getLocation(), 4)) {
+						setNewWanderLocation = true;
+					}
+
+					if (smartMovement(targetLocation)) {
+						setNewWanderLocation = true;
+					}
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -1352,10 +1376,12 @@ public strictfp class RobotPlayer {
 		// Returns true if the robot is within stride radius of its destination.
 		// If the robot can move in the direction to the destination, move
 		if (rc.canMove(directionToDestination)) {
-			System.out.println("Moved normally!");
-			rc.move(directionToDestination);
-			if (rc.isLocationOccupiedByTree(rc.getLocation().add(directionToDestination, 2))) {
-				rc.firePentadShot(directionToDestination);
+			if (rc.isLocationOccupiedByTree(rc.getLocation().add(directionToDestination, 4))) {
+				tryMove(directionToDestination.rotateLeftDegrees(90));
+			}
+			else {
+				System.out.println("Moved normally!");
+				rc.move(directionToDestination);
 			}
 		}
 		// If the robot cannot move in the direction to its destination, find
@@ -1638,7 +1664,7 @@ public strictfp class RobotPlayer {
 			treeHealth += tree.getHealth();
 		}
 		System.out.println("messured TreeHealth:" + treeHealth);
-		if (treeHealth > 3000) {
+		if (treeHealth > 1500) {
 			enclosed = true;
 		}
 		float[] size = guessMapSize();
