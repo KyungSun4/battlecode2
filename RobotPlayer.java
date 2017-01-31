@@ -31,6 +31,7 @@ public strictfp class RobotPlayer {
 	static int BASE_TREE_Y = 85;
 	static int ENEMY_X = 86;
 	static int ENEMY_Y = 87;
+	static int SET_COUNT = 88;
 
 	static Direction randomDir = randomDirection();
 
@@ -226,6 +227,7 @@ public strictfp class RobotPlayer {
 						// attacking
 						// and farming
 						// mapTypeOneGardener();
+						tryBuildRobot(randomDirection(), 1, 180, RobotType.LUMBERJACK);
 					} else if (mapData == 2) {
 						// Make soldiers then send them to attack
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
@@ -233,6 +235,7 @@ public strictfp class RobotPlayer {
 						// Make lumberjacks then do tree stuff
 						// mapTypeOneGardener();
 						// maintainTreeRing();
+						tryBuildRobot(randomDirection(), 1, 180, RobotType.LUMBERJACK);
 					} else if (mapData == 4) {
 						// Do tree stuff and make gardeners, maybe periodically
 						// make
@@ -245,19 +248,24 @@ public strictfp class RobotPlayer {
 						}
 					}
 				} else {
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.LUMBERJACK);
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3
+							|| (rc.readBroadcast(SET_COUNT) <= 2 && rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5)
+							|| rc.readBroadcast(SET_COUNT) <= 1) {
+						tryBuildRobot(randomDirection(), 1, 180, RobotType.LUMBERJACK);
 					}
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 3) {
-						tryBuildRobot(randomDirection(), 10, 9, RobotType.SOLDIER);
+						tryBuildRobot(randomDirection(), 1, 180, RobotType.SOLDIER);
 					}
 					if (rc.readBroadcast(TANK_COUNT_ARR) <= 3) {
 
 						// tryBuildRobot(randomDirection(), 10, 9,
 						// RobotType.TANK);
 					}
-
+					boolean setWas = set;
 					set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
+					if (!setWas && set) {
+						rc.broadcast(SET_COUNT, rc.readBroadcast(SET_COUNT) + 1);
+					}
 					// maintainTreeGrid(rc.senseNearbyTrees());
 
 				}
@@ -781,6 +789,11 @@ public strictfp class RobotPlayer {
 				 * randomDirection(); x++; } if (rc.canMove(randDir)) {
 				 * rc.move(randDir); } } }
 				 */
+				if (stuckCount == 1) {
+					stuckCount = 0;
+					tree = getNextTreeLocation(nearByTrees, tree);
+				}
+
 				if (tree != null) {
 
 					int result = fulfillLumberjackRequest(tree, nearByTrees);
@@ -789,7 +802,7 @@ public strictfp class RobotPlayer {
 					} else if (result == 2) {
 						if (!chopNearestTrees(nearByTrees)) {
 							System.out.println("Stuck");
-							stuckCount = 5;
+							stuckCount = 1;
 							// destination = tree;
 							// nextPathLocation =
 							// smartMoveToLocation(nextPathLocation,
@@ -801,7 +814,7 @@ public strictfp class RobotPlayer {
 				} else {
 					// tree = getLumberJackRequest();
 					if (tree == null) {
-						tree = getNextTreeLocation(nearByTrees);
+						tree = getNextTreeLocation(nearByTrees, null);
 					}
 					if (tree == null) {
 						if (!chopNearestTrees(nearByTrees)) {
@@ -855,20 +868,33 @@ public strictfp class RobotPlayer {
 		return false;
 	}
 
-	static MapLocation getNextTreeLocation(TreeInfo[] trees) {
+	static MapLocation getNextTreeLocation(TreeInfo[] trees, MapLocation current) {
 		if (trees.length == 0) {
 			return null;
+		}
+		// if begining get rid of the small ones
+		for (TreeInfo tree : trees) {
+			if (tree.getHealth() < 100
+					&& (tree.getTeam() == rc.getTeam().opponent() || tree.getTeam() == Team.NEUTRAL)) {
+				if (!tree.getLocation().equals(current)) {
+					return tree.getLocation();
+				}
+			}
 		}
 		// prioritize ones with robots
 		for (TreeInfo tree : trees) {
 			if (tree.containedRobot != null) {
-				return tree.getLocation();
+				if (!tree.getLocation().equals(current)) {
+					return tree.getLocation();
+				}
 			}
 		}
 		// return closest eneym or neutral tree
 		for (TreeInfo tree : trees) {
 			if (tree.getTeam() == rc.getTeam().opponent() || tree.getTeam() == Team.NEUTRAL) {
-				return tree.getLocation();
+				if (!tree.getLocation().equals(current)) {
+					return tree.getLocation();
+				}
 			}
 		}
 		return null;
