@@ -73,6 +73,7 @@ public strictfp class RobotPlayer {
 					if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (3.0 * rc.getRoundNum() / 300)) {
 						// this donest work: &&
 						// rc.readBroadcast(SOLDIER_COUNT_ARR) >= 2
+
 						tryBuildRobot(randomDirection(), 10, 9, RobotType.GARDENER);
 					}
 				}
@@ -103,7 +104,7 @@ public strictfp class RobotPlayer {
 		if (rc.getRoundNum() == 1) {
 			// These following statements are to find the location of the
 			// farthest archon from the center
-			System.out.print("maptype:"+getMapType());
+			System.out.print("maptype:" + getMapType());
 			MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
 			MapLocation mapCenter = getMapCenter();
 			MapLocation farthestArchonLocation = mapCenter;
@@ -119,6 +120,8 @@ public strictfp class RobotPlayer {
 			// what type of map it is
 			if (rc.getLocation() == farthestArchonLocation && isNotSurrounded()) {
 				saveInitialData();
+				rc.broadcast(BASE_TREE_X, (int) (rc.getLocation().x * 100000));
+				rc.broadcast(BASE_TREE_Y, (int) (rc.getLocation().y * 100000));
 				tryBuildRobot(farthestArchonLocation.directionTo(mapCenter), 10, 18, RobotType.GARDENER);
 				System.out.println("Im the farthest archon!");
 			}
@@ -133,6 +136,8 @@ public strictfp class RobotPlayer {
 			// set a different archon
 			if (rc.readBroadcast(MAIN_ARCHON_ID) == 0 && isNotSurrounded()) {
 				saveInitialData();
+				rc.broadcast(BASE_TREE_X, (int) (rc.getLocation().x * 100000));
+				rc.broadcast(BASE_TREE_Y, (int) (rc.getLocation().y * 100000));
 				tryBuildRobot(randomDirection(), 10, 18, RobotType.GARDENER);
 				System.out.println("Eh!?");
 			}
@@ -292,12 +297,12 @@ public strictfp class RobotPlayer {
 			// otherwise find unocupied spot on grid
 			// once this is working, make more complex grid arangement
 			float spacing = (float) 8.3;
-			MapLocation baseLocation = new MapLocation(spacing * 200 + 500, spacing * 200 + 500);
-			/*
-			 * MapLocation baseLocation = new MapLocation( spacing * 200 +
-			 * rc.readBroadcast(BASE_TREE_X) / (float) 100000, spacing * 200 +
-			 * rc.readBroadcast(BASE_TREE_Y) / (float) 100000);
-			 */
+			// MapLocation baseLocation = new MapLocation(spacing * 200 + 500,
+			// spacing * 200 + 500);
+
+			MapLocation baseLocation = new MapLocation(spacing * 200 + rc.readBroadcast(BASE_TREE_X) / (float) 100000,
+					spacing * 200 + rc.readBroadcast(BASE_TREE_Y) / (float) 100000);
+
 			MapLocation offsetLocation = new MapLocation(spacing * 200 + baseLocation.x,
 					spacing * 200 + baseLocation.y);
 			System.out.println("base is " + baseLocation);
@@ -1584,11 +1589,13 @@ public strictfp class RobotPlayer {
 		for (TreeInfo tree : trees) {
 			treeHealth += tree.getHealth();
 		}
-		if (treeHealth * trees.length > 400) {
+		System.out.println("messured TreeHealth:" + treeHealth);
+		if (treeHealth > 3000) {
 			enclosed = true;
 		}
 		float[] size = guessMapSize();
 		// if greater than a certain area
+		System.out.println("max Dist:" + Math.sqrt(size[0] * size[0] + size[1] * size[1]));
 		if (Math.sqrt(size[0] * size[0] + size[1] * size[1]) > 55) {
 			small = false;
 		}
