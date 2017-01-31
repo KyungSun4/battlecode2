@@ -222,6 +222,9 @@ public strictfp class RobotPlayer {
 		int mapData = rc.readBroadcast(MAP_TYPE);
 		boolean set = false;
 		boolean leaveSpace = (Math.random() > .5);
+		if(rc.getRoundNum()<5) {
+			leaveSpace = true;
+		}
 		boolean aboutToDie = false;
 
 		while (true) {
