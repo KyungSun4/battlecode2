@@ -103,6 +103,7 @@ public strictfp class RobotPlayer {
 		if (rc.getRoundNum() == 1) {
 			// These following statements are to find the location of the
 			// farthest archon from the center
+			System.out.print("maptype:"+getMapType());
 			MapLocation[] archonLocationF = rc.getInitialArchonLocations(rc.getTeam());
 			MapLocation mapCenter = getMapCenter();
 			MapLocation farthestArchonLocation = mapCenter;
@@ -1588,7 +1589,7 @@ public strictfp class RobotPlayer {
 		}
 		float[] size = guessMapSize();
 		// if greater than a certain area
-		if (Math.sqrt(size[0] * size[0] + size[1] * size[1]) > 30) {
+		if (Math.sqrt(size[0] * size[0] + size[1] * size[1]) > 55) {
 			small = false;
 		}
 		if (small && enclosed) {
