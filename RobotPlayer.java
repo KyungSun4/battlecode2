@@ -386,11 +386,7 @@ public strictfp class RobotPlayer {
 				}
 
 			}
-		} else
-
-		{
-			// rn will just do regular small flowers
-			// maintain flower (ring)
+		} else {
 			maintainTreeRing(leaveSpace);
 		}
 		return set;
@@ -636,7 +632,7 @@ public strictfp class RobotPlayer {
 	static void runSoldier() throws GameActionException {
 		System.out.println("I'm an soldier!");
 		rc.broadcast(SOLDIER_COUNT_ARR, rc.readBroadcast(SOLDIER_COUNT_ARR) + 1);
-		int mapData = rc.readBroadcast(MAP_TYPE);
+		//int mapData = rc.readBroadcast(MAP_TYPE);
 
 		MapLocation targetLocation = rc.getLocation();
 		Direction wanderDirection = Direction.NORTH;
@@ -730,13 +726,19 @@ public strictfp class RobotPlayer {
 						// units
 						randomDistance = (int) (Math.random() * 11 + 5);
 
-						if (rc.onTheMap(rc.getLocation().add(wanderDirection, 5))) {
+						if (rc.onTheMap(rc.getLocation().add(wanderDirection, 7))) {
 							System.out.println("Location is on the map!");
 							setNewWanderLocation = false;
 							targetLocation = rc.getLocation().add(wanderDirection, randomDistance);
 						}
 					}
-					smartMovement(targetLocation);
+					if (!rc.onTheMap(rc.getLocation(), 4)) {
+						setNewWanderLocation = true;
+					}
+					
+					if (smartMovement(targetLocation)) {
+						setNewWanderLocation = true;
+					}
 				}
 				Clock.yield();
 			} catch (Exception e) {
@@ -1291,12 +1293,14 @@ public strictfp class RobotPlayer {
 	static boolean smartMovement(MapLocation destination) throws GameActionException {
 		Direction directionToDestination = rc.getLocation().directionTo(destination);
 
-		TreeInfo[] trees = rc.senseNearbyTrees(4, Team.NEUTRAL);
 		// Returns true if the robot is within stride radius of its destination.
 		// If the robot can move in the direction to the destination, move
-		if (rc.canMove(directionToDestination) && rc.isCircleOccupied(rc.getLocation().add(directionToDestination, 4), 1)) {
+		if (rc.canMove(directionToDestination)) {
 			System.out.println("Moved normally!");
 			rc.move(directionToDestination);
+			if (rc.isLocationOccupiedByTree(rc.getLocation().add(directionToDestination, 2))) {
+				rc.firePentadShot(directionToDestination);
+			}
 		}
 		// If the robot cannot move in the direction to its destination, find
 		// the next possible position to move to
@@ -1398,36 +1402,49 @@ public strictfp class RobotPlayer {
 	}
 
 	static void tryShoot() throws GameActionException {
-		// shoots with correct number of bullets in correct distance. Use as a
-		// conditional to check if there is an enemy in range and call this
-		// function
-
-		// 0-2 distance shoot pent, 3-5 distance shoot triad, >6 distance shoot
-		// single
-		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam().opponent());
 		if (enemyRobots.length > 0) {
 			MapLocation myLocation = rc.getLocation();
-			// Loops through all the enemies nearby starting with the closest
-			// one
+			// Loops through all the enemies nearby starting with the closest one
 			for (int counter = 0; counter < enemyRobots.length; counter++) {
 				Direction directionToEnemy = myLocation.directionTo(enemyRobots[counter].getLocation());
 				// Checks if it will hit a friendly or not
-				if (!willHitFriendly(directionToEnemy)) {
-					float distanceToEnemy = myLocation.distanceTo(enemyRobots[counter].getLocation());
-					if (distanceToEnemy < 4 && rc.canFirePentadShot()) {
+				if (!willHitFriendly(directionToEnemy) && !treeInWay(directionToEnemy)) {
+					float distanceToEnemy = myLocation.distanceTo(enemyRobots[counter].getLocation()) + rc.getType().bodyRadius;
+					System.out.println("Distance to enemy: " + distanceToEnemy);
+					if (distanceToEnemy < 6 && rc.canFirePentadShot()) {
 						rc.firePentadShot(directionToEnemy);
-						return;
-					} else if (distanceToEnemy < 7 && rc.canFireTriadShot()) {
-						rc.fireTriadShot(directionToEnemy);
+						System.out.println("Pentad shot!");
 						return;
 					}
-				} else {
-					System.out.println("Will hit Friend");
+					else if (distanceToEnemy < 9 && rc.canFireTriadShot()) {
+						rc.fireTriadShot(directionToEnemy);
+						System.out.println("Triad shot!");
+						return;
+					}
 				}
 			}
-		} else {
+		}
+		else {
 			System.out.println("No enemies detected!");
 		}
+	}
+	
+	static boolean treeInWay(Direction dir) {
+		TreeInfo[] allTrees = rc.senseNearbyTrees(4, Team.NEUTRAL);
+		for (TreeInfo tree: allTrees) {
+			//Looks through an array of all the trees near you
+			Direction directionToTree = rc.getLocation().directionTo(tree.getLocation());
+			float distanceToTree = rc.getLocation().distanceTo(tree.getLocation());
+			float theta = Math.abs(directionToTree.radiansBetween(dir));
+			float perpendicularDistance = (float) (Math.sin((double)theta) * distanceToTree);
+			//If the perpendicular distance is less than or equal to the trees radius, the bullet will hit it
+			if (perpendicularDistance <= tree.getRadius() && distanceToTree <= 4) {
+				// Immediately break return true if it will hit a tree
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static boolean tryMove(Direction dir) throws GameActionException {
