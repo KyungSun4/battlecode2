@@ -35,7 +35,7 @@ public strictfp class RobotPlayer {
 	// Some static variables
 	static int BULLET_OVERFLOW_LIMIT = 1000;
 	static int BULLETS_NEEDED_TO_MAKE_ROBOT = 50;
-	
+
 	static Direction randomDir = randomDirection();
 
 	@SuppressWarnings("unused")
@@ -233,23 +233,24 @@ public strictfp class RobotPlayer {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 					}
-					
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+
+					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
 				// Small and open
-				else if (mapData == 2) {					
+				else if (mapData == 2) {
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 2) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
-					
+
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
@@ -257,11 +258,11 @@ public strictfp class RobotPlayer {
 					}
 					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 10 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 10
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
@@ -275,11 +276,11 @@ public strictfp class RobotPlayer {
 
 					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 10) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10  && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
@@ -288,7 +289,7 @@ public strictfp class RobotPlayer {
 					if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 2) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
-					
+
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
@@ -296,11 +297,9 @@ public strictfp class RobotPlayer {
 					}
 					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10) {
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 10) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					}
-					else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
+					} else if (rc.readBroadcast(TANK_COUNT_ARR) < 5) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.TANK);
 					}
 				}
@@ -1082,13 +1081,17 @@ public strictfp class RobotPlayer {
 		RobotInfo[] enemyRobots = rc.senseNearbyRobots(RobotType.SCOUT.sensorRadius, rc.getTeam().opponent());
 		for (RobotInfo robot : enemyRobots) {
 			if (robot.getType() == RobotType.GARDENER && rc.getLocation().distanceTo(robot.location) > 4.5) {
-				tryMove(rc.getLocation().directionTo(robot.location));
+				if (!rc.hasMoved()) {
+					tryMove(rc.getLocation().directionTo(robot.location));
+				}
 				return;
 			} else if (robot.getType() == RobotType.GARDENER) {
 				float distance = (float) ((rc.getLocation().distanceTo(robot.location)) - 2.01);
 				if (rc.canMove(rc.getLocation().directionTo(robot.location), distance)) {
-					rc.move(rc.getLocation().directionTo(robot.location), distance);
-					return;
+					if (!rc.hasMoved()) {
+						rc.move(rc.getLocation().directionTo(robot.location), distance);
+						return;
+					}
 				}
 			}
 		}
@@ -1372,7 +1375,9 @@ public strictfp class RobotPlayer {
 	// run this code. Will stop running this method if an enemy is detected
 	static boolean smartMovement(MapLocation destination) throws GameActionException {
 		Direction directionToDestination = rc.getLocation().directionTo(destination);
-
+		if (rc.hasMoved()) {
+			return false;
+		}
 		// Returns true if the robot is within stride radius of its destination.
 		// If the robot can move in the direction to the destination, move
 		if (rc.canMove(directionToDestination)) {
@@ -1389,7 +1394,7 @@ public strictfp class RobotPlayer {
 		else {
 			System.out.println("Trying to find another direction!");
 			Direction smartMove = nextAvaliableDirection(directionToDestination);
-			if (rc.canMove(smartMove)) {
+			if (smartMove != null && rc.canMove(smartMove)) {
 				System.out.println("Using nextAvaliableDirection to move!");
 				rc.move(smartMove);
 			}
