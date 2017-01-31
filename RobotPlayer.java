@@ -31,6 +31,7 @@ public strictfp class RobotPlayer {
 	static int BASE_TREE_Y = 85;
 	static int ENEMY_X = 86;
 	static int ENEMY_Y = 87;
+	static int SET_COUNT = 88;
 
 	// Some static variables
 	static int BULLET_OVERFLOW_LIMIT = 1000;
@@ -77,22 +78,26 @@ public strictfp class RobotPlayer {
 				mapType = rc.readBroadcast(MAP_TYPE);
 				if (rc.readBroadcast(MAIN_ARCHON_ID) == rc.getID() || rc.getRoundNum() > 400) {
 					if (mapType == 1) {
-						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100)
+								&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 2) {
-						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 100)
+								&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 3) {
-						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 75) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 75)
+								&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
 					if (mapType == 4) {
-						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 50) && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+						if (rc.readBroadcast(GARDENER_COUNT_ARR) <= (int) (rc.getRoundNum() / 50)
+								&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 							tryBuildRobot(randomDirection(), 1, 180, RobotType.GARDENER);
 						}
 					}
@@ -234,7 +239,7 @@ public strictfp class RobotPlayer {
 						}
 					}
 
-					if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5
+					if ((rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5 || rc.readBroadcast(SET_COUNT) <= 1)
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40
@@ -248,16 +253,16 @@ public strictfp class RobotPlayer {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
 
-					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT && rc.getRoundNum() < 50) {
+					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT
+							&& rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
-					}
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 20
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) < 20
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
-					}
-					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3 && rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
+					} else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3
+							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
 					}
 				}
@@ -286,15 +291,17 @@ public strictfp class RobotPlayer {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
-					}
-					else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
+					} else if (rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 3) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
-					} 
-					else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40) {
+					} else if (rc.readBroadcast(SOLDIER_COUNT_ARR) <= 40) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);
 					}
 				}
+				boolean setWas = set;
 				set = maintainTreeGridOfFlowers(set, rc.senseNearbyRobots(), leaveSpace);
+				if (!setWas && set) {
+					rc.broadcast(SET_COUNT, rc.readBroadcast(SET_COUNT) + 1);
+				}
 				TreeInfo[] sensedTrees = rc.senseNearbyTrees();
 				alwaysWater(sensedTrees);
 				convertVictoryPoints(1000);
@@ -302,6 +309,7 @@ public strictfp class RobotPlayer {
 				if (rc.getHealth() <= 10 && !aboutToDie) {
 					aboutToDie = true;
 					rc.broadcast(GARDENER_COUNT_ARR, rc.readBroadcast(GARDENER_COUNT_ARR) - 1);
+					// rc.broadcast(SET_COUNT, rc.readBroadcast(SET_COUNT) - 1);
 				}
 
 				Clock.yield();
@@ -1373,8 +1381,7 @@ public strictfp class RobotPlayer {
 		if (rc.canMove(directionToDestination)) {
 			if (rc.isLocationOccupiedByTree(rc.getLocation().add(directionToDestination, 4))) {
 				tryMove(directionToDestination.rotateLeftDegrees(90));
-			}
-			else {
+			} else {
 				System.out.println("Moved normally!");
 				rc.move(directionToDestination);
 			}
