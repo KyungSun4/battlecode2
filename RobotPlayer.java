@@ -232,18 +232,15 @@ public strictfp class RobotPlayer {
 				System.out.println("Scout: " + rc.readBroadcast(SCOUT_COUNT_ARR));
 				System.out.println("Lumberjack: " + rc.readBroadcast(LUMBERJACK_COUNT_ARR));
 				if (mapData == 1) {
-
-					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
-						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
-					}
 					if (rc.readBroadcast(SCOUT_COUNT_ARR) == 0 && rc.getRoundNum() < 50) {
 						if (tryBuildRobot(randomDirection(), 10, 18, RobotType.SCOUT)) {
 							rc.broadcast(SCOUT_COUNT_ARR, rc.readBroadcast(SCOUT_COUNT_ARR) + 1);
 						}
 
-					}	
-
-
+					}
+					if (rc.readBroadcast(SOLDIER_COUNT_ARR) == 0) {
+						tryBuildRobot(randomDir, 10, 18, RobotType.SOLDIER);					
+					}
 					if ((rc.readBroadcast(LUMBERJACK_COUNT_ARR) <= 5 || rc.readBroadcast(SET_COUNT) <= 1)
 							&& rc.getTeamBullets() >= BULLETS_NEEDED_TO_MAKE_ROBOT) {
 						tryBuildRobot(randomDir, 10, 18, RobotType.LUMBERJACK);
